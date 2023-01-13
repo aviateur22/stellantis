@@ -1,0 +1,319 @@
+<div id='popup'></div>
+<script>
+	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-forecasts/'>Upload forecasts</a></p>";
+
+	filtreText += "<h2>Filters</h2>";
+ filtreText += "<p style='text-align:center'><label for='end'>End date</label>";
+ 	filtreText += '<input style="margin-left:10px;" type="date" id="end" name="end" value="2023-12-31" min="2022-01-01" max="2050-12-31"></p>';
+ 	filtreText += "<table><tr><td><label for='family'>Family</label>";
+ 	filtreText += '<select style="display:block" id="family" name="family" multiple></td>';
+ filtreText += "<td><label for='countryCode'>Country Code</label>";
+ filtreText += '<select style="display:block" id="countryCode" name="countryCode" multiple></td>';
+ filtreText += "<td><label for='countryName'>Country Name</label>";
+ filtreText += '<select style="display:block" id="countryName" name="countryName" multiple></td>';
+ filtreText += "<td><label for='codePochette'>Code Pochette</label>";
+ filtreText += '<select style="display:block" id="codePochette" name="codePochette" multiple></td>';
+ 	filtreText += "<td><label for='partNumber'>Part Number</label>";
+ 	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" value="ALL"></td>';
+ 	filtreText += '</tr></table>';
+
+	function $_GET(param) {
+		var vars = {};
+		window.location.href.replace( location.hash, '' ).replace(
+		/[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
+		function( m, key, value ) { // callback
+			vars[key] = value !== undefined ? value : '';
+			if(vars[key].substring(vars[key].length-1)=="#")
+			vars[key] = vars[key].substring(0,vars[key].length-1);
+		}
+		);
+
+		if ( param ) {
+			return vars[param] ? vars[param] : null;
+		}
+		return vars;
+	}
+
+
+	function chargement() {
+		document.getElementById("chargement-page").style.display = "block";
+		document.getElementById("resultat-page").classList.add("invisible");
+	}
+
+	var mode = 1;
+	var type;
+
+	window.onload=function(){
+
+		/////////////////////////// EVENT /////////////////////////////////////////////
+		document.getElementById("message").addEventListener('input', resetMessage);
+		function resetMessage() {
+			document.getElementById("resultat").innerHTML ="<p></p>";
+		}
+
+		document.getElementById("btn-go").addEventListener('click', rechercheGo);
+
+function rechercheGo(e)
+{
+	e.preventDefault();
+gestionAppel();
+}
+
+		window.addEventListener('click', function(e){
+			if (document.getElementById('popup').contains(e.target) || document.getElementById('order_table').contains(e.target)){
+				// Clicked in box
+
+
+				// if (document.getElementById('documents').contains(e.target))
+				// {
+				// 	document.getElementById("table-lot").style.display = "none";
+				// 	document.getElementById("lots").classList.remove("active");
+				//
+				// 	document.getElementById("table-document").style.display = "block";
+				// 	document.getElementById("documents").classList.add("active");
+				//
+				// 	document.getElementById("table-tracking").style.display = "none";
+				// 	document.getElementById("tracking").classList.remove("active");
+				//
+				// 	document.getElementById("table-commentaire").style.display = "none";
+				// 	document.getElementById("commentaires").classList.remove("active");
+				// }
+				/////////////////////////// EVENT /////////////////////////////////////////////
+
+			}
+			else{
+				//$('#popup').hide();
+				document.getElementById('popup').style.display = "none";
+			}
+		});
+
+		/////////////////////////////////// INIT //////////////////////////////////////////
+		document.getElementById("filter-div").innerHTML = filtreText;
+
+		type = "1";
+		//id_lot= $_GET('id_lot');
+		//id_projet= $_GET('id_projet');
+
+		gestionAppel();
+
+
+	}
+	function elementPosition (a) {
+	  var b = a.getBoundingClientRect();
+	  return {
+	    clientX: a.offsetLeft,
+	    clientY: a.offsetTop,
+	    viewportX: (b.x || b.left),
+	    viewportY: (b.y || b.top)
+	  }
+	}
+	function getDocumentSize()
+{
+	return new Array((document.documentElement && document.documentElement.scrollWidth) ? document.documentElement.scrollWidth : (document.body.scrollWidth > document.body.offsetWidth) ? document.body.scrollWidth : document.body.offsetWidth,(document.documentElement && document.documentElement.scrollHeight) ? document.documentElement.scrollHeight : (document.body.scrollHeight > document.body.offsetHeight) ? document.body.scrollHeight : document.body.offsetHeight);
+}
+
+	function affichePopup(ids,idnumRows)
+	{
+for(x=1;x<5000;x++)
+{
+		//reset style
+	if(document.body.contains(document.getElementById("row-"+x)))
+	{
+		document.getElementById("row-"+x).style.backgroundColor = "#FFF";
+		document.getElementById("row-"+x).style.color = "#262626";
+	}
+	else {
+		break;
+	}
+}
+
+		document.getElementById(idnumRows).style.backgroundColor = "#1e4faa";
+		document.getElementById(idnumRows).style.color = "#FFF";
+		var positions = elementPosition(document.getElementById(idnumRows));
+		var hauteur = getDocumentSize();
+		console.log({
+			 "Hauteur vertical de la page": hauteur[1],
+			 "Position verticale dans la fenêtre": positions.clientY,
+			 "Position horizontale dans le document": positions.viewportX,
+			 "Position verticale dans le document": positions.viewportY
+		});
+		const nposY=positions.clientY-hauteur[1]+1500;
+		document.getElementById('popup').style.top=nposY+"px";
+		document.getElementById('popup').style.height="400px";
+
+
+		document.getElementById('popup').style.display = "block";
+		document.getElementById('popup').innerHTML = "<h5 style='text-align:center;margin-top:100px;'>... Loading data in progress ...</h5>";
+
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_popup_LongTerm.php";
+
+
+		var _variables = 'ids=' + encodeURIComponent(ids);
+
+
+		mode = 4; //STRING
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+
+	}
+
+
+	function initListes()
+	{
+		var categorie="appareil,site";
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get-listes.php";
+		const _variables = 'categorie=' + encodeURIComponent(categorie);
+		mode = 1; //JSON
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+	}
+
+
+	function gestionAppel()
+	{
+
+		//Chargement en cours
+		chargement();
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_forecasts_dashboard.php";
+
+		const dateFin = document.getElementById('end').value;
+		// const appareil = document.getElementById('appareil');
+		//
+		// var sappareil = "";
+		// for(x=0;x<appareil.length;x++)
+		// {
+		// 	if(appareil[x].selected == true)
+		// 	sappareil += appareil[x].value + ", ";
+		// }
+
+
+	//	const contrat_technique = document.getElementById('contrat_technique').value;
+
+		var _variables = 'type=' + encodeURIComponent(type) + '&dateFin=' + encodeURIComponent(dateFin);
+
+
+		mode = 2; //JSON
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+	}
+	function AppelScriptPHP(lien_scriptPHP, variables)
+	{
+		httpRequest = new XMLHttpRequest();
+
+		if (!httpRequest){
+			alert('Il y a eu une erreur XMLHTTP. Merci de nous contacter.');
+			return false;
+		}
+
+
+
+		//Afficher résultats par défaut
+
+		httpRequest.onreadystatechange = alertContents;
+		httpRequest.open('POST', lien_scriptPHP);
+		httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+		httpRequest.send(variables);
+	}
+
+	function alertContents() {
+		if (httpRequest.readyState === XMLHttpRequest.DONE) {
+			if (httpRequest.status === 200) {
+
+				var data; //string ou JSON
+				if(mode == 1){
+					try {
+						data = JSON.parse(httpRequest.responseText);
+
+						//document.getElementById("appareil").innerHTML = data['combo_liste_appareil'];
+
+						//gestionAppel();
+					}catch(e) {
+						alert(e); // error in the above string (in this case, yes)!
+					}
+				}
+				else if(mode == 2)
+				{
+					//try {
+						data = JSON.parse(httpRequest.responseText);
+						majResult(data);
+
+						document.getElementById("chargement-page").style.display = "none";
+						document.getElementById("resultat-page").classList.remove("invisible");
+
+
+					// }catch(e) {
+					// 	alert(e); // error in the above string (in this case, yes)!
+					// }
+
+				}
+				if(mode>2){
+					data = httpRequest.responseText;
+					if(data.substring(0,6) == 'Erreur')
+					{
+
+						alert(data);
+					}
+					else{
+						if(mode == 3){ //Si modification
+							gestionAppel(type,id_lot); //rechargement des données de la page
+
+							document.getElementById("resultat").innerHTML = "<p style='color:green;text-align:center'><strong>Mise à jour réussie !</strong></p>";
+						}
+						if(mode == 4){ //Si Popup
+							document.getElementById('popup').style.display = "block";
+							document.getElementById('popup').innerHTML = data;
+
+						}
+					}
+				}
+			}
+			else {
+				alert('Il y a eu une erreur. Merci de nous contacter.');
+			}
+		}
+	}
+
+	function downloadFile(link) {
+		window.open(link,'_self');
+		setTimeout(() => {
+			document.getElementById("resultat-print").classList.add("invisible");
+		}, "2000")
+	}
+
+
+
+	function majResult(data)
+	{
+		//MAJ Titre et WIP
+
+		document.getElementById('resultat-div').innerHTML = data['orders'];
+
+		// for(x=0;x<2;x++)
+		// {
+		// 	var ctx = document.getElementById('myChart'+x);
+		//   new Chart(ctx, {
+		//     type: 'bar',
+		//     data: {
+		//       labels: [data['grapheTab'][x]['labels'][0],data['grapheTab'][x]['labels'][1],data['grapheTab'][x]['labels'][2],data['grapheTab'][x]['labels'][3]],
+		//       datasets: [{
+		//         label: data['grapheTab'][x]['label'],
+		//         data: [data['grapheTab'][x]['data'][0], data['grapheTab'][x]['data'][1], data['grapheTab'][x]['data'][2], data['grapheTab'][x]['data'][3]],
+		//         borderWidth: 1
+		//       }]
+		//     },
+		//     options: {
+		//       scales: {
+		//         y: {
+		//           beginAtZero: true
+		//         }
+		//       }
+		//     }
+		//   });
+		//
+		// }
+
+
+	}
+
+
+
+
+</script>

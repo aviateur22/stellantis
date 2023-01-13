@@ -1,0 +1,354 @@
+<div id="result"></div>
+
+<script>
+
+	// Commande en echec
+	let failureOrders = [];
+
+	// Commande dupliquée
+	let duplicatedOrders = []
+
+	function $_GET(param) {
+		var vars = {};
+		window.location.href.replace( location.hash, '' ).replace(
+		/[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
+		function( m, key, value ) { // callback
+			vars[key] = value !== undefined ? value : '';
+			if(vars[key].substring(vars[key].length-1)=="#")
+			vars[key] = vars[key].substring(0,vars[key].length-1);
+		}
+		);
+
+		if ( param ) {
+			return vars[param] ? vars[param] : null;
+		}
+		return vars;
+	}
+
+
+	function chargement() {
+		deletedRedRows.length = 0;
+		document.getElementById("chargement-2").style.display = "block";
+		document.getElementById("div-result").classList.add("invisible");
+		document.getElementById("resultat").innerHTML = '<span style="font-size: 18pt; font-family:comic sans ms, sans-serif;"><strong>... Loading data in progress ...</strong></span>';
+
+	}
+
+
+	var redRows = new Array();
+
+	var deletedRedRows= new Array();
+	var mode = 1;
+	var type;
+	var sidOldOrder = "";
+
+	window.onload=function(){
+
+		/////////////////////////// EVENT /////////////////////////////////////////////
+
+
+
+		document.getElementById("order-model").addEventListener('click', DownloadOrderModel);
+		document.getElementById("upload-file").addEventListener('change', SaveFile);
+
+
+
+		/////////////////////////////////// INIT //////////////////////////////////////////
+
+		type = "2";
+		//id_lot= $_GET('id_lot');
+		//id_projet= $_GET('id_projet');
+
+		init();
+
+
+	}
+
+	async function SaveFile()
+	{
+		const excel = document.getElementById("upload-file").files[0];
+		if(excel.name.substr(-3) != "xls" && excel.name.substr(-4) != "xlsx")
+		{
+			alert("The file must be an xlsx file !");
+			document.getElementById("upload-file").value = "";
+			return;
+		}
+		let formData = new FormData();
+		formData.append("file", excel);
+
+		await fetch('https://mdw-05.fr/wp-content/themes/redparts/upload.php', {
+			method: "POST",
+			body: formData
+		}).then(response => {
+			//Avec  response, il est possible d'analyser la réponse (voir doc : https://developer.mozilla.org/fr/docs/Web/API/Response)
+			console.log(response.ok);
+			console.log(response.status);
+			console.log(response.statusText);
+			if(response.ok){
+				console.log("Tout s'est bien passé");
+				gestionAppel(excel.name); // return obligatoire pour passer au then d'après
+			}
+		});
+	}
+
+	function changeOnglet(onglet){
+
+			if(onglet == 1){
+			document.getElementById("short-term").style.display = "none";
+			document.getElementById("short-term-li").classList.remove("active");
+			document.getElementById("long-term").style.display = "block";
+			document.getElementById("long-term-li").classList.add("active");
+		}
+			else {
+				document.getElementById("long-term").style.display = "none";
+				document.getElementById("long-term-li").classList.remove("active");
+				document.getElementById("short-term").style.display = "block";
+				document.getElementById("short-term-li").classList.add("active");
+			}
+	}
+
+	function delRow(row){
+		const tdParentElement = row.parentElement;
+		const trParentElement = tdParentElement.parentElement;
+
+		if(trParentElement) {
+			// Récuperation donnée de la commande
+			const orderId = trParentElement.dataset.orderId;
+			const partNumber = trParentElement.dataset.partNumber;
+			const deliveredDate = trParentElement.dataset.deliveredDate;
+
+			// BTN Supprimé a bloquer			
+			disableDeleteBtnElement(true);
+
+			// Requete HTTP pour supprimeer
+			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/delete_order.php";			
+			var _variables = 'orderid=' + encodeURIComponent(orderId) + '&partnumber=' + encodeURIComponent(partNumber)+ '&orderdate=' + encodeURIComponent(deliveredDate);
+			AppelScriptPHP(_lien_scriptPHP, _variables);disableDeleteBtnElement()
+
+			// Mise à jour des listes en erreur
+			duplicatedOrders = duplicatedOrders.filter(x=>x !== partNumber);
+			failureOrders = failureOrders.filter(x=>x !== partNumber);
+
+			console.log(duplicatedOrders, failureOrders)
+			trParentElement.remove();
+
+			// BTN Supprimé a débloquer	
+			disableDeleteBtnElement(false);
+
+			// Bouton Soumission des commandes
+			disableSubmitOrderBtnElement();
+		}
+		
+		
+   
+		// document.getElementById('row-'+idRow).remove();
+
+		// var cond = true;
+		// for(x=0;x<redRows.length;x++)
+		// {
+		// 	var cond2 = false;
+		// 	for(y=0;y<deletedRedRows.length;y++)
+		// 	{
+		// 		if(redRows[x] == deletedRedRows[y]){
+		// 			cond2 = true;
+		// 			break
+		// 		}
+		// 	}
+		// 	if(cond2 == false)
+		// 	cond = false;
+		// }
+		// if(cond)
+		// {
+		// 	document.getElementById('red-row-div').remove();
+		// 	document.getElementById('btn-confim-order').disabled = false;
+
+		// }
+
+	}
+
+
+	function DownloadOrderModel(){
+		document.getElementById("del-message").classList.remove("invisible");
+
+		downloadFile("https://mdw-05.fr/wp-content/uploads/orders/order_model.xlsx","del-message");
+	}
+
+/*
+ * Creation XML 
+ */
+function orderConfirm(btnElement)
+{
+	const orderId = btnElement.dataset.orderId;
+	
+	if(orderId){
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/confirm_order.php";
+		chargement();
+
+		var _variables = 'orderid=' + encodeURIComponent(orderId);
+		mode = 10; //Chaine
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+	}
+}
+
+
+	function init()
+	{
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/init_order.php";
+		mode = 1; //JSON
+		var _variables = 'type=' + encodeURIComponent(type);
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+	}
+
+
+	function gestionAppel(filename)
+	{
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/analyse_xlsx_orders.php";
+		chargement();
+
+
+		var _variables = 'filename=' + encodeURIComponent(filename);
+
+		mode = 2; //JSON
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+	}
+	
+	function AppelScriptPHP(lien_scriptPHP, variables)
+	{
+		httpRequest = new XMLHttpRequest();
+
+		if (!httpRequest){
+			alert('There is an error XMLHTTP. Pease contact support.');
+			return false;
+		}
+
+		//Chargement en cours
+
+		//Afficher résultats par défaut
+
+		httpRequest.onreadystatechange = alertContents;
+		httpRequest.open('POST', lien_scriptPHP);
+		httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		httpRequest.send(variables);
+	}
+
+	function alertContents() {
+		if (httpRequest.readyState === XMLHttpRequest.DONE) {
+			if (httpRequest.status === 200) {
+
+				var data; //string ou JSON
+				if(mode == 1){
+					try {
+						data = JSON.parse(httpRequest.responseText);
+
+						document.getElementById("intro").innerHTML = data['intro'];
+						document.getElementById("chargement-1").style.display = "none";
+						document.getElementById("div-form").classList.remove("invisible");
+					}catch(e) {
+						alert(e); // error in the above string (in this case, yes)!
+					}
+				}
+				else if(mode == 2)
+				{
+					//try {
+					data = JSON.parse(httpRequest.responseText);
+					majResult(data);
+
+					document.getElementById("chargement-2").style.display = "none";
+					document.getElementById("div-result").classList.remove("invisible");
+
+
+					// }catch(e) {
+					// 	alert(e); // error in the above string (in this case, yes)!
+					// }
+
+				}
+				if(mode>2){
+					data = httpRequest.responseText;
+					if(data.substring(0,5) == 'Error')
+					{
+
+						alert(data);
+					}
+					else{
+						if(mode == 10){ 
+							
+							//Si validation order
+
+							// document.getElementById("resultat").innerHTML = '<span style="font-size: 18pt; font-family:comic sans ms, sans-serif;">Order sent successfully !</span>';
+							// //redirection vers dashbord
+							// location.href = "https://mdw-05.fr/reseau-psa/orders-dashboard/";
+						}
+					}
+				}
+			}
+			else {
+				alert('There in an error. Please contact support.');
+			}
+		}
+	}
+
+	function downloadFile(link,idmessage) {
+		window.open(link,'_self');
+		setTimeout(() => {
+			document.getElementById(idmessage).classList.add("invisible");
+		}, "2000")
+	}
+
+	/*
+	 * Disable Delete button
+	 * @params {bool} disabledValue - True-False 
+	 */
+	function disableDeleteBtnElement(disabledValue) {
+		// Récupération des button supprimés
+		const deleteBtnElements = document.querySelectorAll(".del-btn-ico");
+		
+		if(deleteBtnElements) {
+			deleteBtnElements.forEach(element => {
+				element.disabled  = disabledValue;			
+			});
+		}		
+	}
+
+	/*
+	 * Disable/Enable Submit Order
+	 */
+	 function disableSubmitOrderBtnElement() {
+		// Récupération des button supprimés
+		const submitBtnElement = document.getElementById('btn-confim-order');
+		const orderRowElement = document.querySelectorAll('.order-row');
+		const warningMessageElement = document.getElementById('red-row-div');
+
+		if(!submitBtnElement) {
+			return 
+		}		
+
+		// Vérification si erreur dans les commandes
+		if(duplicatedOrders.length > 0 || failureOrders.length > 0 || orderRowElement.length <= 0) {
+				submitBtnElement.disabled  = true;	
+			} else {
+				submitBtnElement.disabled  = false;	
+
+				// Masque le mesage de suppression
+				if(warningMessageElement) {
+					warningMessageElement.style.display = "none"
+				}
+			}
+	 }
+
+	function majResult(data)
+	{
+		if(data['result']) {
+			//MAJ Titre et WIP
+			document.getElementById('result').innerHTML = data['result'];
+
+			// Listes des commandes en erreur
+			duplicatedOrders = data['duplicatedOrder'];
+			failureOrders = data['failureOrders'];
+
+			sidOldOrder = data['sidOldOrder'];
+			redRows = data['redRows'];
+		} else if (data['delete-result']) {
+
+		}
+	}
+</script>

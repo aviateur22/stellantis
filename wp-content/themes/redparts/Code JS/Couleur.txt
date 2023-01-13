@@ -1,0 +1,5 @@
+<td style='background-color:#FFFFFF;'>PREFLIGHT</td>
+<td style='background-color:#E9F782;'>IN PROGRESS</td>
+<td style='background-color:#FF735D;'>BLOCKED</td>
+<td style='background-color:#61CE70;'>READY</td>
+<td style='background-color:#00FF2E;'>DELIVERED</td><tr></table>";
