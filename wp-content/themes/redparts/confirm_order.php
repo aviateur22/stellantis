@@ -24,14 +24,15 @@ if(isset($orderId)) {
 
 
     // Format les commandes a transférer
-    $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();
+    $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();    
 
+    // Transfert Fichier
+    $ftpTransfert->transfertOrders($formatedPathOrders);
 
-    
+    // Mise a jour du statut des commandes
+    $ftpTransfert->updateOrderStatus();  
 
-
-    var_dump('ICI');
-    echo "OK";
+    echo "Tranfert commandes OK";
   }
   catch(Throwable $th) {
     echo($th->getMessage());

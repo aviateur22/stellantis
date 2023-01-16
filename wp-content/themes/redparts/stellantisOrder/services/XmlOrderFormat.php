@@ -96,7 +96,7 @@ class XmlOrderFormat implements OrderFormatInterface {
 
     // TODO Prevision sous 8 semaine
     $prevision = $this->forecastPrintHelper->getForecastOrdersQuantity($order['deliveredDate'], $order['partNumber'], (int)$order['quantity']);
-    var_dump($prevision);
+    
     $livre->appendChild($xmlFile->createElement('orderForecastPrevisions', strval($prevision)));    
 
     // Format + Sauvegarde

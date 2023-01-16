@@ -66,10 +66,9 @@ class DisplayOrder {
           $orderId = $order->getOrderId();
         }
         // class pour les <tr>
-        $trClass = $this->isOrderValid($order->getPartNumber()) ? 'order-valid' : 'order-failure';
-        
+        $trClass = $this->isOrderValid($order->getPartNumber()) ? 'order-valid' : 'order-failure';        
         $html .= "<tr data-order-id=".$orderId." data-part-number=".$order->getPartNumber()." data-delivered-date=".$order->getdeliveredDate()." class='".$trClass." order-row'>";
-        $html .= "<td><button class=del-btn-ico onclick='delRow(this);' id='del-".$order->getPartNumber()."'></button></td>";
+        $html .= "<td><button class=del-btn-ico onclick='displayOrderDeleteModal(this);' id='del-".$order->getPartNumber()."'></button></td>";
         //$html .= "<td><button class=".$this->isOrderValid($order->getPartNumber()) ? 'order-failure' : 'del-btn-ico'."' onclick='delRow();' id='del-".$order->getPartNumber()."'></button></td>";
         $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
         $html .= $this->createHtmlForOrderProperty($order->getQuantity());        
@@ -84,6 +83,9 @@ class DisplayOrder {
     $html .= $this->addButtonAction($orderId);
 
     $html .='</div>';
+
+    // Ajout de la modal
+    $html .= $this->addConfirmationModal();
 
     //$this->orderHtml = $html;
     return $html;
@@ -133,13 +135,15 @@ class DisplayOrder {
    * @return string
    */
   function addConfirmationModal(): string {
-    return '<div id="orderModal" class="modal_container">
+    return '<div id="orderModal" class="modal__container">
       <div class="modal">
-        <h4>Confirmation suppression commande</h4>
-        <p>Confirmez-vous la suppréssion de la commande?</p>
-        <div>
-          <button onclick="deleteOrder();" type="button" class="modal__button" value> Oui </button>
-          <button onclick="hideModal();" type="button" class="modal__button cancel--button" value> Non </button>
+        <h4 class="modal__title">Confirmation suppression commande</h4>
+        <p class="modal__text">Confirmez-vous la suppression de la commande ?</p>
+        <div class="modal__button__container">
+          <div>          
+            <button onclick="delRow();" type="button" class="modal__button" value> Oui </button>
+            <button onclick="hideOrderDeleteModal();" type="button" class="modal__button cancel--button" value> Non </button>
+          </div>
         </div>
       </div> 
     </div>';

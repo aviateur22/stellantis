@@ -4,6 +4,7 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/in
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/FormatedOrder.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/exceptions/FtpException.php';
 
 /**
  * Transfert des fichier via FTP
@@ -14,7 +15,7 @@ class FtpTransfert implements OrderTransferInterface {
     'HOST' => 'localhost',
     'USER' => 'aviateur22',
     'PASSWORD' => 'Advency1',
-    'DESTINATION_FILE_PATH' => 'ddd',
+    'DESTINATION_FILE_PATH' => 'XML/',
   ];
 
   /**
@@ -51,7 +52,12 @@ class FtpTransfert implements OrderTransferInterface {
         $ftpConnect = $this->getFactoryRecipient($formatedOrder->getOrderQuantity());
 
         // Transfert du fichier
-        ftp_put($ftpConnect, self::RECEPIENT_INFORMATION['DESTINATION_FILE_PATH'].'/'.$formatedOrder->getFileName(), $formatedOrder->getOrderFilePath(), FTP_ASCII);
+        ftp_put(
+          $ftpConnect, 
+          self::RECEPIENT_INFORMATION['DESTINATION_FILE_PATH'].$formatedOrder->getFileName(), 
+          $formatedOrder->getOrderFilePath(), 
+          FTP_ASCII
+        );
         
         // close
         ftp_close($ftpConnect);
@@ -69,22 +75,35 @@ class FtpTransfert implements OrderTransferInterface {
   {    
     switch ($orderQuantity) {
       case $orderQuantity < 100:
+        // Connection FTP
+        $ftpConnect = ftp_connect(
+          self::RECEPIENT_INFORMATION['HOST']) or die("Error connecting to ftp $ftpConnect");
 
-        $ftpConnect = ftp_connect(self::RECEPIENT_INFORMATION['HOST']) or die("Error connecting to ftp $ftpConnect");
-        ftp_login($ftpConnect, self::RECEPIENT_INFORMATION['USER'], self::RECEPIENT_INFORMATION['PASSWORD']);
+        // Login FTP
+        ftp_login(
+          $ftpConnect, 
+          self::RECEPIENT_INFORMATION['USER'], 
+          self::RECEPIENT_INFORMATION['PASSWORD']
+        );
         return $ftpConnect;
         break;
 
       case $orderQuantity > 100:
-        $ftpConnect = ftp_connect(self::RECEPIENT_INFORMATION['HOST']) or die("Error connecting to ftp $ftpConnect");
-        ftp_login($ftpConnect, self::RECEPIENT_INFORMATION['USER'], self::RECEPIENT_INFORMATION['PASSWORD']);
+       // Connection FTP
+       $ftpConnect = ftp_connect(
+        self::RECEPIENT_INFORMATION['HOST']) or die("Error connecting to ftp $ftpConnect");
+
+        // Login FTP
+        ftp_login(
+          $ftpConnect,
+          self::RECEPIENT_INFORMATION['USER'],
+          self::RECEPIENT_INFORMATION['PASSWORD']
+        );
         return $ftpConnect;
         break;
 
       default: 
-      $ftpConnect = ftp_connect(self::RECEPIENT_INFORMATION['HOST']) or die("Error connecting to ftp $ftpConnect");
-      ftp_login($ftpConnect, self::RECEPIENT_INFORMATION['USER'], self::RECEPIENT_INFORMATION['PASSWORD']);
-      return $ftpConnect;
+      throw new FtpException();
       break;
     }
   }
