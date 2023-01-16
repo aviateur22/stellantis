@@ -61,7 +61,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     foreach($orders as $order) {
       if($order instanceof Order) {
 
-        $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$order->getPartNumber() ."' AND deliveredDate ='".$order->getdeliveredDate()."'";
+        $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$order->getPartNumber() ."' AND deliveredDate ='".$order->getdeliveredDate()."' AND wip <>'PREPARATION'";
         $findOrder = $wpdb->get_results($query, ARRAY_A);
         
         if(count($findOrder) > 0) {

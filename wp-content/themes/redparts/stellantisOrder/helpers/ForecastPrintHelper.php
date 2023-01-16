@@ -38,11 +38,8 @@ class ForecastPrintHelper {
     // N° de semaine de Fin de forecast
     $weekNumberEnd = $weekNumberStart + self::FORECAST_WEEK;
 
-    // $forecastOrders = $this->forecastRepository->findForecastByWeekInterval($partNumber, $weekNumberStart, $weekNumberEnd);
-    $forecastOrders = $this->forecastRepository->findForecastByWeekInterval('23A1CCEDEXX57D3', $weekNumberStart, $weekNumberEnd);
-    //23A1CCEDEXX57D3
-
-    var_dump($forecastOrders);
+    $forecastOrders = $this->forecastRepository->findForecastByWeekInterval($partNumber, $weekNumberStart, $weekNumberEnd);
+    // $forecastOrders = $this->forecastRepository->findForecastByWeekInterval('23A1CCEDEXX57D3', $weekNumberStart, $weekNumberEnd);
 
     // Si pas de forecatOrder
     if(count($forecastOrders) === 0) {
@@ -50,9 +47,7 @@ class ForecastPrintHelper {
     }
 
     // Calcul des quantitté de prévues
-    $orderQuantityForecast = $this->calculForecastOrderQuantity($forecastOrders);
-    var_dump($orderQuantityForecast);
-    var_dump($orderQuantityForecast - $orderQuantity);
+    $orderQuantityForecast = $this->calculForecastOrderQuantity($forecastOrders);    
     return $orderQuantityForecast - $orderQuantity;
   }
 

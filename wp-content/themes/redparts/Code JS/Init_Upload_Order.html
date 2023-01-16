@@ -6,7 +6,20 @@
 	let failureOrders = [];
 
 	// Commande dupliquée
-	let duplicatedOrders = []
+	let duplicatedOrders = [];	
+		
+	// Données sur la commande à supprimer (OnClick)
+	let orderInformation = {
+
+		// Ligne des commandes a supprimer
+		orderRowToDelete: null,
+
+		// Html button contenant les données de la commande a supprimer
+		deleteButtonOrderElement: null,
+
+		// PartNumber de la commande
+		partNumber: null
+	}
 
 	function $_GET(param) {
 		var vars = {};
@@ -107,64 +120,54 @@
 			}
 	}
 
-	function delRow(row){
-		const tdParentElement = row.parentElement;
-		const trParentElement = tdParentElement.parentElement;
+	function delRow(){
+		if(orderInformation.deleteButtonOrderElement) {
+			const tdParentElement = orderInformation.deleteButtonOrderElement.parentElement;
+			const trParentElement = tdParentElement.parentElement;		
 
-		if(trParentElement) {
-			// Récuperation donnée de la commande
-			const orderId = trParentElement.dataset.orderId;
-			const partNumber = trParentElement.dataset.partNumber;
-			const deliveredDate = trParentElement.dataset.deliveredDate;
+			if(trParentElement) {
+				// Copie de ligne a supprimer
+				orderInformation.orderRowToDelete = trParentElement;
 
-			// BTN Supprimé a bloquer			
-			disableDeleteBtnElement(true);
+				// Récuperation donnée de la commande
+				const orderId = trParentElement.dataset.orderId;
+				const partNumber = trParentElement.dataset.partNumber;
+				const deliveredDate = trParentElement.dataset.deliveredDate;
 
-			// Requete HTTP pour supprimeer
-			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/delete_order.php";			
-			var _variables = 'orderid=' + encodeURIComponent(orderId) + '&partnumber=' + encodeURIComponent(partNumber)+ '&orderdate=' + encodeURIComponent(deliveredDate);
-			AppelScriptPHP(_lien_scriptPHP, _variables);disableDeleteBtnElement()
+				// Copie de partNumber
+				orderInformation.partNumber = partNumber;
 
+				// BTN Supprimé a bloquer			
+				disableDeleteBtnElement(true);
+
+				// Requete HTTP pour supprimeer
+				const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/delete_order.php";			
+				let _variables = 'orderid=' + encodeURIComponent(orderId) + '&partnumber=' + encodeURIComponent(partNumber)+ '&orderdate=' + encodeURIComponent(deliveredDate);				
+				AppelScriptPHP(_lien_scriptPHP, _variables);disableDeleteBtnElement();				
+			}	
+		} 
+	}
+
+	/*
+	 * Mise a jour des l'interface
+	 */
+	function updateTableOrder() {
 			// Mise à jour des listes en erreur
-			duplicatedOrders = duplicatedOrders.filter(x=>x !== partNumber);
-			failureOrders = failureOrders.filter(x=>x !== partNumber);
+			duplicatedOrders = duplicatedOrders.filter(x=>x !== orderInformation.partNumber);
+			failureOrders = failureOrders.filter(x=>x !== orderInformation.partNumber);
 
-			console.log(duplicatedOrders, failureOrders)
-			trParentElement.remove();
+			// Suppression de la Ligne
+			orderInformation.orderRowToDelete.remove();
 
 			// BTN Supprimé a débloquer	
 			disableDeleteBtnElement(false);
 
 			// Bouton Soumission des commandes
 			disableSubmitOrderBtnElement();
+
+			// Masque la modal 
+			hideOrderDeleteModal();
 		}
-		
-		
-   
-		// document.getElementById('row-'+idRow).remove();
-
-		// var cond = true;
-		// for(x=0;x<redRows.length;x++)
-		// {
-		// 	var cond2 = false;
-		// 	for(y=0;y<deletedRedRows.length;y++)
-		// 	{
-		// 		if(redRows[x] == deletedRedRows[y]){
-		// 			cond2 = true;
-		// 			break
-		// 		}
-		// 	}
-		// 	if(cond2 == false)
-		// 	cond = false;
-		// }
-		// if(cond)
-		// {
-		// 	document.getElementById('red-row-div').remove();
-		// 	document.getElementById('btn-confim-order').disabled = false;
-
-		// }
-
-	}
 
 
 	function DownloadOrderModel(){
@@ -247,9 +250,15 @@ function orderConfirm(btnElement)
 						alert(e); // error in the above string (in this case, yes)!
 					}
 				}
+				// Suppression Commande
 				else if(mode == 2)
 				{
-					//try {
+					// Mise a jour du tableau des commandes
+					if(orderInformation.orderRowToDelete) {
+						updateTableOrder();
+					}
+					
+					// //try {
 					data = JSON.parse(httpRequest.responseText);
 					majResult(data);
 
@@ -257,9 +266,9 @@ function orderConfirm(btnElement)
 					document.getElementById("div-result").classList.remove("invisible");
 
 
-					// }catch(e) {
-					// 	alert(e); // error in the above string (in this case, yes)!
-					// }
+					// // }catch(e) {
+					// // 	alert(e); // error in the above string (in this case, yes)!
+					// // }
 
 				}
 				if(mode>2){
@@ -270,13 +279,11 @@ function orderConfirm(btnElement)
 						alert(data);
 					}
 					else{
-						if(mode == 10){ 
-							
-							//Si validation order
-
-							// document.getElementById("resultat").innerHTML = '<span style="font-size: 18pt; font-family:comic sans ms, sans-serif;">Order sent successfully !</span>';
-							// //redirection vers dashbord
-							// location.href = "https://mdw-05.fr/reseau-psa/orders-dashboard/";
+						// Redirection aprés Transfert des fichiers Commandes
+						if(mode == 10){							
+							document.getElementById("resultat").innerHTML = '<span style="font-size: 18pt; font-family:comic sans ms, sans-serif;">Order sent successfully !</span>';
+							//redirection vers dashbord
+							location.href = "https://mdw-05.fr/reseau-psa/orders-dashboard/";
 						}
 					}
 				}
@@ -310,9 +317,9 @@ function orderConfirm(btnElement)
 	}
 
 	/*
-	 * Disable/Enable Submit Order
+	 * Disable Submit button
 	 */
-	 function disableSubmitOrderBtnElement() {
+	function disableSubmitOrderBtnElement() {
 		// Récupération des button supprimés
 		const submitBtnElement = document.getElementById('btn-confim-order');
 		const orderRowElement = document.querySelectorAll('.order-row');
@@ -335,11 +342,40 @@ function orderConfirm(btnElement)
 			}
 	 }
 
-	function majResult(data)
+	/*
+	 * Masque Modal de suppression
+	 */
+	function hideOrderDeleteModal() {
+		const modalElement = document.getElementById('orderModal');
+		modalElement.hidden = true;
+	}
+
+	/*
+	 * Masque Modal de suppression
+	 * @params {htmlElement} deleteButtonElement - Button cliqué
+	 */
+	 function displayOrderDeleteModal(deleteButtonElement) {		
+
+		const modalElement = document.getElementById('orderModal');
+		modalElement.hidden = false;
+
+		// Reference de la commande a supprimer
+		orderInformation.deleteButtonOrderElement = deleteButtonElement;
+	}
+	
+
+  /*
+	 * Disable/Enable Submit Order
+	 */
+ function majResult(data)
 	{
-		if(data['result']) {
-			//MAJ Titre et WIP
+		if(data['result']) {		
+
+			// MAJ Titre et WIP
 			document.getElementById('result').innerHTML = data['result'];
+
+			// Masque la modal
+			hideOrderDeleteModal();
 
 			// Listes des commandes en erreur
 			duplicatedOrders = data['duplicatedOrder'];
