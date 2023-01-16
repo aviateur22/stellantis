@@ -32,14 +32,19 @@ class ForecastPrintHelper {
    * @return void
    */
   function getForecastOrdersQuantity(string $orderDeliveredDate, string $partNumber, int $orderQuantity): int {
-    // N° de semaine de deliveredDate
-    $weekNumberStart = $this->getOrderDateWeekNumber($orderDeliveredDate);
 
-    // N° de semaine de Fin de forecast
-    $weekNumberEnd = $weekNumberStart + self::FORECAST_WEEK;
+    // Nombre de semaine de prévision
+    $forecastWeek = '+' . self::FORECAST_WEEK . ' week';
+    
+    // Jour de début
+    $dayStart = date('Y-m-d', strtotime( '+1 day', strtotime($orderDeliveredDate)));
 
-    $forecastOrders = $this->forecastRepository->findForecastByWeekInterval($partNumber, $weekNumberStart, $weekNumberEnd);
-    // $forecastOrders = $this->forecastRepository->findForecastByWeekInterval('23A1CCEDEXX57D3', $weekNumberStart, $weekNumberEnd);
+    // Jour de fin
+    $dayEnd = date('Y-m-d', strtotime( $forecastWeek, strtotime($dayStart)));
+
+    $forecastOrders = $this->forecastRepository->findForecastByWeekInterval($partNumber, $dayStart, $dayEnd);    
+
+    // $forecastOrders = $this->forecastRepository->findForecastByWeekInterval('23A1CCEDEXX57D3', $dayStart, $dayEnd);
 
     // Si pas de forecatOrder
     if(count($forecastOrders) === 0) {
@@ -48,18 +53,7 @@ class ForecastPrintHelper {
 
     // Calcul des quantitté de prévues
     $orderQuantityForecast = $this->calculForecastOrderQuantity($forecastOrders);    
-    return $orderQuantityForecast - $orderQuantity;
-  }
-
-  /**
-   * Récupération du N° de la semaine
-   *
-   * @param string $orderDate
-   * @return integer
-   */
-  private function getOrderDateWeekNumber(string $orderDate): int {
-    $weekNumber = date('W', strtotime($orderDate));
-    return (int)$weekNumber;
+    return $orderQuantityForecast;
   }
 
   /**
