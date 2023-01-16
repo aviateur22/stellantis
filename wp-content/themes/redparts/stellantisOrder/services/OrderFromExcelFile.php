@@ -24,8 +24,6 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
    * @var array
    */
   protected array $orders = [];
-
-  protected array $ordersBis = [];
   
   /**
    * OrderHelper
@@ -69,15 +67,6 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
   function getOrders(): array {
     return $this->orders;
   }  
-
-  /**
-   * Renvoie la liste des commandes
-   *
-   * @return array
-   */
-  function getOrdersBis(): array {
-    return $this->ordersBis;
-  }  
  
   /**
    * Parcours du fichier commande
@@ -110,7 +99,6 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       
       if(!empty($orderStdClass->partNumber)) {
         $this->orders[] = $this->createOrder($orderStdClass);
-        $this->ordersBis[] = $this->createOrderClassFormat($orderStdClass);
       }      
     }
   }
@@ -141,7 +129,16 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
           $orderStdClass->countryName = $countryData['country'];
 
           // Link impression
+          $coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
           $orderStdClass->coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
+
+          if(!$coverLink) {
+            //$orderStdClass->isValid = false;
+            $orderStdClass->coverLink = '';
+
+          } else {
+            $orderStdClass->coverLink = $coverLink;
+          }
         }
         break;
 
@@ -186,31 +183,9 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       $orderStdClass->orderDate,
       $orderStdClass->countryCode,
       $orderStdClass->countryName,
-      $orderStdClass->wip
-    );
-   
+      $orderStdClass->wip,
+      $orderStdClass->isValid
+    );   
     return $order;
-  }
-
-  /**
-   * 
-   */
-  private function createOrderClassFormat(\stdClass $orderStdClass): array {
-    return [
-      'orderId' => $orderStdClass->orderId,
-      'coverCode' => $orderStdClass->coverCode,
-      'model' => $orderStdClass->model,
-      'family' => $orderStdClass->family,
-      'orderFrom' => $orderStdClass->orderFrom,
-      'orderBuyer' => $orderStdClass->orderBuyer,
-      'deliveredDate' => $orderStdClass->deliveredDate,
-      'quantity' => $orderStdClass->quantity,
-      'partNumber' => $orderStdClass->partNumber,
-      'coverLink' => $orderStdClass->coverLink,
-      'orderDate' => $orderStdClass->orderDate,
-      'countryCode' => $orderStdClass->countryCode,
-      'countryName' => $orderStdClass->countryName,
-      'wip' => $orderStdClass->wip
-    ];
   }
 }

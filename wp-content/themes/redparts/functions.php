@@ -632,3 +632,4 @@ $tabColorStatut['IN PROGRESS']='#E9F782';
 $tabColorStatut['BLOCKED']='#FF735D';
 $tabColorStatut['READY']='#61CE70';
 $tabColorStatut['DELIVERED']='#00FF2E';
+	

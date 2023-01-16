@@ -5,7 +5,7 @@
 require_once('./stellantisOrder/services/OrderFromExcelFile.php');
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/exceptions/FileNotFindException.php');
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
+require_once('./stellantisOrder/helpers/OrderHelper.php');
 require_once('./stellantisOrder/html/DisplayOrder.php');
 
 require('/home/mdwfrkglvc/www/wp-config.php');
@@ -41,7 +41,7 @@ if(isset($filename)){
 		// Récupération des commandes dupliquées
 		$duplicatedOrders = $orderRepository->findDuplicatedOrder($orders);
 
-		// Récupération des Commandes en erreurs
+		// Récupération des commandes sans liens de documentation
 		$failureOrders = $orderHelper->getFailureOrders();
 
 		// Sauvegarde des commandes
@@ -53,8 +53,14 @@ if(isset($filename)){
 
 		// Renvoie des données 
 		$data['result'] = $ordersHtml;
-		$data['orders'] = $orderSource->getOrdersBis();
+
+		// Orders
+		$data['orders'] = $orderSource->getOrders();
+
+		// Commandes dupliquées
 		$data['duplicatedOrder'] = $duplicatedOrders;
+
+		// Commande sans CoverLink
 		$data['failureOrders'] = [];
 
 		echo(json_encode($data));

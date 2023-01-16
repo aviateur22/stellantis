@@ -101,6 +101,13 @@ class Order {
    */
   protected string $model;
 
+  /**
+   * Commande valide
+   *
+   * @var bool
+   */
+  protected bool $isValid;
+
 
   function __construct(
     string $orderId,
@@ -116,7 +123,8 @@ class Order {
     string $orderDate,
     string $countryCode,
     string $countryName,
-    string $wip
+    string $wip,
+    bool $isValid
   ) {
     $this->coverCode = $coverCode;
     $this->model = $model;
@@ -132,6 +140,7 @@ class Order {
     $this->countryCode = $countryCode;
     $this->countryName = $countryName;
     $this->wip = $wip;
+    $this->isValid = $isValid;
   }
   #Region Getter
 
@@ -250,6 +259,10 @@ class Order {
      */
     function getCoverLink(): string {
       return $this->coverLink;
+    }
+
+    function getIsValid(): bool {
+      return $this->isValid;
     }
 
   #endRegion

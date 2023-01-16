@@ -41,7 +41,6 @@ class OrderHelper {
    */
   protected string $orderFrom;
 
-  protected 
 
   function __construct()
   {
@@ -71,6 +70,7 @@ class OrderHelper {
     $orderStdClass->countryCode = ''; 
     $orderStdClass->countryName = ''; 
     $orderStdClass->wip = 'PREPARATION';
+    $orderStdClass->isValid = TRUE;
 
     return $orderStdClass;
   }
@@ -161,6 +161,4 @@ class OrderHelper {
   private function isCoverLinkFind():bool {
     return true;
   }
-
-
 }

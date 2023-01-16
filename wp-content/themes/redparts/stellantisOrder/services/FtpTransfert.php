@@ -12,10 +12,10 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/ex
 class FtpTransfert implements OrderTransferInterface {
 
   const RECEPIENT_INFORMATION = [
-    'HOST' => 'localhost',
-    'USER' => 'aviateur22',
-    'PASSWORD' => 'Advency1',
-    'DESTINATION_FILE_PATH' => 'XML/',
+    'HOST' => '5.196.28.34',
+    'USER' => 'maury',
+    'PASSWORD' => 'tWa12?op78!',
+    'DESTINATION_FILE_PATH' => 'TEST/',
   ];
 
   /**
@@ -77,7 +77,7 @@ class FtpTransfert implements OrderTransferInterface {
       case $orderQuantity < 100:
         // Connection FTP
         $ftpConnect = ftp_connect(
-          self::RECEPIENT_INFORMATION['HOST']) or die("Error connecting to ftp $ftpConnect");
+          self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
 
         // Login FTP
         ftp_login(
@@ -91,7 +91,7 @@ class FtpTransfert implements OrderTransferInterface {
       case $orderQuantity > 100:
        // Connection FTP
        $ftpConnect = ftp_connect(
-        self::RECEPIENT_INFORMATION['HOST']) or die("Error connecting to ftp $ftpConnect");
+        self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
 
         // Login FTP
         ftp_login(
