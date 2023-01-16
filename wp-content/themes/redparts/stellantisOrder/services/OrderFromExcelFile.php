@@ -90,7 +90,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     for($row = self::FILE_STRUCTURE['ROW_START']; $row < $LAST_ROW; $row++) {
       
       // Nouveau OrderStdClass
-      $orderStdClass = $this->orderHelper->getNewOrderStdClass();
+      $orderStdClass = $this->orderHelper->getNewOrderStdClass();      
       
       for($col = self::FILE_STRUCTURE['COLUMN_START']; $col <= $COLUMN_COUNT_NUMBER; $col++ ) {
         
@@ -132,8 +132,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
           $coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
           $orderStdClass->coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
 
-          if(!$coverLink) {
-            //$orderStdClass->isValid = false;
+          if(empty($coverLink)) {           
+            $orderStdClass->isValid = false;
             $orderStdClass->coverLink = '';
 
           } else {
@@ -159,7 +159,12 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
 
         // Vérification si commande déja existante
         if(!empty($orderStdClass->partNumber)) {
-          $this->orderHelper->checkForDuplicateOrder($orderStdClass->partNumber, $orderStdClass->deliveredDate);
+          $isOrderDuplicate = $this->orderHelper->isOrderDuplicate($orderStdClass->partNumber, $orderStdClass->deliveredDate);
+
+          // Commande dupliquée
+          if($isOrderDuplicate) {
+            $orderStdClass->isValid = false;
+          }
           break;
         }
 
@@ -174,7 +179,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
    * @param \stdClass $carData
    * @return Order
    */
-  private function createOrder(\stdClass $orderStdClass): Order {
+  private function createOrder(\stdClass $orderStdClass): Order {  
     $order = new Order(
       $orderStdClass->orderId,
       $orderStdClass->coverCode,

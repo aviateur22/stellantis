@@ -43,7 +43,7 @@ class OrderHelper {
   protected array $duplicateOrders = [];
 
   /**
-   * Undocumented variable
+   * Lite des commandes avec des quantités en erreur
    *
    * @var array
    */
@@ -93,7 +93,7 @@ class OrderHelper {
     $orderStdClass->countryCode = ''; 
     $orderStdClass->countryName = ''; 
     $orderStdClass->wip = 'PREPARATION';
-    $orderStdClass->isValid = TRUE;
+    $orderStdClass->isValid = true;
 
     return $orderStdClass;
   }
@@ -164,11 +164,15 @@ class OrderHelper {
    * @param string $deliveredDate
    * @return void
    */
-  public function checkForDuplicateOrder(string $partNumber, string $deliveredDate): void {
-    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($partNumber, $deliveredDate);    
+  public function isOrderDuplicate(string $partNumber, string $deliveredDate): bool {
+    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($partNumber, $deliveredDate);   
+    
+    // Commande dupliqué
     if(count($duplicateOrder) > 0) {
       $this->duplicateOrders[] = $partNumber;
+      return true;
     }
+    return false;
   }
 
   /**

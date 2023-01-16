@@ -20,10 +20,6 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     foreach($orders as $order) {
       // Verification instance Orer 
       if($order instanceof Order) {
-       
-        // Vérification si Commande existante
-        //$isCommandExist = $this->findOne($order);
-                
         $wpdb->insert('orders', array(
           'orderId' => $order->getOrderId(),
           'orderDate' => $order->getOrderDate(),
@@ -39,6 +35,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'wip' => $order->getWip(),
           'coverLink'=> $order->getCoverLink(),
           'model'=>$order->getModel(),
+          'isValid' => $order->getIsValid()
         ));       
       } else {
         throw new InvalidFormatException();
