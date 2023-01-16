@@ -26,10 +26,9 @@ if(isset($filename)){
 		}	
 
 		// Implementation des modèles
-		$orderHelper = new OrderHelper();
-
-		$orderSource = new OrderFromExcelFile($filename, $orderHelper);
 		$orderRepository = new MySqlOrderRepository();
+		$orderHelper = new OrderHelper($orderRepository);
+		$orderSource = new OrderFromExcelFile($filename, $orderHelper);		
 		$displayOrder = new DisplayOrder();
 		
 		// Lecture des données

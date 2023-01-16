@@ -1,5 +1,6 @@
 <?php
 require_once('/home/mdwfrkglvc/www/wp-config.php');
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 
 /**
  * Helper pour construction d'un nouvelle Commande
@@ -35,15 +36,37 @@ class OrderHelper {
   protected array $failureOrders = [];
 
   /**
+   * Liste commandes en echec
+   *
+   * @var array
+   */
+  protected array $duplicateOrders = [];
+
+  /**
+   * Undocumented variable
+   *
+   * @var array
+   */
+  protected array $errorOnQuantityOrders = [];
+
+  /**
    * Personne faisant la commande
    *
    * @var string
    */
   protected string $orderFrom;
 
+   /**
+   * Orders Repository
+   *
+   * @var OrderRepositoryInterface
+   */
+  protected OrderRepositoryInterface $orderRepository;
 
-  function __construct()
+
+  function __construct(OrderRepositoryInterface $orderRepository)
   {
+    $this->orderRepository = $orderRepository;
     $this->orderDate = date('y-m-d');
     $this->orderFrom = $this->getOrderFrom();
     $this->orderId = uniqid();
@@ -123,6 +146,21 @@ class OrderHelper {
    */
   public function getFailureOrders(): array {
     return $this->failureOrders;
+  }
+
+  /**
+   * Vérification des commandes en double
+   *
+   * @param string $partNumber
+   * @param string $deliveredDate
+   * @return void
+   */
+  public function getDuplicateOrder(string $partNumber, string $deliveredDate): void {
+    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($partNumber, $deliveredDate);
+
+    if(count($duplicateOrder) > 0) {
+      $this->duplicateOrders[] = $partNumber;
+    }
   }
 
   /**

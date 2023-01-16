@@ -75,6 +75,20 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     return $duplicatedOrder;    
   }
 
+    /**
+   * Trouve les commandes dupliquées pour 1 partNumber
+   *
+   * @param string $partNumber - Le partNumber de la commande a vérifier
+   * @param string $deliveredDate - Date de livraison
+   * @return array - Commandes dupliquées
+   */
+  function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array {
+    global $wpdb;
+    $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$partNumber."' AND deliveredDate ='".$deliveredDate."' AND wip <>'PREPARATION'";
+    $findOrder = $wpdb->get_results($query, ARRAY_A);
+    return $findOrder;
+  }
+
   /**
    * Suppression d'une commande
    *
