@@ -156,9 +156,15 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       case 4:        
         $date = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
         $orderStdClass->deliveredDate = \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
-        break;
 
-      default:  ;break;
+        // Vérification si commande déja existante
+        if(!empty($orderStdClass->partNumber)) {
+          $this->orderHelper->checkForDuplicateOrder($orderStdClass->partNumber, $orderStdClass->deliveredDate);
+          break;
+        }
+
+      default:  
+      break;
     }
   }
 

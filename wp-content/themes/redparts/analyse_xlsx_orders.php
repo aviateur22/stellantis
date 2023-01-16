@@ -38,10 +38,12 @@ if(isset($filename)){
 		$orders = $orderSource->getOrders();
 
 		// Récupération des commandes dupliquées
-		$duplicatedOrders = $orderRepository->findDuplicatedOrder($orders);
+		$duplicatedOrders = $orderHelper->getDuplicateOrders();
 
 		// Récupération des commandes sans liens de documentation
 		$failureOrders = $orderHelper->getFailureOrders();
+
+
 
 		// Sauvegarde des commandes
 		$orderRepository->save($orders);

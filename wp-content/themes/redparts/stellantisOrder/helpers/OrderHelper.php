@@ -149,15 +149,23 @@ class OrderHelper {
   }
 
   /**
+   * Renvoie la liste des commanded duplisuées
+   *
+   * @return array
+   */
+  public function getDuplicateOrders(): array {
+    return $this->duplicateOrders;
+  }
+
+  /**
    * Vérification des commandes en double
    *
    * @param string $partNumber
    * @param string $deliveredDate
    * @return void
    */
-  public function getDuplicateOrder(string $partNumber, string $deliveredDate): void {
-    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($partNumber, $deliveredDate);
-
+  public function checkForDuplicateOrder(string $partNumber, string $deliveredDate): void {
+    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($partNumber, $deliveredDate);    
     if(count($duplicateOrder) > 0) {
       $this->duplicateOrders[] = $partNumber;
     }
