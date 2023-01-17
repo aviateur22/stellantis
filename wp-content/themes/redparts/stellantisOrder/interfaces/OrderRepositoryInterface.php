@@ -66,5 +66,14 @@ interface OrderRepositoryInterface {
    *
    * @return void
    */
-  function deleteUnused(string $referenceDeleteDate); 
+  function deleteUnused(string $referenceDeleteDate);
+
+  /**
+   * Recherche toutes les commandes sur un certains nombre de jour 
+   *
+   * @param string $dayStart
+   * @param string $dayEnd
+   * @return array
+   */
+  function findOrdersOnIntervalDay(string $daySart, string $dayEnd): array;
 }

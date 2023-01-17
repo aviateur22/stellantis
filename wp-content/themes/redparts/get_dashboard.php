@@ -1,13 +1,25 @@
 <?php
-
 setlocale(LC_TIME, "fr_FR");
+require_once('./stellantisOrder/services/MySqlOrderRepository.php');
+require_once('./stellantisOrder/helpers/DashboardOrderHelper.php');
 
 require('/home/mdwfrkglvc/www/wp-config.php');
 global $wpdb;
-
 error_reporting(E_ALL);
-
 global $tabColorStatut;
+
+
+// Initilisation
+$orderRepository = new MySqlOrderRepository();
+$dashboardHelper = new DashboardHelper($orderRepository);
+
+$test = $dashboardHelper->setDashboardOrders(null, '2023-02-25');
+
+var_dump($dashboardHelper->getQuantitiesOrdersPerDay());
+
+
+
+
 
 function dateDiff($date1, $date2){
   $diff = abs($date1 - $date2); // abs pour avoir la valeur absolute, ainsi éviter d'avoir une différence négative

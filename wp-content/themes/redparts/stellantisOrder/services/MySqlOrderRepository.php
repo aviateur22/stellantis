@@ -148,4 +148,20 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     global $wpdb;
     $wpdb->query($wpdb->prepare("DELETE FROM orders WHERE wip = 'PREPARATION' AND orderDate < '".$referenceDeleteDate."'"));
   }
+
+
+   /**
+   * Recherche toutes les commandes sur un certains nombre de jour 
+   *
+   * @param string $dayStart
+   * @param string $dayEnd
+   * @return array
+   */
+  function findOrdersOnIntervalDay(string $daySart, string $dayEnd): array
+  {
+    global $wpdb;
+    $query = "SELECT * FROM orders WHERE deliveredDate >= '".$daySart."' AND deliveredDate <= '".$dayEnd."'";
+    $findOrder = $wpdb->get_results($query, ARRAY_A);
+    return $findOrder;
+  }
 }
