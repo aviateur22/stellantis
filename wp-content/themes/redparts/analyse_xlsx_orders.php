@@ -7,6 +7,7 @@ require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/exceptions/FileNotFindException.php');
 require_once('./stellantisOrder/helpers/OrderHelper.php');
 require_once('./stellantisOrder/html/DisplayOrder.php');
+require_once('./stellantisOrder/helpers/DeleteHelper.php');
 
 require('/home/mdwfrkglvc/www/wp-config.php');
 
@@ -30,6 +31,7 @@ if(isset($filename)){
 		$orderHelper = new OrderHelper($orderRepository);
 		$orderSource = new OrderFromExcelFile($filename, $orderHelper);		
 		$displayOrder = new DisplayOrder();
+		$deleteHelper = new DeleteHelper($orderRepository);
 		
 		// Lecture des données
 		$orderSource->readOrderSourceData();		
@@ -43,10 +45,12 @@ if(isset($filename)){
 		// Récupération des commandes sans liens de documentation
 		$failureOrders = $orderHelper->getFailureOrders();
 
-
-
 		// Sauvegarde des commandes
 		$orderRepository->save($orders);
+
+		//Nettoyages des ancienne données
+		$deleteHelper->deleteOldgeneratedOrderFile();
+		$deleteHelper->deleteUnusedOrders();
 
 		// Creation HTML des commandes
 		$displayOrder->setDuplicateAndFailureOrder($duplicatedOrders, $failureOrders);

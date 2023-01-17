@@ -60,9 +60,11 @@ interface OrderRepositoryInterface {
   function updateWip(string $wipValue, string $orderId): void;
 
   /**
-   * Suppression des ancienne commandes
+   * Suppression des ancienne commandes non traité
+   * 
+   * @param string $referenceDeleteDate - Date avant laquelle toutes les commandes non traitées doivent être supprimées
    *
    * @return void
    */
-  function deleteOld(); 
+  function deleteUnused(string $referenceDeleteDate); 
 }

@@ -138,13 +138,14 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   }
 
   /**
-   * Suppression des ancienne commandes
+   * Suppression des ancienne commandes non traité
+   * 
+   * @param string $referenceDeleteDate - Date avant laquelle toutes les commandes non traitées doivent être supprimées
    *
    * @return void
    */
-  function deleteOld() {
+  function deleteUnused(string $referenceDeleteDate) {
     global $wpdb;
-    $actualDate = date("Y-m-d") . " 00:00:00";
-    $wpdb->query($wpdb->prepare("DELETE FROM orders WHERE wip = 'PREPARATION' AND orderDate < '".$actualDate."'"));
+    $wpdb->query($wpdb->prepare("DELETE FROM orders WHERE wip = 'PREPARATION' AND orderDate < '".$referenceDeleteDate."'"));
   }
 }
