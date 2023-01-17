@@ -97,9 +97,10 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         $this->completeOrderStdClass($orderStdClass, $row, ($col - 1));        
       }
       
-      if(!empty($orderStdClass->partNumber)) {
+      // Ajout à la liste des commandes
+      if($this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
         $this->orders[] = $this->createOrder($orderStdClass);
-      }      
+      }
     }
   }
 
