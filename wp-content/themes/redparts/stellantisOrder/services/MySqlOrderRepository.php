@@ -20,10 +20,6 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     foreach($orders as $order) {
       // Verification instance Orer 
       if($order instanceof Order) {
-       
-        // Vérification si Commande existante
-        //$isCommandExist = $this->findOne($order);
-                
         $wpdb->insert('orders', array(
           'orderId' => $order->getOrderId(),
           'orderDate' => $order->getOrderDate(),
@@ -39,6 +35,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'wip' => $order->getWip(),
           'coverLink'=> $order->getCoverLink(),
           'model'=>$order->getModel(),
+          'isValid' => $order->getIsValid()
         ));       
       } else {
         throw new InvalidFormatException();
@@ -73,6 +70,20 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     }
 
     return $duplicatedOrder;    
+  }
+
+    /**
+   * Trouve les commandes dupliquées pour 1 partNumber
+   *
+   * @param string $partNumber - Le partNumber de la commande a vérifier
+   * @param string $deliveredDate - Date de livraison
+   * @return array - Commandes dupliquées
+   */
+  function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array {
+    global $wpdb;
+    $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$partNumber."' AND deliveredDate ='".$deliveredDate."' AND wip <>'PREPARATION'";
+    $findOrder = $wpdb->get_results($query, ARRAY_A);
+    return $findOrder;
   }
 
   /**
@@ -127,13 +138,14 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   }
 
   /**
-   * Suppression des ancienne commandes
+   * Suppression des ancienne commandes non traité
+   * 
+   * @param string $referenceDeleteDate - Date avant laquelle toutes les commandes non traitées doivent être supprimées
    *
    * @return void
    */
-  function deleteOld() {
+  function deleteUnused(string $referenceDeleteDate) {
     global $wpdb;
-    $actualDate = date("Y-m-d") . " 00:00:00";
-    $wpdb->query($wpdb->prepare("DELETE FROM orders WHERE wip = 'PREPARATION' AND orderDate < '".$actualDate."'"));
+    $wpdb->query($wpdb->prepare("DELETE FROM orders WHERE wip = 'PREPARATION' AND orderDate < '".$referenceDeleteDate."'"));
   }
 }

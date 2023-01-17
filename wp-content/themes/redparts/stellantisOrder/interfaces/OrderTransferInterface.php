@@ -15,10 +15,10 @@ interface OrderTransferInterface {
   /**
    * Récupération addresse d'envoie
    *
-   * @param int $OrderQuantity - quantité a imprimer
+   * @param FormatedOrder $formatedOrder - Parametre sur la commande a transmettre
    * @return string
    */
-  function getFactoryRecipient(int $orderQuantity);
+  function getFactoryRecipient(FormatedOrder $formatedOrder): void;
 
   /**
    * Modifie le status des Commandes

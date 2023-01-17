@@ -11,6 +11,9 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/he
  */
 class XmlOrderFormat implements OrderFormatInterface {
 
+  /**
+   * Path pour sauvegarder les commandes générées
+   */
   const SAVE_XML_PATH = '/home/mdwfrkglvc/www/wp-content/uploads/xml/';
 
   /**
@@ -72,7 +75,7 @@ class XmlOrderFormat implements OrderFormatInterface {
    * @return FormatedOrder
    */
   private function createXml(array $order): FormatedOrder {
-
+    
     // Parametrage XML
     $xmlFile = new DOMDocument('1.0', 'utf-8');
     $xmlFile->appendChild($bibliotheque = $xmlFile->createElement('bibliotheque'));

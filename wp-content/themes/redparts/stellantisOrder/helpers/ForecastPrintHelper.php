@@ -32,14 +32,20 @@ class ForecastPrintHelper {
    * @return void
    */
   function getForecastOrdersQuantity(string $orderDeliveredDate, string $partNumber, int $orderQuantity): int {
-    // N° de semaine de deliveredDate
-    $weekNumberStart = $this->getOrderDateWeekNumber($orderDeliveredDate);
 
-    // N° de semaine de Fin de forecast
-    $weekNumberEnd = $weekNumberStart + self::FORECAST_WEEK;
+    // Nombre de semaine de prévision
+    $forecastWeek = '+' . self::FORECAST_WEEK . ' week';
+    
+    // Jour de début
+    $dayStart = date('Y-m-d', strtotime( '+1 day', strtotime($orderDeliveredDate)));
 
-    $forecastOrders = $this->forecastRepository->findForecastByWeekInterval($partNumber, $weekNumberStart, $weekNumberEnd);
-    // $forecastOrders = $this->forecastRepository->findForecastByWeekInterval('23A1CCEDEXX57D3', $weekNumberStart, $weekNumberEnd);
+    // Jour de fin
+    $dayEnd = date('Y-m-d', strtotime( $forecastWeek, strtotime($dayStart)));   
+
+    // Récupérations des forecastOrders
+    $forecastOrders = $this->forecastRepository->findForecastByWeekInterval($partNumber, $dayStart, $dayEnd);    
+
+    // $forecastOrders = $this->forecastRepository->findForecastByWeekInterval('23A1CCEDEXX57D3', $dayStart, $dayEnd);
 
     // Si pas de forecatOrder
     if(count($forecastOrders) === 0) {
@@ -48,18 +54,7 @@ class ForecastPrintHelper {
 
     // Calcul des quantitté de prévues
     $orderQuantityForecast = $this->calculForecastOrderQuantity($forecastOrders);    
-    return $orderQuantityForecast - $orderQuantity;
-  }
-
-  /**
-   * Récupération du N° de la semaine
-   *
-   * @param string $orderDate
-   * @return integer
-   */
-  private function getOrderDateWeekNumber(string $orderDate): int {
-    $weekNumber = date('W', strtotime($orderDate));
-    return (int)$weekNumber;
+    return $orderQuantityForecast;
   }
 
   /**
@@ -70,28 +65,39 @@ class ForecastPrintHelper {
    */
   private function calculForecastOrderQuantity(array $forcastOrders): int {
 
-    // Liste des commandes long terme
-    $longTermOrders = [];
+    // Derniere date des commandes court Terme
+    $lastShortTermDeliveredDate = date('1970-01-01');
 
     // Quantité de prévu 
     $forecastQuantity = 0;
 
     // Traitement des commandes courtes terme
     foreach($forcastOrders as $forecastOrder) {
+      
       // Commande Court terme
-      if($forecastOrder->shortem === 0) {
+      if($forecastOrder->shortTerm === '1') {
         $forecastQuantity += (int)$forecastOrder->quantity;
-      } else {
-        // Ajout d'une commande long terme
-        $longTermOrders [] = $forecastOrder;
+
+        // Récupération de la nouvelle deliveredDate
+        if($forecastOrder->deliveredDate > $lastShortTermDeliveredDate) {
+          $lastShortTermDeliveredDate = $forecastOrder->deliveredDate;
+        }
       }
     }
 
-    // Traitement Commande longterme
-    foreach($longTermOrders as $longTermOrder) {
-      $forecastQuantity += (int)$longTermOrder->quantity;
-    }
+    // Traitement des commandes long terme
+    foreach($forcastOrders as $forecastOrder) {
+      // Commande Long terme
+      if($forecastOrder->shortTerm === '0') {
 
+        // Récupération de la nouvelle deliveredDate
+        if($forecastOrder->deliveredDate > $lastShortTermDeliveredDate) {         
+          //$lastShortTermDeliveredDate = $forecastOrder->deliveredDate;
+          $forecastQuantity += (int)$forecastOrder->quantity;
+        }
+      }
+    }
+   
     return $forecastQuantity;
   }
 

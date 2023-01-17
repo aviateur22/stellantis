@@ -1,5 +1,6 @@
 <?php
 require_once('/home/mdwfrkglvc/www/wp-config.php');
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 
 /**
  * Helper pour construction d'un nouvelle Commande
@@ -35,15 +36,37 @@ class OrderHelper {
   protected array $failureOrders = [];
 
   /**
+   * Liste commandes en echec
+   *
+   * @var array
+   */
+  protected array $duplicateOrders = [];
+
+  /**
+   * Lite des commandes avec des quantités en erreur
+   *
+   * @var array
+   */
+  protected array $errorOnQuantityOrders = [];
+
+  /**
    * Personne faisant la commande
    *
    * @var string
    */
   protected string $orderFrom;
 
+   /**
+   * Orders Repository
+   *
+   * @var OrderRepositoryInterface
+   */
+  protected OrderRepositoryInterface $orderRepository;
 
-  function __construct()
+
+  function __construct(OrderRepositoryInterface $orderRepository)
   {
+    $this->orderRepository = $orderRepository;
     $this->orderDate = date('y-m-d');
     $this->orderFrom = $this->getOrderFrom();
     $this->orderId = uniqid();
@@ -70,9 +93,23 @@ class OrderHelper {
     $orderStdClass->countryCode = ''; 
     $orderStdClass->countryName = ''; 
     $orderStdClass->wip = 'PREPARATION';
-    $orderStdClass->isValid = TRUE;
+    $orderStdClass->isValid = true;
 
     return $orderStdClass;
+  }
+  
+  /**
+   * Undocumented function
+   *
+   * @param string|null $partNumber
+   * @return boolean
+   */
+  function isPartNumberValid($partNumber): bool {    
+    $pattern = "/[0-9][0-9][a-zA-Z\d+]*/"; 
+    if(empty($partNumber) || !preg_match($pattern, $partNumber)) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -123,6 +160,52 @@ class OrderHelper {
    */
   public function getFailureOrders(): array {
     return $this->failureOrders;
+  }
+
+  /**
+   * Renvoie la liste des commanded duplisuées
+   *
+   * @return array
+   */
+  public function getDuplicateOrders(): array {
+    return $this->duplicateOrders;
+  }
+
+  /**
+   * Renvoie la liste des Commandes avec une quantité = 0
+   *
+   * @return array
+   */
+  public function getErrorQuantityOrders(): array {
+    return $this->errorOnQuantityOrders;
+  }
+
+  /**
+   * Vérification des commandes en double
+   *
+   * @param string $partNumber
+   * @param string $deliveredDate
+   * @return void
+   */
+  public function isOrderDuplicate(string $partNumber, string $deliveredDate): bool {
+    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($partNumber, $deliveredDate);   
+    
+    // Commande dupliqué
+    if(count($duplicateOrder) > 0) {
+      $this->duplicateOrders[] = $partNumber;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Ajout d'une commande en erreur de quantité
+   *
+   * @param string $partNumber
+   * @return void
+   */
+  public function addToQuantityErrorOrder(string $partNumber) {
+    $this->errorOnQuantityOrders[] = $partNumber;
   }
 
   /**

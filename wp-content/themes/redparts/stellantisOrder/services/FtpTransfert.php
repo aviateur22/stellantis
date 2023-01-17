@@ -49,18 +49,8 @@ class FtpTransfert implements OrderTransferInterface {
       if($formatedOrder instanceof FormatedOrder) {
 
         // Récupération données pour envoie
-        $ftpConnect = $this->getFactoryRecipient($formatedOrder->getOrderQuantity());
+        $this->getFactoryRecipient($formatedOrder);      
 
-        // Transfert du fichier
-        ftp_put(
-          $ftpConnect, 
-          self::RECEPIENT_INFORMATION['DESTINATION_FILE_PATH'].$formatedOrder->getFileName(), 
-          $formatedOrder->getOrderFilePath(), 
-          FTP_ASCII
-        );
-        
-        // close
-        ftp_close($ftpConnect);
       }
     }
   }
@@ -68,13 +58,14 @@ class FtpTransfert implements OrderTransferInterface {
   /**
    * Récupération addresse d'envoie
    *
-   * @param int $OrderQuantity - quantité a imprimer
-   * @return Connection|false
+   * @param FormatedOrder $formatedOrder - Parametre de transfere de la commande
+   * @return void
    */
-  function getFactoryRecipient(int $orderQuantity): Connection
-  {    
-    switch ($orderQuantity) {
-      case $orderQuantity < 100:
+  function getFactoryRecipient(FormatedOrder $formatedOrder): void {    
+    $ftpConnect = null; 
+
+    switch ($formatedOrder->getOrderQuantity()) {
+      case $formatedOrder->getOrderQuantity() < 100:
         // Connection FTP
         $ftpConnect = ftp_connect(
           self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
@@ -85,13 +76,13 @@ class FtpTransfert implements OrderTransferInterface {
           self::RECEPIENT_INFORMATION['USER'], 
           self::RECEPIENT_INFORMATION['PASSWORD']
         );
-        return $ftpConnect;
-        break;
 
-      case $orderQuantity > 100:
-       // Connection FTP
-       $ftpConnect = ftp_connect(
-        self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
+      break;
+
+      case $formatedOrder->getOrderQuantity() > 100:
+        // Connection FTP
+        $ftpConnect = ftp_connect(
+          self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
 
         // Login FTP
         ftp_login(
@@ -99,13 +90,49 @@ class FtpTransfert implements OrderTransferInterface {
           self::RECEPIENT_INFORMATION['USER'],
           self::RECEPIENT_INFORMATION['PASSWORD']
         );
-        return $ftpConnect;
         break;
 
       default: 
-      throw new FtpException();
+          throw new FtpException();
       break;
     }
+
+    if(!$ftpConnect) {
+      throw new FtpException();
+    }
+
+    // Force FTP passive mode
+    ftp_pasv($ftpConnect, true) or die("Unable switch to passive mode");
+
+    // Vérification existance fichier source
+    if(!file_exists($formatedOrder->getOrderFilePath())) {
+      throw new \FileNotFindException('Le fichier source n\'existe pas');
+    }
+    
+   // Récupéaration File Extension
+    $fileExtension = $this->getFileInformation($formatedOrder->getOrderFilePath());
+
+    // Transfert du fichier
+    ftp_put(
+      $ftpConnect,
+      self::RECEPIENT_INFORMATION['DESTINATION_FILE_PATH'].$formatedOrder->getFileName().'.'. $fileExtension, 
+      $formatedOrder->getOrderFilePath(),
+      FTP_ASCII
+    );
+    
+    // close
+    ftp_close($ftpConnect);
+  }
+  
+  /**
+   * Récuperation exension du fichier a transférer
+   *
+   * @param string $filePath
+   * @return string
+   */
+  private function getFileInformation(string $filePath): string {    
+    $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+    return $fileExtension;
   }
 
   /**

@@ -23,6 +23,16 @@ interface OrderRepositoryInterface {
   function findDuplicatedOrder(array $orders): array;
 
   /**
+   * Trouve les commandes dupliquées pour 1 partNumber
+   *
+   * @param string $partNumber - Le partNumber de la commande a vérifier
+   * @param string $deliveredDate - Date de livraison
+   * @return array - Commandes dupliquées
+   */
+  function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array;
+
+
+  /**
    * Suppression d'une commande
    *
    * @param string $partNumber
@@ -50,9 +60,11 @@ interface OrderRepositoryInterface {
   function updateWip(string $wipValue, string $orderId): void;
 
   /**
-   * Suppression des ancienne commandes
+   * Suppression des ancienne commandes non traité
+   * 
+   * @param string $referenceDeleteDate - Date avant laquelle toutes les commandes non traitées doivent être supprimées
    *
    * @return void
    */
-  function deleteOld(); 
+  function deleteUnused(string $referenceDeleteDate); 
 }
