@@ -6,7 +6,10 @@
 	let failureOrders = [];
 
 	// Commande dupliquée
-	let duplicatedOrders = [];	
+	let duplicatedOrders = [];
+
+	// Commande avec erreur de quantité
+	let quantityErrorOrders = [];
 		
 	// Données sur la commande à supprimer (OnClick)
 	let orderInformation = {
@@ -155,6 +158,7 @@
 			// Mise à jour des listes en erreur
 			duplicatedOrders = duplicatedOrders.filter(x=>x !== orderInformation.partNumber);
 			failureOrders = failureOrders.filter(x=>x !== orderInformation.partNumber);
+			quantityErrorOrders = quantityErrorOrders.filter(x=>x !== orderInformation.partNumber);
 
 			// Suppression de la Ligne
 			orderInformation.orderRowToDelete.remove();
@@ -330,16 +334,16 @@ function orderConfirm(btnElement)
 		}		
 
 		// Vérification si erreur dans les commandes
-		if(duplicatedOrders.length > 0 || failureOrders.length > 0 || orderRowElement.length <= 0) {
-				submitBtnElement.disabled  = true;	
-			} else {
-				submitBtnElement.disabled  = false;	
+		if(duplicatedOrders.length > 0 || failureOrders.length > 0 || quantityErrorOrders.length > 0 || orderRowElement.length <= 0) {
+			submitBtnElement.disabled  = true;	
+		} else {
+			submitBtnElement.disabled  = false;	
 
-				// Masque le mesage de suppression
-				if(warningMessageElement) {
-					warningMessageElement.style.display = "none"
-				}
+			// Masque le mesage de suppression
+			if(warningMessageElement) {
+				warningMessageElement.style.display = "none"
 			}
+		}
 	 }
 
 	/*
@@ -378,8 +382,9 @@ function orderConfirm(btnElement)
 			hideOrderDeleteModal();
 
 			// Listes des commandes en erreur
-			duplicatedOrders = data['duplicatedOrder'];
+			duplicatedOrders = data['duplicatedOrders'];
 			failureOrders = data['failureOrders'];
+			quantityErrorOrders = data['quantityErrorOrders']
 
 			sidOldOrder = data['sidOldOrder'];
 			redRows = data['redRows'];

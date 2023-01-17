@@ -103,6 +103,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     }
   }
 
+
   /**
    * Complete le Order StdClass à partir du fichier XLS et 
    *
@@ -119,54 +120,83 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       case 0: 
         $orderStdClass->coverCode = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
         break;
+
       // PartNumber
       case 1: 
-        $orderStdClass->partNumber = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-        if(!empty($orderStdClass->partNumber)) {          
-          // Récupération des données pays
-          $countryData = $this->orderHelper->getCountryInformation($orderStdClass->partNumber);
-          $orderStdClass->countryCode = $countryData['countryCode'];
-          $orderStdClass->countryName = $countryData['country'];
+        $cellValue = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
 
-          // Link impression
-          $coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
-          $orderStdClass->coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
-
-          if(empty($coverLink)) {           
-            $orderStdClass->isValid = false;
-            $orderStdClass->coverLink = '';
-
-          } else {
-            $orderStdClass->coverLink = $coverLink;
-          }
+        if(!$this->orderHelper->isPartNumberValid($cellValue)) {
+          return;
         }
+        // PartNumber
+        $orderStdClass->partNumber = $cellValue;
+
+        // Récupération des données pays
+        $countryData = $this->orderHelper->getCountryInformation($orderStdClass->partNumber);
+        $orderStdClass->countryCode = $countryData['countryCode'];
+        $orderStdClass->countryName = $countryData['country'];
+
+        // Link impression
+        $coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
+        $orderStdClass->coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
+
+        if(empty($coverLink)) {           
+          $orderStdClass->isValid = false;
+          $orderStdClass->coverLink = '';
+
+        } else {
+          $orderStdClass->coverLink = $coverLink;
+        }
+
         break;
 
       // Model
-      case 2: 
+      case 2:
+
+        // Si partNumber valide
+        if(!$this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
+          return;
+        }
+
         $orderStdClass->model = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
         break;
 
       // Quantité
       case 3:
+
+        // Si partNumber valide
+        if(!$this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
+          return;
+        }
+
         $orderStdClass->quantity = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
+
+        // Si quantité = 0        
+        if(strval($orderStdClass->quantity) === '0' && !empty($orderStdClass->partNumber)) {          
+          $this->orderHelper->addToQuantityErrorOrder($orderStdClass->partNumber);
+        }
         break;
       
       // Date      
-      case 4:        
+      case 4: 
+
+        // Si partNumber valide
+        if(!$this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
+          return;
+        }
+
         $date = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
         $orderStdClass->deliveredDate = \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
 
-        // Vérification si commande déja existante
-        if(!empty($orderStdClass->partNumber)) {
-          $isOrderDuplicate = $this->orderHelper->isOrderDuplicate($orderStdClass->partNumber, $orderStdClass->deliveredDate);
+        // Vérification si commande déja existante        
+        $isOrderDuplicate = $this->orderHelper->isOrderDuplicate($orderStdClass->partNumber, $orderStdClass->deliveredDate);
 
-          // Commande dupliquée
-          if($isOrderDuplicate) {
-            $orderStdClass->isValid = false;
-          }
-          break;
+        // Commande dupliquée
+        if($isOrderDuplicate) {
+          $orderStdClass->isValid = false;
         }
+        break;
+        
 
       default:  
       break;

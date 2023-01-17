@@ -97,6 +97,20 @@ class OrderHelper {
 
     return $orderStdClass;
   }
+  
+  /**
+   * Undocumented function
+   *
+   * @param string|null $partNumber
+   * @return boolean
+   */
+  function isPartNumberValid($partNumber): bool {    
+    $pattern = "/[0-9][0-9][a-zA-Z\d+]*/"; 
+    if(empty($partNumber) || !preg_match($pattern, $partNumber)) {
+      return false;
+    }
+    return true;
+  }
 
   /**
    * MAJ du orderBuyer
@@ -158,6 +172,15 @@ class OrderHelper {
   }
 
   /**
+   * Renvoie la liste des Commandes avec une quantité = 0
+   *
+   * @return array
+   */
+  public function getErrorQuantityOrders(): array {
+    return $this->errorOnQuantityOrders;
+  }
+
+  /**
    * Vérification des commandes en double
    *
    * @param string $partNumber
@@ -173,6 +196,16 @@ class OrderHelper {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Ajout d'une commande en erreur de quantité
+   *
+   * @param string $partNumber
+   * @return void
+   */
+  public function addToQuantityErrorOrder(string $partNumber) {
+    $this->errorOnQuantityOrders[] = $partNumber;
   }
 
   /**

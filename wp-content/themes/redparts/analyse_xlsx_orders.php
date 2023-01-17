@@ -39,11 +39,10 @@ if(isset($filename)){
 		// Récupération des commandes
 		$orders = $orderSource->getOrders();
 
-		// Récupération des commandes dupliquées
+		// Récupération des commandes en erreur
 		$duplicatedOrders = $orderHelper->getDuplicateOrders();
-
-		// Récupération des commandes sans liens de documentation
 		$failureOrders = $orderHelper->getFailureOrders();
+		$quantityErrorOrders = $orderHelper->getErrorQuantityOrders();
 
 		// Sauvegarde des commandes
 		$orderRepository->save($orders);
@@ -53,17 +52,20 @@ if(isset($filename)){
 		$deleteHelper->deleteUnusedOrders();
 
 		// Creation HTML des commandes
-		$displayOrder->setDuplicateAndFailureOrder($duplicatedOrders, $failureOrders);
+		$displayOrder->setDuplicateAndFailureOrder($duplicatedOrders, $failureOrders, $quantityErrorOrders);
 		$ordersHtml = $displayOrder->createHtmlFromOrders($orders);
 
-		// Renvoie des données 
+		// Renvoie des données HTML
 		$data['result'] = $ordersHtml;
 
-		// Orders
+		// liste des commandes
 		$data['orders'] = $orderSource->getOrders();
 
 		// Commandes dupliquées
-		$data['duplicatedOrder'] = $duplicatedOrders;
+		$data['duplicatedOrders'] = $duplicatedOrders;
+
+		// Commandes sans quantité
+		$data['quantityErrorOrders'] = $quantityErrorOrders;
 
 		// Commande sans CoverLink
 		$data['failureOrders'] = [];

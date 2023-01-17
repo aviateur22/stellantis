@@ -19,6 +19,16 @@ class DisplayOrder {
    */
   protected array $failureOrders;
 
+  /**
+   * Listes des commandes en erreur de quantité
+   *
+   * @param array $duplicatedOrders
+   * @param array $failureOrders
+   * @param array $errorQuantityOrders
+   * @return void
+   */
+  protected array $errorQuantityOrders;
+
 
   /**
    * Récupération liste commande dupliqué et erreur
@@ -27,9 +37,10 @@ class DisplayOrder {
    * @param array $failureOrders
    * @return void
    */
-  function setDuplicateAndFailureOrder(array $duplicatedOrders, array $failureOrders) {
+  function setDuplicateAndFailureOrder(array $duplicatedOrders, array $failureOrders, array $errorQuantityOrders) {
     $this->duplicatedOrders = $duplicatedOrders;
     $this->failureOrders = $failureOrders;
+    $this->errorQuantityOrders = $errorQuantityOrders;
   }
   
   /**
@@ -118,7 +129,7 @@ class DisplayOrder {
     // Html des buttons
     $html = '';
 
-    if(count($this->duplicatedOrders) > 0 || count ($this->failureOrders) > 0) {
+    if(count($this->duplicatedOrders) > 0 || count ($this->failureOrders) > 0 || count($this->errorQuantityOrders) > 0) {
       $html .= "<div id='red-row-div' style='text-align:center;margin-top:10px;padding:10px;background-color:#FF5733;border-radius:5px'>Part Number documentation disable or duplicted Orders. Please remove red row(s) to confirm your order.</div>";
       $html .= "<div style='margin-top:30px;'><button data-order-id=".$orderId." id='btn-confim-order' onclick='orderConfirm(this);' class='acceptButton' disabled>Confirm print order</button></div>";
     } else {
@@ -163,7 +174,10 @@ class DisplayOrder {
     // Commande dupliqué
     $isOrderduplicate = in_array($partNumber, $this->duplicatedOrders);
 
-    if($isOrderduplicate || $isOrderFailer) {
+    // Commandes sans quantité
+    $isOrderQuantityError = in_array($partNumber, $this->errorQuantityOrders);
+
+    if($isOrderduplicate || $isOrderFailer || $isOrderQuantityError) {
       return false;
     }
     return true;
