@@ -157,10 +157,10 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $dayEnd
    * @return array
    */
-  function findOrdersOnIntervalDay(string $daySart, string $dayEnd): array
+  function findOrdersOnIntervalDay(string $dayStart, string $dayEnd): array
   {
     global $wpdb;
-    $query = "SELECT * FROM orders WHERE deliveredDate >= '".$daySart."' AND deliveredDate <= '".$dayEnd."'";
+    $query = "SELECT * FROM orders WHERE wip <> 'PREPARATION' AND  deliveredDate >= '".$dayStart."' AND deliveredDate <= '".$dayEnd."'";
     $findOrder = $wpdb->get_results($query, ARRAY_A);
     return $findOrder;
   }

@@ -1,9 +1,57 @@
 <?php
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/Order.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/OrderEntity.php');
 /**
  * modèle OrderDashboard
  */
-class DashboardOrderModel extends Order {
+class DashboardOrderModel {
+  /**
+   * PartNumber
+   *
+   * @var string
+   */
+  protected string $partNumber;  
+  
+  /**
+   * Code pays
+   *
+   * @var string
+   */
+  protected string $countryCode;
+
+  /**
+   * Nom pays 
+   * 
+   * @var string
+   */
+  protected string $countryName;
+
+  /**
+   * Code pochette
+   *
+   * @var string
+   */
+  protected string $coverCode;
+
+  /**
+   * Liens du document a imprimer
+   *
+   * @var string
+   */
+  protected string $coverLink;
+  
+  /**
+   * Voiture
+   * A CFM - Table de Correspondance ?
+   * @var string
+   */
+  protected string $family;
+
+  /**
+   * Modele de voiture
+   * Fichier XLS - Carlinename
+   * @var string
+   */
+  protected string $model;
 
   /**
    * Liste de quantité par jour 
@@ -12,46 +60,88 @@ class DashboardOrderModel extends Order {
    */
   protected array $quantitiesByDate; 
 
-  function __construct(
-    string $orderId,
+  function __construct(        
     string $coverCode,
     string $model,
-    string $family,
-    string $orderFrom,
-    string $orderBuyer,
-    string $deliveredDate,
-    string $quantity,
+    string $family,    
     string $partNumber,
     string $coverLink,
-    string $orderDate,
     string $countryCode,
     string $countryName,
-    string $wip,
-    bool $isValid,
     array $quantitiesByDate
     ) {
-    parent::__construct (
-      $orderId,
-      $coverCode,
-      $model,
-      $family,
-      $orderFrom,
-      $orderBuyer,
-      $deliveredDate,
-      $quantity,
-      $partNumber,
-      $coverLink,
-      $orderDate,
-      $countryCode,
-      $countryName,
-      $wip,
-      $isValid
-    );
-    
+    $this->coverCode = $coverCode;
+    $this->model = $model;
+    $this->family = $family;        
+    $this->partNumber = $partNumber;    
+    $this->coverLink = $coverLink;    
+    $this->countryCode = $countryCode;
+    $this->countryName = $countryName;    
     $this->quantitiesByDate = $quantitiesByDate;
+  }
+  #Region Getter
+
+  function getModel(): string {
+    return $this->model;
   }
 
   /**
+   * Renvoie la famille 
+   *
+   * @return string
+   */
+  function getFamily(): string {
+    return $this->family;
+  }
+
+  /**
+   * Renvoie le partNumber
+   *
+   * @return string
+   */
+  function getPartNumber(): string {
+    return $this->partNumber;
+  }
+
+  /**
+   * Renvoi le code pochette
+   *
+   * @return string
+   */
+  function getCoverCode(): string {
+    return $this->coverCode;
+  }
+
+  /**
+   * Code pays
+   *
+   * @return string
+   */
+  function getCountryCode(): string {
+    return $this->countryCode;
+    
+  }
+
+  /**
+   * Nom pays
+   *
+   * @return string
+   */
+  function getCountryName(): string {
+    return $this->countryName;
+  }
+
+  
+  /**
+   * Lien document d'impression
+   *
+   * @return string
+   */
+  function getCoverLink(): string {
+    return $this->coverLink;
+  }
+
+   /**
    * Renvoie les quantités par date
    *
    * @return array
@@ -60,4 +150,5 @@ class DashboardOrderModel extends Order {
     return $this->quantitiesByDate;
   }
 
+#endRegion
 }
