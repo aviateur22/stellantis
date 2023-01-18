@@ -1,5 +1,12 @@
 <div id='popup'></div>
 <script>
+
+	// Update spinner
+	let spinnerLoaderElement;
+
+	// Modal update commande
+	let updateOrderElement;
+
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
  filtreText += "<h2>Filters</h2>";
@@ -16,6 +23,25 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	filtreText += "<td><label for='partNumber'>Part Number</label>";
 	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" value="ALL"></td>';
 	filtreText += '</tr></table>';
+
+	/**
+	 * Masque la modal update Order
+	 */
+	function hideUpdateOrder() {
+		if(updateOrderElement) {
+			updateOrderElement.hidden = true;
+		}		
+	}
+
+	/**
+	 * Affichage modal updateOrder element
+	 */
+	function displayUpdateOrderElement(element) {
+		console.log(element);
+		if(updateOrderElement) {
+			updateOrderElement.hidden = false;
+		}	
+	}
 
 	function $_GET(param) {
 		var vars = {};
@@ -285,6 +311,13 @@ for(x=1;x<5000;x++)
 		//MAJ Titre et WIP
 
 		document.getElementById('resultat-div').innerHTML = data['orders'];
+
+		// Loader de chargement
+		spinnerLoaderElement = document.getElementById('loader');
+		spinnerLoaderElement.hidden = true;
+
+		// Modal update commande
+		updateOrderElement = document.getElementById('updateOrder');
 
 		// for(x=0;x<2;x++)
 		// {

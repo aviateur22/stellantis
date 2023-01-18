@@ -33,7 +33,7 @@ class DisplayDashboardOrder {
       return "<h3 style='color:red;text-align:center;'>No order find</h3>";
      }
 
-    $html = "<div style='margin-right:-10%;margin-left:-10%;padding:10px;background-color:#FFF;border:solid 1px;border-radius:5px;width:120%;overflow-x: auto;white-space: nowrap;'>";
+    $html = "<div style='margin-right:-10%;margin-left:-10%;padding:10px;background-color:#FFF;border:solid 1px;border-radius:5px;width:120%;overflow-x: auto;white-space: nowrap; min-height: 500px'>";
     $html .= "<table id='order_table' class='order-table'>";
 
     // Header
@@ -67,18 +67,31 @@ class DisplayDashboardOrder {
             $html .= $this->createHtmlForOrderProperty($order->getCoverCode());
             $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
             foreach($order->getQuantitiesByDate() as $quantity) {
-              $html .= "<td data-order-id=".$quantity['order']['id']." >";
-                $html .= $quantity['order']['quantity'];
-              $html .= "</td>";
+              if(empty($quantity['order']['quantity'])) {
+                $html .= "<td>";
+                  $html .= "<div class='inprogress'>";
+                    $html .= '-';
+                  $html .= "</div>";
+                $html .= "</td>";
+              } else {
+                $html .= "<td onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
+                  $html .= "<div class='inprogress'>";
+                    $html .= $quantity['order']['quantity'];
+                  $html .= "</div>";
+                $html .= "</td>";
+              }             
             }
           $html .= "</tr>";
         }          
       }     
     }
+
+    // Fin HTML
     $html .= "</tbody>";
     $html .= "</table>";
     $html .= "</div>";
-
+    // Modal information
+    $html .= $this->popup();
     return $html;
   }
 
@@ -94,6 +107,53 @@ class DisplayDashboardOrder {
     $htmlOrder .= '</td>';
 
     return $htmlOrder;
+  }
+
+  private function popup() {
+    return '
+          <div id="updateOrder" class="update_modal">
+            <div id="loader" class="modal__loader">
+              <h4 class="modal__title"> Loading in progress </h4>
+              <!--Loader -->
+              <div class="spinner">             
+                <div class="bounce1"></div>
+                <div class="bounce2"></div>
+                <div class="bounce3"></div>
+              </div>
+             </div>          
+            <form class="update__form" method="post">
+              <h4 class="update__title">Order information</h4>
+              <div class="update__content">
+                <div class="group__control">
+                  <label for="quantity">PartNumber</label>
+                  <p>XXXX</p>
+                </div>
+                <div class="group__control">
+                  <label for="quantity">Quantity</label>
+                  <input name="quantity" id="quantity" type="number">
+                </div>
+                <div class="group__control">
+                  <label for="deliveredDate">Delivered Date</label>
+                  <input name="deliveredDate" id="deliveredDate" type="date">
+                </div>
+                <div class="group__control">
+                  <label for="status">Order Status</label>
+                  <select name="status" id="status">
+                    <option value="">--Please choose an option--</option>
+                    <option value="preflight">PREFLIGHT</option>
+                    <option value="onprogress">ONPROGRESS</option>
+                    <option value="ready">READY</option>
+                    <option value="delivered">DELIVERED</option>>
+                  </select>
+                </div>
+              </div>
+              <div class="modal__button__container">
+                <div>          
+                  <button onclick="updateOrder();" type="button" class="modal__button" value> Oui </button>
+                  <button onclick="hideUpdateOrder();" type="button" class="modal__button cancel--button" value> Non </button>
+                </div>
+              </div>
+            </form>';
   }
 
   private function filter() {
