@@ -35,7 +35,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'wip' => $order->getWip(),
           'coverLink'=> $order->getCoverLink(),
           'model'=>$order->getModel(),
-          'isValid' => $order->getIsValid()
+          'isValid' => $order->getIsValid(),
+          'brand' =>$order->getBrand()
         ));       
       } else {
         throw new InvalidFormatException();

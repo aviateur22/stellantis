@@ -95,6 +95,13 @@ class Order {
   protected string $family;
 
   /**
+   * Marque commande
+   *
+   * @var string
+   */
+  protected string $brand;
+
+  /**
    * Modele de voiture
    * Fichier XLS - Carlinename
    * @var string
@@ -124,7 +131,8 @@ class Order {
     string $countryCode,
     string $countryName,
     string $wip,
-    bool $isValid
+    bool $isValid,
+    string $brand
   ) {
     $this->coverCode = $coverCode;
     $this->model = $model;
@@ -141,6 +149,7 @@ class Order {
     $this->countryName = $countryName;
     $this->wip = $wip;
     $this->isValid = $isValid;
+    $this->brand = $brand;
   }
   #Region Getter
 
@@ -261,8 +270,22 @@ class Order {
       return $this->coverLink;
     }
 
+    /**
+     * Renvoie isValid
+     *
+     * @return boolean
+     */
     function getIsValid(): bool {
       return $this->isValid;
+    }
+
+    /**
+     * Renvoie la marque
+     *
+     * @return string
+     */
+    function getBrand(): string {
+      return $this->brand;
     }
 
   #endRegion

@@ -3,33 +3,41 @@ setlocale(LC_TIME, "fr_FR");
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/helpers/DashboardOrderHelper.php');
 require_once('./stellantisOrder/html/DisplayDashboardOrder.php');
-
-require('/home/mdwfrkglvc/www/wp-config.php');
+require_once('./stellantisOrder/helpers/UserHelper.php');
 global $wpdb;
 error_reporting(E_ALL);
 global $tabColorStatut;
 
 
 // Initilisation
-$orderRepository = new MySqlOrderRepository();
-$dashboardHelper = new DashboardHelper($orderRepository);
+try {
+  $userHelper = new UserHelper();
+  $user = $userHelper->getUser();
+  
+  $orderRepository = new MySqlOrderRepository();
+  $dashboardHelper = new DashboardHelper($orderRepository);
+  
+  $test = $dashboardHelper->setDashboardOrders(null, '2023-02-25');
+  
+  // Récupération des données
+  $dashboardOrders = $dashboardHelper->getDashboardOrders();
+  $intervalDays = $dashboardHelper->getIntervalDays();
+  
+  
+  
+  // Creation html
+  $displayDashboardOrder = new DisplayDashboardOrder($dashboardOrders, $intervalDays);
+  
+  
+  $data['orders'] = $displayDashboardOrder->createHtml();
+  
+  
+  echo(json_encode($data));
+}
+catch(\Throwable $th) {
+  echo('error: ' .$th->getMessage());
+}
 
-$test = $dashboardHelper->setDashboardOrders(null, '2023-02-25');
-
-// Récupération des données
-$dashboardOrders = $dashboardHelper->getDashboardOrders();
-$intervalDays = $dashboardHelper->getIntervalDays();
-
-
-
-// Creation html
-$displayDashboardOrder = new DisplayDashboardOrder($dashboardOrders, $intervalDays);
-
-
-$data['orders'] = $displayDashboardOrder->createHtml();
-
-
-echo(json_encode($data));
 
 
 

@@ -74,10 +74,10 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
       $startDay = date('Y-m-d 00:00:00');
     } else {
       $startDay = date('Y-m-d 00:00:00', strtotime($startDay));
-    }
-    
+    }    
+
     // Date de fin
-    $endDay = date('Y-m-d 00:00:00', strtotime('+5 day', strtotime($startDay)));   
+    $endDay = date('Y-m-d 00:00:00', strtotime('+'.(self::INTERVAL_DAY - 1).' day', strtotime($startDay)));   
     
     // $endDay = date('Y-m-d 00:00:00', strtotime($endDay));    
   }
@@ -94,9 +94,7 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
 
     foreach($orders as $order) {
       $this->orders[] = $this->orderEntity($order);
-    }
-
-    
+    }    
   }
 
   /**
@@ -122,7 +120,8 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
       $order['countryCode'],
       $order['countryName'],
       $order['wip'],
-      $order['isValid']
+      $order['isValid'],
+      $order['brand']
     );
   }
   

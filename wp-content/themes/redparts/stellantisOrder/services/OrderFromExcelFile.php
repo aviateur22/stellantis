@@ -3,6 +3,7 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/he
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderSourceInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/Order.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/User.php';
 
 /**
  * Extraction données a partir d'un fichier Excel
@@ -32,11 +33,19 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
    */
   protected OrderHelper $orderHelper;
 
-  function __construct(string $fileName, OrderHelper $orderHelper)
+  /**
+   * Utilisateur 
+   *
+   * @var User
+   */
+  protected User $user;
+
+  function __construct(string $fileName, OrderHelper $orderHelper, User $user)
   { 
     // Constructeur parent
     parent::__construct($fileName); 
     $this->orderHelper = $orderHelper;
+    $this->user = $user;
   }
 
   /**
@@ -74,11 +83,23 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
    * @return void
    */
   private function browseOrderDataFile() {    
-    // Récupération du site faisant la commande
-    $orderBuyer = $this->activeSheet->getCell('A2')->getValue();       
+    // Récupération du site faisant la commande    
+    $orderBuyer = $this->user->getFirstRole();
+    
+    // Récupération de la marque de  la voiture
+    $brand = $this->activeSheet->getCell('A2')->getValue();
+
+    // Personne faisant la commande
+    $orderFrom = $this->user->getFistNameAndLastName();
     
     // Mise a jour de OrderBuyer
     $this->orderHelper->setOrderBuyer($orderBuyer);
+
+    // Mise a jour de la marque
+    $this->orderHelper->setBrand($brand);
+
+    // Mise a jour de la personne faisoant la commande
+    $this->orderHelper->setOrderFrom($orderFrom);
 
     // Derniere ligne
     $LAST_ROW = $this->activeSheet->getHighestRow();
@@ -226,7 +247,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       $orderStdClass->countryCode,
       $orderStdClass->countryName,
       $orderStdClass->wip,
-      $orderStdClass->isValid
+      $orderStdClass->isValid,
+      $orderStdClass->brand
     );   
     return $order;
   }

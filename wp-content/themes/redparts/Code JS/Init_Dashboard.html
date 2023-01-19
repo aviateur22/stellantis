@@ -2,10 +2,10 @@
 <script>
 
 	// Update spinner
-	let spinnerLoaderElement;
+	let spinnerLoaderElement = null;
 
 	// Modal update commande
-	let updateOrderElement;
+	let updateOrderElement = null;
 
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
@@ -314,10 +314,14 @@ for(x=1;x<5000;x++)
 
 		// Loader de chargement
 		spinnerLoaderElement = document.getElementById('loader');
-		spinnerLoaderElement.hidden = true;
 
 		// Modal update commande
 		updateOrderElement = document.getElementById('updateOrder');
+
+		// Masque la fenetre de chargement de la modal de modification
+		if(spinnerLoaderElement) {
+			spinnerLoaderElement.hidden = true;
+		}		
 
 		// for(x=0;x<2;x++)
 		// {

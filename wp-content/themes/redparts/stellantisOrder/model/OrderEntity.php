@@ -28,7 +28,8 @@ class OrderEntity extends Order {
     string $countryCode,
     string $countryName,
     string $wip,
-    bool $isValid    
+    bool $isValid,
+    string $brand  
     ) {
     parent::__construct (
       $orderId,
@@ -45,7 +46,8 @@ class OrderEntity extends Order {
       $countryCode,
       $countryName,
       $wip,
-      $isValid
+      $isValid,
+      $brand
     );
     
     $this->id = $id;

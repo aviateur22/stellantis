@@ -1,6 +1,14 @@
 <?php
-abstract class Status {
+abstract class StaticData {
 
+  const FACTORY_AUTH_ORDER = [
+    'poissy',
+    'rennes',
+    'sochaux',
+    'mulhouse',
+    'kenitra',
+    'administrator'
+  ];
 
   const STATUS_WIP = [
     'PREFLIGHT_MI' => 1,
@@ -12,6 +20,4 @@ abstract class Status {
     'READY_MA' => 7,
     'DELIVERED_MA' => 8,
   ];
-
-
 }
