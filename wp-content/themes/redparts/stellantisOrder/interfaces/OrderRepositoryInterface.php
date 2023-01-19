@@ -15,7 +15,15 @@ interface OrderRepositoryInterface {
   function save(array $orders): void;
 
   /**
-   * Trouve 1 commande
+   * Recherche d'une commande a partir id de la commande
+   *
+   * @param string $orderId
+   * @return array
+   */
+  function findOne(string $orderId): array;
+
+  /**
+   * Trouve les commandes dupliquées
    *
    * @param array $orders - Liste des commandes a vérifier
    * @return array - Commandes dupliquées
@@ -58,6 +66,17 @@ interface OrderRepositoryInterface {
    * @return void
    */
   function updateWip(string $wipValue, string $orderId): void;
+
+  /**
+   * Mise a jour d'une commande
+   *
+   * @param string $orderId
+   * @param string $quantity
+   * @param string $deliveredDate
+   * @param string $status
+   * @return void
+   */
+  function update(string $orderId, string $quantity, string $deliveredDate, string $status): void; 
 
   /**
    * Suppression des ancienne commandes non traité

@@ -2,7 +2,7 @@
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 
 /**
- * Update des données d'une commande
+ * Récupératon des données d'une commande
  */
 
  error_reporting(E_ALL);
@@ -11,22 +11,25 @@ require_once('./stellantisOrder/services/MySqlOrderRepository.php');
  /**
   * Id de la commande
   */
-  $orderId = $_POST['id'];
-  $quantity = $_POST['quantity'];
-  $deliveredDate = $_POST['deliveredDate'];
-  $status = $_POST['status'];
+  $orderId = $_POST['orderid'];
 
-  if(!isset($orderId) || !isset($quantity) || !isset($deliveredDate) || !isset($status)) {
+  if(!isset($orderId)) {
     throw new \Exception('Impossible de récupérer Id de la commande');
   }
 
   $orderRepository = new MySqlOrderRepository();
 
   // Recherche commande en base de données
-  $order = $orderRepository->update($orderId, $quantity, $deliveredDate, $status);
+  $order = $orderRepository->findOne($orderId);  
+
+  if(count($order) === 0 ) {
+    throw new \Exception('Commande non trouvée', 404);
+  }
+
   
-  $data['updateOrder'] = $order;
+  $data['findOrder'] = $order;
   echo(json_encode($data));
  } catch (\Throwable $th) {
   echo('Error ' . $th->getMessage());
  }
+ 

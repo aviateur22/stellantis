@@ -88,6 +88,23 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   }
 
   /**
+   * Recherche d'une commande a partir id de la commande
+   *
+   * @param string $orderId
+   * @return array
+   */
+  function findOne(string $orderId): array {
+    global $wpdb;
+    $findOrder = $wpdb->get_results(
+      $wpdb->prepare(
+        "SELECT * FROM orders WHERE id = %s",
+          $orderId
+        )
+    );
+    return $findOrder;
+  }
+
+  /**
    * Suppression d'une commande
    *
    * @param string $partNumber
@@ -95,8 +112,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $deliverdDate
    * @return void
    */
-  function deleteOne(string $partNumber, string $orderId, string $deliveredDate): void
-  {
+  function deleteOne(string $partNumber, string $orderId, string $deliveredDate): void {
     global $wpdb;
     $wpdb->query(
       $wpdb->prepare(
@@ -128,14 +144,41 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $orderId
    * @return void
    */
-  function updateWip(string $wipValue, string $orderId): void
-  {
+  function updateWip(string $wipValue, string $orderId): void {
     global $wpdb;
     $wpdb->query( $wpdb->prepare(
       "UPDATE orders SET wip = %s WHERE orderid = %s",
       $wipValue, $orderId
       )
     );    
+  }
+
+  /**
+   * Mise a jour d'une commande
+   *
+   * @param string $orderId
+   * @param string $quantity
+   * @param string $deliveredDate
+   * @param string $status
+   * @return void
+   */
+  public function update(string $id, string $quantity, string $deliveredDate, string $status): void
+  {
+    global $wpdb;
+    $order = $this->findOne($id);
+
+    if(empty($order)) {
+      throw new \Exception('Order Not Find');
+    }
+
+    $update = $wpdb->query( $wpdb->prepare(
+      "UPDATE orders SET quantity=%s, deliveredDate=%s, wip = %s  WHERE id = %s",
+      $quantity, $deliveredDate, $status, $id
+      )
+    );  
+
+    var_dump($update);
+    
   }
 
   /**
@@ -158,8 +201,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $dayEnd
    * @return array
    */
-  function findOrdersOnIntervalDay(string $dayStart, string $dayEnd): array
-  {
+  function findOrdersOnIntervalDay(string $dayStart, string $dayEnd): array {
     global $wpdb;
     $query = "SELECT * FROM orders WHERE wip <> 'PREPARATION' AND  deliveredDate >= '".$dayStart."' AND deliveredDate <= '".$dayEnd."'";
     $findOrder = $wpdb->get_results($query, ARRAY_A);

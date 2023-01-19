@@ -7,6 +7,14 @@
 	// Modal update commande
 	let updateOrderElement = null;
 
+	//Form contenant le formulaire de soumission
+	let submitOrderFormElement = null;
+
+	// Commmande récupérer en base de données
+	let findOrderInformation = {
+
+	}
+
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
  filtreText += "<h2>Filters</h2>";
@@ -38,9 +46,86 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	 */
 	function displayUpdateOrderElement(element) {
 		console.log(element);
+		// Affichage modal
 		if(updateOrderElement) {
-			updateOrderElement.hidden = false;
-		}	
+			updateOrderElement.hidden = false;			
+		}
+
+		// Affichage spinner chargement
+		if(spinnerLoaderElement) {
+				spinnerLoaderElement.hidden = false;
+		}
+
+		// Récupération id de la commande
+		const orderId = element.dataset.orderId;
+
+		if(!orderId) {
+			return alert('impossible de récupérer la commande');
+		}
+
+		// Recherche de la commande en base de données
+		findOrder(orderId);
+	}
+
+	/**
+	 * Soumission formulaire
+	 * @params {string} orderId
+	 */
+	function findOrder(orderId){
+		mode === 2;
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_order_information.php";
+		let _variables = 'orderid=' + encodeURIComponent(orderId);
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+	}
+
+	/**
+	 * Soumission formulaire
+	 * @params {event} event
+	 */
+	function updateOrder(event) {
+		event.preventDefault();
+		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
+		console.log(formData);
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/update_order_on_dashboard.php";
+		AppelScriptPHP(_lien_scriptPHP, formData);
+	}
+
+	/**
+	 * Mise a jour de la modal updateOrder avec les données de la base de données
+	 * 
+	 * @params {object} findOrder
+	 */
+	function updateOrderModalElement(findOrder) {
+		const partNumberElement = document.getElementById('displayPartNumber');
+		const quantityElement = document.getElementById('displayQuantity');
+		const deliveredDateElement = document.getElementById('displayDeliveredDate');
+		const statusElement = document.getElementById('displayStatus');
+		const idElement = document.getElementById('id');
+
+		if(partNumberElement && quantityElement && deliveredDateElement && statusElement) {
+			idElement.value = findOrder[0].id;
+			partNumberElement.innerText = findOrder[0].partNumber;
+			quantityElement.value = findOrder[0].quantity;
+			deliveredDateElement.value = findOrder[0].deliveredDate;
+			statusElement.value = findOrder[0].wip.toLowerCase();
+		}
+
+		console.log(findOrder);
+	}
+
+	/**
+	 * Transforme les données en format urlEncoded
+	 * @params {object} datas - Données a passer au format urlEnconded
+	 */
+	function urlEncoded(datas) {
+		let formBody = [];
+		for (let property in datas) {
+			let encodedKey = encodeURIComponent(property);
+			let encodedValue = encodeURIComponent(datas[property]);
+			formBody.push(encodedKey + "=" + encodedValue);
+		}
+
+		return formBody.join("&");
 	}
 
 	function $_GET(param) {
@@ -272,7 +357,7 @@ for(x=1;x<5000;x++)
 				}
 				if(mode>2){
 					data = httpRequest.responseText;
-					if(data.substring(0,6) == 'Erreur')
+					if(data.substring(0,6) == 'Error')
 					{
 
 						alert(data);
@@ -309,8 +394,16 @@ for(x=1;x<5000;x++)
 	function majResult(data)
 	{
 		//MAJ Titre et WIP
+		if(data['orders']) {
+			document.getElementById('resultat-div').innerHTML = data['orders'];	
+		}
 
-		document.getElementById('resultat-div').innerHTML = data['orders'];
+		// Résulat d'une recherche de commande
+		if(data['findOrder']) {
+
+			// Mise a jour de l'affichage
+			updateOrderModalElement(data['findOrder']);
+		}
 
 		// Loader de chargement
 		spinnerLoaderElement = document.getElementById('loader');
@@ -318,10 +411,18 @@ for(x=1;x<5000;x++)
 		// Modal update commande
 		updateOrderElement = document.getElementById('updateOrder');
 
+		// Formulaire de soumission
+		submitOrderFormElement = document.getElementById('updateOrderForm');
+
+		if(submitOrderFormElement) {
+			// Ajout soumission formulaire
+			submitOrderFormElement.addEventListener('submit', updateOrder)
+		}
+
 		// Masque la fenetre de chargement de la modal de modification
 		if(spinnerLoaderElement) {
 			spinnerLoaderElement.hidden = true;
-		}		
+		}	
 
 		// for(x=0;x<2;x++)
 		// {

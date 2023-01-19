@@ -121,24 +121,25 @@ class DisplayDashboardOrder {
                 <div class="bounce3"></div>
               </div>
              </div>          
-            <form class="update__form" method="post">
+            <form id="updateOrderForm" class="update__form" method="post">
               <h4 class="update__title">Order information</h4>
               <div class="update__content">
+                <input id="id" name="id" type="hidden">
                 <div class="group__control">
                   <label for="quantity">PartNumber</label>
-                  <p>XXXX</p>
+                  <p id="displayPartNumber">XXXX</p>
                 </div>
                 <div class="group__control">
                   <label for="quantity">Quantity</label>
-                  <input name="quantity" id="quantity" type="number">
+                  <input id="displayQuantity" name="quantity" id="quantity" type="number">
                 </div>
                 <div class="group__control">
                   <label for="deliveredDate">Delivered Date</label>
-                  <input name="deliveredDate" id="deliveredDate" type="date">
+                  <input id="displayDeliveredDate" name="deliveredDate" id="deliveredDate" type="date">
                 </div>
                 <div class="group__control">
                   <label for="status">Order Status</label>
-                  <select name="status" id="status">
+                  <select id="displayStatus" name="status" id="status">
                     <option value="">--Please choose an option--</option>
                     <option value="preflight">PREFLIGHT</option>
                     <option value="onprogress">ONPROGRESS</option>
@@ -149,7 +150,7 @@ class DisplayDashboardOrder {
               </div>
               <div class="modal__button__container">
                 <div>          
-                  <button onclick="updateOrder();" type="button" class="modal__button" value> Oui </button>
+                  <button type="submit" class="modal__button" value> Update Order </button>
                   <button onclick="hideUpdateOrder();" type="button" class="modal__button cancel--button" value> Non </button>
                 </div>
               </div>
