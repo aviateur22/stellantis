@@ -27,7 +27,7 @@ class OrderEntity extends Order {
     string $orderDate,
     string $countryCode,
     string $countryName,
-    string $wip,
+    string $wipId,
     bool $isValid,
     string $brand  
     ) {
@@ -45,7 +45,7 @@ class OrderEntity extends Order {
       $orderDate,
       $countryCode,
       $countryName,
-      $wip,
+      $wipId,
       $isValid,
       $brand
     );

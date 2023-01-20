@@ -10,8 +10,14 @@
 	//Form contenant le formulaire de soumission
 	let submitOrderFormElement = null;
 
+	// Form contenant les filtres d'affichage
+	let filterOrderFormElement = null;
+
 	// Message Element
 	let flashMessageElement = null
+
+	// Select Date on filter
+	let selectDayFilterElement = null;
 
 	// Commmande récupérer en base de données
 	let findOrderInformation = {
@@ -21,8 +27,9 @@
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
  filtreText += "<h2>Filters</h2>";
-filtreText += "<p style='text-align:center'><label for='end'>End date</label>";
-	filtreText += '<input style="margin-left:10px;" type="date" id="end" name="end" value="2023-12-31" min="2022-01-01" max="2050-12-31"></p>';
+ filtreText += "<p style='text-align:center'><label for='end'>End date</label>"; 
+filtreText += "<form id='filterOrderForm'>";
+	filtreText += '<input style="margin-left:10px;" type="date" id="end" name="end" min="2022-01-01" max="2050-12-31"></p>';
 	filtreText += "<table><tr><td><label for='family'>Family</label>";
 	filtreText += '<select style="display:block" id="family" name="family" multiple></td>';
 filtreText += "<td><label for='countryCode'>Country Code</label>";
@@ -34,6 +41,12 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	filtreText += "<td><label for='partNumber'>Part Number</label>";
 	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" value="ALL"></td>';
 	filtreText += '</tr></table>';
+	filtreText += '<div class="button__container">'
+	filtreText += '<input class="submit--button" type="submit" value="Refresh"/>'
+	filtreText += '<input class="clear--button" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'	
+	filtreText += '</div>'
+	filtreText += "</form>";
+
 
 	/**
 	 * Masque la modal update Order
@@ -88,10 +101,32 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	function updateOrder(event) {
 		mode === 2;
 		event.preventDefault();
-		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
-		console.log(formData);
+		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));		
 		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/update_order_on_dashboard.php";
 		AppelScriptPHP(_lien_scriptPHP, formData);
+	}
+
+	/**
+	 * Filtre les commandes
+	 * @params {event} event
+	 * @params {bool} clearFilter
+	 */
+	function filterOrder(event, clearFilter = false) {
+		mode === 2;		
+		event.preventDefault();
+
+		// Reset du filtre
+		if(clearFilter) {
+			const dateFin = document.getElementById('end').value;
+			var _variables = 'type=' + encodeURIComponent(type) + '&dateFin=' + encodeURIComponent(dateFin);
+			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
+			AppelScriptPHP(_lien_scriptPHP, _variables);
+		} else {		
+			const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
+			console.log(formData);
+			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
+			AppelScriptPHP(_lien_scriptPHP, formData);
+		}		
 	}
 
 	/**
@@ -111,7 +146,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			partNumberElement.innerText = findOrder[0].partNumber;
 			quantityElement.value = findOrder[0].quantity;
 			deliveredDateElement.value = findOrder[0].deliveredDate;
-			statusElement.value = findOrder[0].wip.toLowerCase();
+			statusElement.value = findOrder[0].wipId.toLowerCase();
 		}
 
 		console.log(findOrder);
@@ -443,6 +478,14 @@ for(x=1;x<5000;x++)
 			}			
 		}
 
+		// Select day on filter
+		selectDayFilterElement = document.getElementById('end');
+
+		if(selectDayFilterElement) {
+			// date du jour
+			selectDayFilterElement.valueAsDate = new Date()
+		}
+
 		// Loader de chargement
 		spinnerLoaderElement = document.getElementById('loader');
 
@@ -452,12 +495,20 @@ for(x=1;x<5000;x++)
 		// Formulaire de soumission
 		submitOrderFormElement = document.getElementById('updateOrderForm');
 
+		// Formulaire de filtre
+		filterOrderFormElement = document.getElementById('filterOrderForm');
+
 		// Flash Message
 		flashMessageElement = document.getElementById('flashMessage');
 
 		if(submitOrderFormElement) {
 			// Ajout soumission formulaire
 			submitOrderFormElement.addEventListener('submit', updateOrder)
+		}
+
+		if(filterOrderFormElement) {
+			// Ajout soumission formulaire de filtre
+			filterOrderFormElement.addEventListener('submit', filterOrder);
 		}
 
 		// Masque la fenetre de chargement de la modal de modification

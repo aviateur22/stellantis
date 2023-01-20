@@ -42,7 +42,7 @@ class CreateDashboardOrdersHelper {
         $deliveredDate = date('Y-m-d 00:00:00', strtotime($order->getdeliveredDate()));
 
         $order = [
-          'wip' => $order->getWip(),
+          'wipId' => $order->getWipId(),
           'quantity' => $order->getQuantity(),
           'id' => $order->getId()
         ];
@@ -113,7 +113,7 @@ class CreateDashboardOrdersHelper {
       if(!$order instanceof DashboardOrderModel) {
         throw new \Exception('Erreur de format');
       }
-
+            
       if($order->getPartNumber() === $partNumber) {
         return true;
       }

@@ -1,12 +1,9 @@
 <?php
-setlocale(LC_TIME, "fr_FR");
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/helpers/DashboardOrderHelper.php');
 require_once('./stellantisOrder/html/DisplayDashboardOrder.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
-global $wpdb;
 error_reporting(E_ALL);
-global $tabColorStatut;
 
 
 // Initilisation
@@ -26,7 +23,7 @@ try {
   
   
   // Creation html
-  $displayDashboardOrder = new DisplayDashboardOrder($dashboardOrders, $intervalDays);
+  $displayDashboardOrder = new DisplayDashboardOrder($dashboardOrders, $intervalDays, $user);
   
   
   $data['orders'] = $displayDashboardOrder->createHtml();

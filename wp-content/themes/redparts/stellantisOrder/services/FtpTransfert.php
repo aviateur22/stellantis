@@ -5,6 +5,7 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/in
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/FormatedOrder.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/exceptions/FtpException.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 
 /**
  * Transfert des fichier via FTP
@@ -140,8 +141,8 @@ class FtpTransfert implements OrderTransferInterface {
    *
    * @return void
    */
-  function updateOrderStatus(): void  {
+  function updateOrderStatus(): void  {    
     // Mise a jour du statut des commandes
-    $this->orderRepository->updateWip(ORDER_STATUS['PREFLIGHT'], $this->orderId);
+    $this->orderRepository->updateWip(StaticData::ORDER_STATUS['PREFLIGHT_MI'], $this->orderId);
   }
 }

@@ -5,10 +5,9 @@ require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/m
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/DashboardOrderModel.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/OrderEntity.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/CreateDashboardOrdersHelper.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php');
 
 class DashboardHelper extends CreateDashboardOrdersHelper {
-
-  const INTERVAL_DAY = 7;
 
   /**
    * Order repository
@@ -77,7 +76,7 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
     }    
 
     // Date de fin
-    $endDay = date('Y-m-d 00:00:00', strtotime('+'.(self::INTERVAL_DAY - 1).' day', strtotime($startDay)));   
+    $endDay = date('Y-m-d 00:00:00', strtotime('+'.(StaticData::DASHBOARD_INTERVAL_DAY - 1).' day', strtotime($startDay)));   
     
     // $endDay = date('Y-m-d 00:00:00', strtotime($endDay));    
   }
@@ -119,7 +118,7 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
       $order['orderDate'],
       $order['countryCode'],
       $order['countryName'],
-      $order['wip'],
+      $order['wipId'],
       $order['isValid'],
       $order['brand']
     );
@@ -158,6 +157,7 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
    * @return void
    */
   private function formatDashboardOrders() {
+    
     foreach($this->orders as $order) {      
 
       // Vérification format de la données
@@ -174,9 +174,8 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
        
         $dashboardOrderModel = $this->createDashboardOrderModel($order, $quantityByDateArray);
         $this->dashboardOrders[] = $dashboardOrderModel;
-      }
-
-      // var_dump($this->dashboardOrders);
+      }      
     }
+    
   }
 }

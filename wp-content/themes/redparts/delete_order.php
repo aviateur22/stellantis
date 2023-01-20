@@ -9,11 +9,11 @@ $deliveredDate = $_POST['orderdate'];
  * Supprression d'une commande
  */
 if(isset($partNumber) && isset($orderId) && isset($deliveredDate)){
-
+ 
   // Repository
-  $mySqlOrderRepository = new MySqlOrderRepository();
+  $mySqlOrderRepository = new MySqlOrderRepository(); 
   $mySqlOrderRepository->deleteOne($partNumber, $orderId, $deliveredDate);
-
+  
   // Renvoie des données 
   $data['delete-result'] = true;
   echo(json_encode($data));
