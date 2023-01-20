@@ -1,4 +1,5 @@
 <?php
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once('/home/mdwfrkglvc/www/wp-config.php');
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 
@@ -99,7 +100,7 @@ class OrderHelper {
     $orderStdClass->orderDate = $this->orderDate; 
     $orderStdClass->countryCode = ''; 
     $orderStdClass->countryName = ''; 
-    $orderStdClass->wip = 'PREPARATION';
+    $orderStdClass->wipId = StaticData::ORDER_STATUS['PREPARATION'];
     $orderStdClass->isValid = true;
 
     return $orderStdClass;

@@ -71,7 +71,7 @@ class Order {
    *
    * @var string
    */
-  protected string $wip;
+  protected int $wipId;
 
   /**
    * Site de destination
@@ -130,7 +130,7 @@ class Order {
     string $orderDate,
     string $countryCode,
     string $countryName,
-    string $wip,
+    int $wipId,
     bool $isValid,
     string $brand
   ) {
@@ -147,7 +147,7 @@ class Order {
     $this->orderDate = $orderDate;
     $this->countryCode = $countryCode;
     $this->countryName = $countryName;
-    $this->wip = $wip;
+    $this->wipId = $wipId;
     $this->isValid = $isValid;
     $this->brand = $brand;
   }
@@ -257,8 +257,8 @@ class Order {
      *
      * @return string
      */
-    function getWip(): string {
-      return $this->wip;
+    function getWipId(): int {
+      return $this->wipId;
     }
 
     /**

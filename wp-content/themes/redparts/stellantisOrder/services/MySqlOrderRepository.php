@@ -2,6 +2,7 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/Order.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/exceptions/InvalidFormatException.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once('/home/mdwfrkglvc/www/wp-config.php');
 
 /**
@@ -32,11 +33,11 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'coverCode' => $order->getCoverCode(),
           'quantity' => $order->getQuantity(),
           'deliveredDate' => $order->getDeliveredDate(),
-          'wip' => $order->getWip(),
           'coverLink'=> $order->getCoverLink(),
           'model'=>$order->getModel(),
           'isValid' => $order->getIsValid(),
-          'brand' =>$order->getBrand()
+          'brand' =>$order->getBrand(),
+          'wipId' => $order->getWipId()
         ));       
       } else {
         throw new InvalidFormatException();
@@ -59,7 +60,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     foreach($orders as $order) {
       if($order instanceof Order) {
 
-        $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$order->getPartNumber() ."' AND deliveredDate ='".$order->getdeliveredDate()."' AND wip <>'PREPARATION'";
+        $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$order->getPartNumber() ."' AND deliveredDate ='".$order->getdeliveredDate()."' AND wipId <>'".StaticData::ORDER_STATUS['PREPARATION']."'";
         $findOrder = $wpdb->get_results($query, ARRAY_A);
         
         if(count($findOrder) > 0) {
@@ -82,7 +83,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    */
   function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array {
     global $wpdb;
-    $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$partNumber."' AND deliveredDate ='".$deliveredDate."' AND wip <>'PREPARATION'";
+    $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$partNumber."' AND deliveredDate ='".$deliveredDate."' AND wipId <>'".StaticData::ORDER_STATUS['PREPARATION']."'";
     $findOrder = $wpdb->get_results($query, ARRAY_A);
     return $findOrder;
   }
@@ -113,13 +114,13 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @return void
    */
   function deleteOne(string $partNumber, string $orderId, string $deliveredDate): void {
-    global $wpdb;
+    global $wpdb;    
     $wpdb->query(
       $wpdb->prepare(
         "DELETE FROM orders WHERE partNumber = %s AND orderId = %s AND deliveredDate = %s",
           $partNumber, $orderId, $deliveredDate
         )
-    );
+    );    
   }
 
   /**
@@ -147,7 +148,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function updateWip(string $wipValue, string $orderId): void {
     global $wpdb;
     $wpdb->query( $wpdb->prepare(
-      "UPDATE orders SET wip = %s WHERE orderid = %s",
+      "UPDATE orders SET wipId = %s WHERE orderid = %s",
       $wipValue, $orderId
       )
     );    
@@ -160,10 +161,9 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $quantity
    * @param string $deliveredDate
    * @param string $status
-   * @return void
+   * @return int
    */
-  public function update(string $id, string $quantity, string $deliveredDate, string $status): void
-  {
+  public function update(string $id, string $quantity, string $deliveredDate, string $status): int {
     global $wpdb;
     $order = $this->findOne($id);
 
@@ -172,13 +172,12 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     }
 
     $update = $wpdb->query( $wpdb->prepare(
-      "UPDATE orders SET quantity=%s, deliveredDate=%s, wip = %s  WHERE id = %s",
+      "UPDATE orders SET quantity=%s, deliveredDate=%s, wipId = %s  WHERE id = %s",
       $quantity, $deliveredDate, $status, $id
       )
-    );  
+    );
 
-    var_dump($update);
-    
+    return $update;
   }
 
   /**
@@ -190,7 +189,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    */
   function deleteUnused(string $referenceDeleteDate) {
     global $wpdb;
-    $wpdb->query($wpdb->prepare("DELETE FROM orders WHERE wip = 'PREPARATION' AND orderDate < '".$referenceDeleteDate."'"));
+    $wpdb->query($wpdb->prepare("DELETE FROM orders WHERE wipId = '".StaticData::ORDER_STATUS['PREPARATION']."' AND orderDate < '".$referenceDeleteDate."'"));
   }
 
 
@@ -203,7 +202,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    */
   function findOrdersOnIntervalDay(string $dayStart, string $dayEnd): array {
     global $wpdb;
-    $query = "SELECT * FROM orders WHERE wip <> 'PREPARATION' AND  deliveredDate >= '".$dayStart."' AND deliveredDate <= '".$dayEnd."'";
+    $query = "SELECT * FROM orders WHERE wipId <> '".StaticData::ORDER_STATUS['PREPARATION']."' AND  deliveredDate >= '".$dayStart."' AND deliveredDate <= '".$dayEnd."'";
     $findOrder = $wpdb->get_results($query, ARRAY_A);
     return $findOrder;
   }

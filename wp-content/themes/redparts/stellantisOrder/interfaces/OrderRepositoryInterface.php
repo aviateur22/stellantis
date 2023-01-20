@@ -76,7 +76,7 @@ interface OrderRepositoryInterface {
    * @param string $status
    * @return void
    */
-  function update(string $orderId, string $quantity, string $deliveredDate, string $status): void; 
+  function update(string $orderId, string $quantity, string $deliveredDate, string $status): int; 
 
   /**
    * Suppression des ancienne commandes non traité

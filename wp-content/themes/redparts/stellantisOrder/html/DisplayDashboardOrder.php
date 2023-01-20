@@ -1,9 +1,19 @@
 <?php
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/User.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 
 /**
  * Undocumented class
  */
 class DisplayDashboardOrder {
+
+  /**
+   * Utilisateur
+   *
+   * @var User
+   */
+  protected User $user;
+
   /**
    * Liste des commandes a afficher
    *
@@ -18,9 +28,10 @@ class DisplayDashboardOrder {
    */
   protected array $intervalDays;
 
-  function __construct(array $dashboardOrders, array $intervalDays) {
+  function __construct(array $dashboardOrders, array $intervalDays, User $user) {
     $this->dashboardOrders = $dashboardOrders;
     $this->intervalDays = $intervalDays;
+    $this->user = $user;
   }
 
   /**
@@ -57,7 +68,7 @@ class DisplayDashboardOrder {
     
 
     // Parcours des dashboardOrders
-    foreach($this->dashboardOrders as $order) {     
+      
       foreach($this->dashboardOrders as $order) {
         if($order instanceof DashboardOrderModel) {
           $html .= "<tr>";
@@ -68,14 +79,14 @@ class DisplayDashboardOrder {
             $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
             foreach($order->getQuantitiesByDate() as $quantity) {
               if(empty($quantity['order']['quantity'])) {
-                $html .= "<td>";
+                $html .= "<td class='td--empty'>";
                   $html .= "<div class='inprogress'>";
                     $html .= '-';
                   $html .= "</div>";
                 $html .= "</td>";
               } else {
                 $html .= "<td onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
-                  $html .= "<div class='inprogress'>";
+                  $html .= "<div class='td--border ".$this->getCellClass((int)$quantity['order']['wipId'])."' class='inprogress'>";
                     $html .= $quantity['order']['quantity'];
                   $html .= "</div>";
                 $html .= "</td>";
@@ -84,14 +95,19 @@ class DisplayDashboardOrder {
           $html .= "</tr>";
         }          
       }     
-    }
+    
 
     // Fin HTML
     $html .= "</tbody>";
     $html .= "</table>";
     $html .= "</div>";
+
     // Modal information
     $html .= $this->popup();
+
+    // Flash message
+    $html .= $this->flashMessage();
+
     return $html;
   }
 
@@ -109,55 +125,165 @@ class DisplayDashboardOrder {
     return $htmlOrder;
   }
 
-  private function popup() {
+  /**
+   * Message utilisateur
+   *
+   * @return void
+   */
+  private function flashMessage() {
     return '
-          <div id="updateOrder" class="update_modal">
-            <div id="loader" class="modal__loader">
-              <h4 class="modal__title"> Loading in progress </h4>
-              <!--Loader -->
-              <div class="spinner">             
-                <div class="bounce1"></div>
-                <div class="bounce2"></div>
-                <div class="bounce3"></div>
-              </div>
-             </div>          
-            <form id="updateOrderForm" class="update__form" method="post">
-              <h4 class="update__title">Order information</h4>
-              <div class="update__content">
-                <input id="id" name="id" type="hidden">
-                <div class="group__control">
-                  <label for="quantity">PartNumber</label>
-                  <p id="displayPartNumber">XXXX</p>
-                </div>
-                <div class="group__control">
-                  <label for="quantity">Quantity</label>
-                  <input id="displayQuantity" name="quantity" id="quantity" type="number">
-                </div>
-                <div class="group__control">
-                  <label for="deliveredDate">Delivered Date</label>
-                  <input id="displayDeliveredDate" name="deliveredDate" id="deliveredDate" type="date">
-                </div>
-                <div class="group__control">
-                  <label for="status">Order Status</label>
-                  <select id="displayStatus" name="status" id="status">
-                    <option value="">--Please choose an option--</option>
-                    <option value="preflight">PREFLIGHT</option>
-                    <option value="onprogress">ONPROGRESS</option>
-                    <option value="ready">READY</option>
-                    <option value="delivered">DELIVERED</option>>
-                  </select>
-                </div>
-              </div>
-              <div class="modal__button__container">
-                <div>          
-                  <button type="submit" class="modal__button" value> Update Order </button>
-                  <button onclick="hideUpdateOrder();" type="button" class="modal__button cancel--button" value> Non </button>
-                </div>
-              </div>
-            </form>';
+      <div id="flashMessage" class="flash__container">
+        <div class="flash  success--message">
+          <p id="flashMessageText" class="flash__text">Mon Text<p>
+        </div>
+      </div>';
   }
 
-  private function filter() {
+  /**
+   * Popup modification commandes
+   *
+   * @return void
+   */
+  private function popup() {
+    return'
+    <div id="updateOrder" class="update_modal">
+      <div id="loader" class="modal__loader">
+        <h4 class="modal__title"> Loading in progress </h4>
+        <!--Loader -->
+        <div class="spinner">             
+          <div class="bounce1"></div>
+          <div class="bounce2"></div>
+          <div class="bounce3"></div>
+        </div>
+      </div>          
+      <form id="updateOrderForm" class="update__form" method="post">
+        <h4 class="update__title">Order information</h4>
+        <div class="update__content">
+          <input id="id" name="id" type="hidden">
+          <div class="group__control">
+            <label for="quantity">PartNumber</label>
+            <p id="displayPartNumber">XXXX</p>
+          </div>
+          <div class="group__control">
+            <label for="quantity">Quantity</label>
+            <input min="1" id="displayQuantity" name="quantity" id="quantity" type="number">
+          </div>
+          <div class="group__control">
+            <label for="deliveredDate">Delivered Date</label>
+            <input id="displayDeliveredDate" name="deliveredDate" id="deliveredDate" type="date">
+          </div>
+          '.$this->setPopupSelectectOption().'                                
+        </div>
+        <div class="modal__button__container">
+          <div>          
+            <button type="submit" class="modal__button" value> Update Order </button>
+            <button onclick="hideUpdateOrder();" type="button" class="modal__button cancel--button" value> Non </button>
+          </div>
+        </div>
+      </form>';
+  }
+
+  /**
+   * Undocumented function
+   *
+   * @return void
+   */
+  private function setPopupSelectectOption() {
+    
+    if($this->user->findRole(StaticData::MILLAU_FACTORY_ROLE_NAME)) {
+      return '
+      <div class="group__control">
+        <label for="status">Order Status</label>
+        <select id="displayStatus" name="status" id="status" required>
+            <option value="">--Please choose an option--</option>
+            <option value='.StaticData::ORDER_STATUS['PREFLIGHT_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['PREFLIGHT'].'</option>
+            <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['ON_PROGRESS'].'</option>
+            <option value='.StaticData::ORDER_STATUS['READY_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['READY'].'</option>
+            <option value='.StaticData::ORDER_STATUS['DELIVERED_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['DELIVERED'].'</option>
+            <option value='.StaticData::ORDER_STATUS['BLOCKED_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['BLOCKED'].'</option>
+        </select>
+      </div>';
+
+    } elseif ($this->user->findRole(StaticData::MANCHECOURT_FACTORY_ROLE_NAME)) {
+      return '
+      <div class="group__control">
+        <label for="status">Order Status</label>
+        <select id="displayStatus" name="status" id="status" required>
+            <option value="">--Please choose an option--</option>
+            <option value='.StaticData::ORDER_STATUS['PREFLIGHT_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['PREFLIGHT'].'</option>
+            <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['ON_PROGRESS'].'</option>
+            <option value='.StaticData::ORDER_STATUS['READY_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['READY'].'</option>
+            <option value='.StaticData::ORDER_STATUS['DELIVERED_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['DELIVERED'].'</option>
+            <option value='.StaticData::ORDER_STATUS['BLOCKED_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['BLOCKED'].'</option>
+        </select>
+      </div>';
+
+    } elseif ($this->user->findRole(StaticData::STELLANTIS_ROLE_NAME)) {
+      return '
+      <div class="group__control">
+        <label for="status">Order Status</label>
+        <select id="displayStatus" name="status" id="status" required>
+            <option value="">--Please choose an option--</option>
+            <option value='.StaticData::ORDER_STATUS['PREFLIGHT_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['PREFLIGHT'].'</option>
+            <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['ON_PROGRESS'].'</option>
+            <option value='.StaticData::ORDER_STATUS['READY_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['READY'].'</option>
+            <option value='.StaticData::ORDER_STATUS['DELIVERED_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['DELIVERED'].'</option>
+            <option value='.StaticData::ORDER_STATUS['BLOCKED_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['BLOCKED'].'</option>
+        </select>
+      </div>';
+
+    } else {
+      return'
+      <div class="group__control">
+        <label for="status">Order Status</label>
+        <select id="displayStatus" name="status" id="status" required>
+            <option value="">--Please choose an option--</option>
+            <option value='.StaticData::ORDER_STATUS['PREFLIGHT_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['PREFLIGHT_MI'].'</option>
+            <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['ON_PROGRESS_MI'].'</option>
+            <option value='.StaticData::ORDER_STATUS['READY_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['READY_MI'].'</option>
+            <option value='.StaticData::ORDER_STATUS['DELIVERED_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['DELIVERED_MI'].'</option>
+            <option value='.StaticData::ORDER_STATUS['BLOCKED_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['BLOCKED_MI'].'</option>
+            <option value='.StaticData::ORDER_STATUS['PREFLIGHT_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['PREFLIGHT_MA'].'</option>
+            <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['ON_PROGRESS_MA'].'</option>
+            <option value='.StaticData::ORDER_STATUS['READY_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['READY_MA'].'</option>
+            <option value='.StaticData::ORDER_STATUS['DELIVERED_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['DELIVERED_MA'].'</option>
+            <option value='.StaticData::ORDER_STATUS['BLOCKED_MA'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['BLOCKED_MA'].'</option>
+            <option value='.StaticData::ORDER_STATUS['PREFLIGHT_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['PREFLIGHT_ST'].'</option>
+            <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['ON_PROGRESS_ST'].'</option>
+            <option value='.StaticData::ORDER_STATUS['READY_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['READY_ST'].'</option>
+            <option value='.StaticData::ORDER_STATUS['DELIVERED_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['DELIVERED_ST'].'</option>
+            <option value='.StaticData::ORDER_STATUS['BLOCKED_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['BLOCKED_ST'].'</option>
+        </select>
+      </div>';
+
+    }
+  }
+
+  /**
+   * Récupération des couleur des cellules 
+   *
+   * @param string $status
+   * @return void
+   */
+  private function getCellClass(string $wipId) { 
+    global $tabColorStatut;
+    switch($wipId) {
+      case in_array($wipId, StaticData::PREFLIGHT_ID):
+        return 'status--preflight';
+      break;
+      case in_array($wipId, StaticData::ON_PROGRESS_ID):
+        return 'status--progress';
+      break;
+      case in_array($wipId, StaticData::READY_ID): 
+        return 'status--ready';
+      break;
+      case in_array($wipId, StaticData::DELIVERED_ID): 
+        return 'status--delivered';
+      break;
+      case in_array($wipId, StaticData::BLOCKED_ID): 
+        return 'status--blocked';
+      break;
+    }
 
   }
 }

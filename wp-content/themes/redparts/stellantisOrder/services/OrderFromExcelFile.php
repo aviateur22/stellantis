@@ -246,7 +246,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       $orderStdClass->orderDate,
       $orderStdClass->countryCode,
       $orderStdClass->countryName,
-      $orderStdClass->wip,
+      $orderStdClass->wipId,
       $orderStdClass->isValid,
       $orderStdClass->brand
     );   
