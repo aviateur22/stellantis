@@ -101,23 +101,5 @@ class User {
       }     
       return null;      
     }
-
-    /**
-     * Vérifie l'existence d'un Role utilisateur
-     *
-     * @param string $role
-     * @return void
-     */
-    public function findRole(string $role) {
-        // Vérification des droits      
-      foreach($this->getRoles() as $userRole) {
-        if( strtolower($userRole) === strtolower($role)) {
-          return true;
-        }
-      }    
-      return false;
-    }
-
-
   #endRegion
 }

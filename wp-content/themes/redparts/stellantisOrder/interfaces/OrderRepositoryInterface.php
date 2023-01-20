@@ -39,6 +39,14 @@ interface OrderRepositoryInterface {
    */
   function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array;
 
+  /**
+   * Renvoie les commandes en erreur
+   * 
+   * @param string $orderId - OrderId
+   *
+   * @return array
+   */
+  function findErrorOrders(string $orderId): array;
 
   /**
    * Suppression d'une commande

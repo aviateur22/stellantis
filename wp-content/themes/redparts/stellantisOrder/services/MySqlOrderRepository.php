@@ -74,6 +74,24 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     return $duplicatedOrder;    
   }
 
+  /**
+   * Renvoie les commandes en erreur
+   *
+   * @param string $orderId
+   * @return array
+   */
+  function findErrorOrders(string $orderId): array
+  {
+    global $wpdb;
+    $findOrders = $wpdb->get_results(
+      $wpdb->prepare(
+        "SELECT * FROM orders WHERE orderId = %s AND isValid = 0",
+          $orderId
+        )
+    );
+    return $findOrders;
+  }
+
     /**
    * Trouve les commandes dupliquées pour 1 partNumber
    *

@@ -1,6 +1,7 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/User.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validator.php';
 
 /**
  * Undocumented class
@@ -63,9 +64,6 @@ class DisplayDashboardOrder {
         
      // Body
      $html .= "<tbody>";
-
-     
-    
 
     // Parcours des dashboardOrders
       
@@ -190,7 +188,7 @@ class DisplayDashboardOrder {
    */
   private function setPopupSelectectOption() {
     
-    if($this->user->findRole(StaticData::MILLAU_FACTORY_ROLE_NAME)) {
+    if(isUserRoleFind($this->user, StaticData::MILLAU_FACTORY_ROLE_NAME)) {
       return '
       <div class="group__control">
         <label for="status">Order Status</label>
@@ -204,7 +202,7 @@ class DisplayDashboardOrder {
         </select>
       </div>';
 
-    } elseif ($this->user->findRole(StaticData::MANCHECOURT_FACTORY_ROLE_NAME)) {
+    } elseif(isUserRoleFind($this->user, StaticData::MANCHECOURT_FACTORY_ROLE_NAME)) {
       return '
       <div class="group__control">
         <label for="status">Order Status</label>
@@ -218,7 +216,7 @@ class DisplayDashboardOrder {
         </select>
       </div>';
 
-    } elseif ($this->user->findRole(StaticData::STELLANTIS_ROLE_NAME)) {
+    } elseif(isUserRoleFind($this->user, StaticData::STELLANTIS_ROLE_NAME)) {
       return '
       <div class="group__control">
         <label for="status">Order Status</label>

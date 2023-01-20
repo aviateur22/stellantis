@@ -194,9 +194,12 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         $orderStdClass->quantity = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
 
         // Si quantité = 0        
-        if(strval($orderStdClass->quantity) === '0' && !empty($orderStdClass->partNumber)) {          
+        if(strval($orderStdClass->quantity) === '0' || !is_numeric($orderStdClass->quantity)) {          
           $this->orderHelper->addToQuantityErrorOrder($orderStdClass->partNumber);
+          $orderStdClass->isValid = false;
         }
+
+
         break;
       
       // Date      

@@ -27,9 +27,9 @@
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
  filtreText += "<h2>Filters</h2>";
- filtreText += "<p style='text-align:center'><label for='end'>End date</label>"; 
+ filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>"; 
 filtreText += "<form id='filterOrderForm'>";
-	filtreText += '<input style="margin-left:10px;" type="date" id="end" name="end" min="2022-01-01" max="2050-12-31"></p>';
+	filtreText += '<input style="margin-left:10px;" type="date" id="startDate" name="startDate" min="2022-01-01" max="2050-12-31"></p>';
 	filtreText += "<table><tr><td><label for='family'>Family</label>";
 	filtreText += '<select style="display:block" id="family" name="family" multiple></td>';
 filtreText += "<td><label for='countryCode'>Country Code</label>";
@@ -39,11 +39,11 @@ filtreText += '<select style="display:block" id="countryName" name="countryName"
 filtreText += "<td><label for='codePochette'>Code Pochette</label>";
 filtreText += '<select style="display:block" id="codePochette" name="codePochette" multiple></td>';
 	filtreText += "<td><label for='partNumber'>Part Number</label>";
-	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" value="ALL"></td>';
+	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" placeHolder="23AMOKKDEXX32D3,23AMOKKDEXX32A5"></td>';
 	filtreText += '</tr></table>';
 	filtreText += '<div class="button__container">'
-	filtreText += '<input class="submit--button" type="submit" value="Refresh"/>'
-	filtreText += '<input class="clear--button" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'	
+	filtreText += '<input style="width:120px; height: 50px; border-radius:5px; padding: 10px; margin: 10px;" type="submit" value="Refresh"/>'
+	filtreText += '<input style="width:120px; height: 50px; background: white; border-radius:5px; color: red; border: 0.5px solid red; padding: 10px; margin: 10px;" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'	
 	filtreText += '</div>'
 	filtreText += "</form>";
 
@@ -117,7 +117,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 		// Reset du filtre
 		if(clearFilter) {
-			const dateFin = document.getElementById('end').value;
+			const dateFin = document.getElementById('startDate').value;
 			var _variables = 'type=' + encodeURIComponent(type) + '&dateFin=' + encodeURIComponent(dateFin);
 			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
 			AppelScriptPHP(_lien_scriptPHP, _variables);
@@ -216,7 +216,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	var mode = 1;
 	var type;
 
-	window.onload=function(){
+	window.onload=function(){	
 
 		/////////////////////////// EVENT /////////////////////////////////////////////
 		document.getElementById("message").addEventListener('input', resetMessage);
@@ -262,6 +262,14 @@ gestionAppel();
 
 		/////////////////////////////////// INIT //////////////////////////////////////////
 		document.getElementById("filter-div").innerHTML = filtreText;
+
+		// Select day on filter
+		selectDayFilterElement = document.getElementById('startDate');
+
+		if(selectDayFilterElement) {
+			// date du jour
+			selectDayFilterElement.valueAsDate = new Date()
+		}
 
 		type = "1";
 		//id_lot= $_GET('id_lot');
@@ -347,7 +355,7 @@ for(x=1;x<5000;x++)
 		chargement();
 		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
 
-		const dateFin = document.getElementById('end').value;
+		const dateFin = document.getElementById('startDate').value;
 		// const appareil = document.getElementById('appareil');
 		//
 		// var sappareil = "";
@@ -419,7 +427,7 @@ for(x=1;x<5000;x++)
 				}
 				if(mode>2){
 					data = httpRequest.responseText;
-					if(data.substring(0,6) == 'Error')
+					if(data.substring(0,5) == 'Error')
 					{
 
 						alert(data);
@@ -476,15 +484,7 @@ for(x=1;x<5000;x++)
 				console.log('flash');
 				displayFlashMessage('Succes de la mise à jour de votre commande');
 			}			
-		}
-
-		// Select day on filter
-		selectDayFilterElement = document.getElementById('end');
-
-		if(selectDayFilterElement) {
-			// date du jour
-			selectDayFilterElement.valueAsDate = new Date()
-		}
+		}		
 
 		// Loader de chargement
 		spinnerLoaderElement = document.getElementById('loader');

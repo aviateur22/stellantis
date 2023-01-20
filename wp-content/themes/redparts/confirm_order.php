@@ -22,7 +22,13 @@ if(isset($orderId)) {
     $xmlOrderFormat = new XmlOrderFormat($orderId, $orderRepository, $forecastPrintHelper);
     $ftpTransfert = new FtpTransfert($orderRepository, $orderId);
 
-
+    // Vérification que toute les commandes valides
+    $errorOrders = $orderRepository->findErrorOrders($orderId);
+    
+    if(count($errorOrders) > 0) {
+      throw new \Exception('Error order detected, file transfert cancel');
+    }
+    
     // Format les commandes a transférer
     $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();    
 
