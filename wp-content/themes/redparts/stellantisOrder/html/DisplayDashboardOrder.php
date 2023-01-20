@@ -4,6 +4,15 @@
  * Undocumented class
  */
 class DisplayDashboardOrder {
+
+  const CELL_CLASS = [
+    'PREFLIGHT' => 'status--preflight',
+    'IN PROGRESS' => 'status--progress',
+    'READY' => 'status--ready',
+    'DELIVERED' => 'status--delivered',
+    'BLOCKED' => 'status--blocked'
+  ];
+
   /**
    * Liste des commandes a afficher
    *
@@ -75,7 +84,7 @@ class DisplayDashboardOrder {
                 $html .= "</td>";
               } else {
                 $html .= "<td onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
-                  $html .= "<div class='inprogress'>";
+                  $html .= "<div class='td--border ".$this->getCellClass($quantity['order']['wip'])."' class='inprogress'>";
                     $html .= $quantity['order']['quantity'];
                   $html .= "</div>";
                 $html .= "</td>";
@@ -90,8 +99,13 @@ class DisplayDashboardOrder {
     $html .= "</tbody>";
     $html .= "</table>";
     $html .= "</div>";
+
     // Modal information
     $html .= $this->popup();
+
+    // Flash message
+    $html .= $this->flashMessage();
+
     return $html;
   }
 
@@ -109,6 +123,25 @@ class DisplayDashboardOrder {
     return $htmlOrder;
   }
 
+  /**
+   * Message utilisateur
+   *
+   * @return void
+   */
+  private function flashMessage() {
+    return '
+      <div id="flashMessage" class="flash__container">
+        <div class="flash  success--message">
+          <p id="flashMessageText" class="flash__text">Mon Text<p>
+        </div>
+      </div>';
+  }
+
+  /**
+   * Popup modification commandes
+   *
+   * @return void
+   */
   private function popup() {
     return '
           <div id="updateOrder" class="update_modal">
@@ -157,7 +190,16 @@ class DisplayDashboardOrder {
             </form>';
   }
 
-  private function filter() {
+  /**
+   * Récupération des couleur des cellules 
+   *
+   * @param string $status
+   * @return void
+   */
+  private function getCellClass(string $status) {
+    switch($status) {
+      case '': break;
+    }
 
   }
 }

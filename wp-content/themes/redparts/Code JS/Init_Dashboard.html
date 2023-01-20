@@ -10,6 +10,9 @@
 	//Form contenant le formulaire de soumission
 	let submitOrderFormElement = null;
 
+	// Message Element
+	let flashMessageElement = null
+
 	// Commmande récupérer en base de données
 	let findOrderInformation = {
 
@@ -83,6 +86,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	 * @params {event} event
 	 */
 	function updateOrder(event) {
+		mode === 2;
 		event.preventDefault();
 		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
 		console.log(formData);
@@ -126,6 +130,29 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		}
 
 		return formBody.join("&");
+	}
+
+	/**
+	 * Affichage flashMessage
+	 * 
+	 * @params {text} message - message a afficher
+	 * @params {bool} error - Flash error
+	 */
+	function displayFlashMessage(message, error) {
+		if(flashMessageElement) {
+
+
+			// Affichage message
+			flashMessageElement.classList.add('flash--fade');
+
+			// Message a afficher
+			document.getElementById('flashMessageText').innerText = message;
+
+			// Masque le message
+			setTimeout(()=>{
+				flashMessageElement.classList.remove('flash--fade');
+			}, 5000)
+		}
 	}
 
 	function $_GET(param) {
@@ -405,6 +432,17 @@ for(x=1;x<5000;x++)
 			updateOrderModalElement(data['findOrder']);
 		}
 
+		// Resultat d'un update d'une commande
+		if(data['updateOrder']) {
+			const result = data['updateOrder'];
+			console.log('updateOrder');
+			console.log(result);
+			if(result) {
+				console.log('flash');
+				displayFlashMessage('Succes de la mise à jour de votre commande');
+			}			
+		}
+
 		// Loader de chargement
 		spinnerLoaderElement = document.getElementById('loader');
 
@@ -413,6 +451,9 @@ for(x=1;x<5000;x++)
 
 		// Formulaire de soumission
 		submitOrderFormElement = document.getElementById('updateOrderForm');
+
+		// Flash Message
+		flashMessageElement = document.getElementById('flashMessage');
 
 		if(submitOrderFormElement) {
 			// Ajout soumission formulaire

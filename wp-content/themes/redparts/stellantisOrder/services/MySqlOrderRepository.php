@@ -160,10 +160,9 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $quantity
    * @param string $deliveredDate
    * @param string $status
-   * @return void
+   * @return int
    */
-  public function update(string $id, string $quantity, string $deliveredDate, string $status): void
-  {
+  public function update(string $id, string $quantity, string $deliveredDate, string $status): int {
     global $wpdb;
     $order = $this->findOne($id);
 
@@ -175,10 +174,9 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
       "UPDATE orders SET quantity=%s, deliveredDate=%s, wip = %s  WHERE id = %s",
       $quantity, $deliveredDate, $status, $id
       )
-    );  
+    );
 
-    var_dump($update);
-    
+    return $update;
   }
 
   /**

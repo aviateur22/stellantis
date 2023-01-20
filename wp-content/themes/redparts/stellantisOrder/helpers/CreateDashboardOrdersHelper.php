@@ -42,7 +42,7 @@ class CreateDashboardOrdersHelper {
         $deliveredDate = date('Y-m-d 00:00:00', strtotime($order->getdeliveredDate()));
 
         $order = [
-          'color' => '',
+          'wip' => $order->getWip(),
           'quantity' => $order->getQuantity(),
           'id' => $order->getId()
         ];

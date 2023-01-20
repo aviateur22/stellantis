@@ -23,9 +23,10 @@ require_once('./stellantisOrder/services/MySqlOrderRepository.php');
   $orderRepository = new MySqlOrderRepository();
 
   // Recherche commande en base de données
-  $order = $orderRepository->update($orderId, $quantity, $deliveredDate, $status);
+  $orderRepository->update($orderId, $quantity, $deliveredDate, $status);
   
-  $data['updateOrder'] = $order;
+  $data['updateOrder'] = 'update-success';
+
   echo(json_encode($data));
  } catch (\Throwable $th) {
   echo('Error ' . $th->getMessage());
