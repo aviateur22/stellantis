@@ -41,11 +41,15 @@ class DisplayDashboardOrder {
    * @return string
    */
   function createHtml(): string {
+
     if(!count($this->dashboardOrders) > 0) {
       return "<h3 style='color:red;text-align:center;'>No order find</h3>";
      }
 
-    $html = "<div style='margin-right:-10%;margin-left:-10%;padding:10px;background-color:#FFF;border:solid 1px;border-radius:5px;width:120%;overflow-x: auto;white-space: nowrap; min-height: 500px'>";
+       // Flash message
+    $html = $this->flashMessage();
+
+    $html .= "<div style='margin-right:-10%;margin-left:-10%;padding:10px;background-color:#FFF;border:solid 1px;border-radius:5px;width:120%;overflow-x: auto;white-space: nowrap; min-height: 500px'>";
     $html .= "<table id='order_table' class='order-table'>";
 
     // Header
@@ -78,13 +82,13 @@ class DisplayDashboardOrder {
             foreach($order->getQuantitiesByDate() as $quantity) {
               if(empty($quantity['order']['quantity'])) {
                 $html .= "<td class='td--empty'>";
-                  $html .= "<div class='inprogress'>";
+                  $html .= "<div>";
                     $html .= '-';
                   $html .= "</div>";
                 $html .= "</td>";
               } else {
                 $html .= "<td onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
-                  $html .= "<div class='td--border ".$this->getCellClass((int)$quantity['order']['wipId'])."' class='inprogress'>";
+                  $html .= "<div class='td--border ".findColorOrderDisplay((int)$quantity['order']['wipId'])."'>";
                     $html .= $quantity['order']['quantity'];
                   $html .= "</div>";
                 $html .= "</td>";
@@ -102,9 +106,6 @@ class DisplayDashboardOrder {
 
     // Modal information
     $html .= $this->popup();
-
-    // Flash message
-    $html .= $this->flashMessage();
 
     return $html;
   }
@@ -178,7 +179,8 @@ class DisplayDashboardOrder {
             <button onclick="hideUpdateOrder();" type="button" class="modal__button cancel--button" value> Non </button>
           </div>
         </div>
-      </form>';
+      </form>
+    <div>';
   }
 
   /**
@@ -281,32 +283,5 @@ class DisplayDashboardOrder {
       </div>';
 
     }
-  }
-
-  /**
-   * Récupération des couleur des cellules 
-   *
-   * @param string $status
-   * @return void
-   */
-  private function getCellClass(string $wipId) {    
-    switch($wipId) {
-      case in_array($wipId, StaticData::PREFLIGHT_ID):
-        return 'status--preflight';
-      break;
-      case in_array($wipId, StaticData::ON_PROGRESS_ID):
-        return 'status--progress';
-      break;
-      case in_array($wipId, StaticData::READY_ID): 
-        return 'status--ready';
-      break;
-      case in_array($wipId, StaticData::DELIVERED_ID): 
-        return 'status--delivered';
-      break;
-      case in_array($wipId, StaticData::BLOCKED_ID): 
-        return 'status--blocked';
-      break;
-    }
-
   }
 }

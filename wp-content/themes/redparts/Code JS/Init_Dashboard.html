@@ -7,8 +7,8 @@
 	// Modal update commande
 	let updateOrderElement = null;
 
-	//Form contenant le formulaire de soumission
-	let submitOrderFormElement = null;
+	//Form contenant le formulaire de soumission d'un update
+	let updateOrderFormElement = null;
 
 	// Form contenant les filtres d'affichage
 	let filterOrderFormElement = null;
@@ -18,6 +18,9 @@
 
 	// Select Date on filter
 	let selectDayFilterElement = null;
+
+	// Commande cliquée pour modification
+	let orderElement = null;
 
 	// Commmande récupérer en base de données
 	let findOrderInformation = {
@@ -61,7 +64,9 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	 * Affichage modal updateOrder element
 	 */
 	function displayUpdateOrderElement(element) {
-		console.log(element);
+		// Récupération HtmlElement
+		orderElement = element;
+
 		// Affichage modal
 		if(updateOrderElement) {
 			updateOrderElement.hidden = false;			
@@ -101,6 +106,12 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	function updateOrder(event) {
 		mode === 2;
 		event.preventDefault();
+
+		// Affichage spinner chargement
+		if(spinnerLoaderElement) {
+				spinnerLoaderElement.hidden = false;
+		}
+
 		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));		
 		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/update_order_on_dashboard.php";
 		AppelScriptPHP(_lien_scriptPHP, formData);
@@ -187,6 +198,41 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			setTimeout(()=>{
 				flashMessageElement.classList.remove('flash--fade');
 			}, 5000)
+		}
+	}
+
+	/**
+	 * Mise a jour de la couleur après un update de commande
+	 * 
+	 * @params {object} colorData - contient les données de couelur
+	 */
+	function updateOrderColor(colorData) {
+		// Affichage Flash Message
+		displayFlashMessage('Succes de la mise à jour de votre commande');
+
+		if(!orderElement) {
+			return;
+		}
+
+		// Récupération HTML enfant ayant la couleur
+		const divOrderElement = orderElement.firstChild;
+
+		// Suppression des class de couleur
+		for(classColor of colorData.colorClassToRemove) {
+			divOrderElement.classList.remove(classColor)
+		}
+
+		// Ajoutr de la nouvelle class
+		divOrderElement.classList.add(colorData.colorClassName);
+
+		// Masque spinner chargement
+		if(spinnerLoaderElement) {
+			spinnerLoaderElement.hidden = true;
+		}
+
+		// Masque la modal update Order
+		if(updateOrderElement) {
+			updateOrderElement.hidden = true;			
 		}
 	}
 
@@ -386,8 +432,6 @@ for(x=1;x<5000;x++)
 
 
 		//Afficher résultats par défaut
-
-		httpRequest.
 		httpRequest.onreadystatechange = alertContents;
 		httpRequest.open('POST', lien_scriptPHP);
 		httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -448,7 +492,21 @@ for(x=1;x<5000;x++)
 				}
 			}
 			else {
-				alert('Il y a eu une erreur. Merci de nous contacter.');
+
+				// Masque spinner chargement
+				if(spinnerLoaderElement) {
+						spinnerLoaderElement.hidden = true;
+				}
+
+				// Récupération du message d'erreur 
+				data = httpRequest.responseText;
+
+				if(!data) {
+					return alert('Il y a eu une erreur. Merci de nous contacter.');
+				}
+
+				alert(data);
+				
 			}
 		}
 	}
@@ -478,12 +536,11 @@ for(x=1;x<5000;x++)
 
 		// Resultat d'un update d'une commande
 		if(data['updateOrder']) {
-			const result = data['updateOrder'];
-			console.log('updateOrder');
-			console.log(result);
+			const result = data['updateOrder'];	
+
 			if(result) {
-				console.log('flash');
-				displayFlashMessage('Succes de la mise à jour de votre commande');
+				updateOrderColor(result);
+				
 			}			
 		}		
 
@@ -494,7 +551,7 @@ for(x=1;x<5000;x++)
 		updateOrderElement = document.getElementById('updateOrder');
 
 		// Formulaire de soumission
-		submitOrderFormElement = document.getElementById('updateOrderForm');
+		updateOrderFormElement = document.getElementById('updateOrderForm');
 
 		// Formulaire de filtre
 		filterOrderFormElement = document.getElementById('filterOrderForm');
@@ -502,9 +559,9 @@ for(x=1;x<5000;x++)
 		// Flash Message
 		flashMessageElement = document.getElementById('flashMessage');
 
-		if(submitOrderFormElement) {
+		if(updateOrderFormElement) {
 			// Ajout soumission formulaire
-			submitOrderFormElement.addEventListener('submit', updateOrder)
+			updateOrderFormElement.addEventListener('submit', updateOrder)
 		}
 
 		if(filterOrderFormElement) {

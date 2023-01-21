@@ -49,3 +49,39 @@ function isDateValid(string $date) {
 
   return checkdate($month, $day, $year);
 }
+
+/**
+ * Récupération des couleurs des commandes  
+ *
+ * @param string $wipId
+ * @return string - ClassName
+ */
+function findColorOrderDisplay(string $wipId): string {
+  switch($wipId) {
+    // Preflight
+    case in_array($wipId, StaticData::PREFLIGHT_ID):
+      return StaticData::CLASS_NAME_ORDERS_COLORS['PREFLIGHT_CLASS_NAME'];
+    break;
+
+    // Progress
+    case in_array($wipId, StaticData::ON_PROGRESS_ID):
+      return StaticData::CLASS_NAME_ORDERS_COLORS['PROGRESS_CLASS_NAME'];
+    break;
+
+    // Ready
+    case in_array($wipId, StaticData::READY_ID): 
+      return StaticData::CLASS_NAME_ORDERS_COLORS['READY_CLASS_NAME'];
+    break;
+
+    // Delivered
+    case in_array($wipId, StaticData::DELIVERED_ID): 
+      return StaticData::CLASS_NAME_ORDERS_COLORS['DELIVERED_CLASS_NAME'];
+    break;
+
+    // Blocked
+    case in_array($wipId, StaticData::BLOCKED_ID): 
+      return StaticData::CLASS_NAME_ORDERS_COLORS['BLOCKED_CLASS_NAME'];
+    break;
+  }
+
+}
