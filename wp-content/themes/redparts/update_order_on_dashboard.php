@@ -16,8 +16,8 @@ require_once('./stellantisOrder/services/MySqlOrderRepository.php');
   $deliveredDate = $_POST['deliveredDate'];
   $status = $_POST['status'];
 
-  if(!isset($orderId) || !isset($quantity) || !isset($deliveredDate) || !isset($status)) {
-    throw new \Exception('Impossible de récupérer Id de la commande');
+  if(empty($orderId) || empty($quantity) || empty($deliveredDate) || empty($status)) {
+    throw new \Exception('Update impossible: Missing required order informations', 400);
   }
 
   $orderRepository = new MySqlOrderRepository();
@@ -28,6 +28,7 @@ require_once('./stellantisOrder/services/MySqlOrderRepository.php');
   $data['updateOrder'] = 'update-success';
 
   echo(json_encode($data));
- } catch (\Throwable $th) {
+ } catch (\Throwable $th) { 
+  http_response_code($th->getCode());
   echo('Error ' . $th->getMessage());
  }

@@ -62,6 +62,7 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
 
 
   /**
+   * Formate les dates
    * 
    * @param string $startDay
    * @param string $endDay
@@ -76,9 +77,7 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
     }    
 
     // Date de fin
-    $endDay = date('Y-m-d 00:00:00', strtotime('+'.(StaticData::DASHBOARD_INTERVAL_DAY - 1).' day', strtotime($startDay)));   
-    
-    // $endDay = date('Y-m-d 00:00:00', strtotime($endDay));    
+    $endDay = date('Y-m-d 00:00:00', strtotime('+'.(StaticData::DASHBOARD_INTERVAL_DAY - 1).' day', strtotime($startDay)));
   }
   
   /**
@@ -162,7 +161,7 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
 
       // Vérification format de la données
       if(!$order instanceof OrderEntity) {
-        throw new \Exception('Mauvais format de données');
+        throw new \Exception('Error Instanceof model - DashboardOrdersHelper', 500);
       }
 
       if(!$this->isParNumberInDashboardArray($order->getPartNumber())) {

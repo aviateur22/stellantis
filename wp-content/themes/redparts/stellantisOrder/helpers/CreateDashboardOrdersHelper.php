@@ -34,7 +34,7 @@ class CreateDashboardOrdersHelper {
 
       // Vérification format de la données
       if(!$order instanceof OrderEntity) {
-        throw new \Exception('Mauvais format de données');
+        throw new \Exception('Error Instanceof model - CreateDashboardOrdersHelper', 500);
       }
 
       if($order->getPartNumber() === $partNumber) {
@@ -42,6 +42,10 @@ class CreateDashboardOrdersHelper {
         $deliveredDate = date('Y-m-d 00:00:00', strtotime($order->getdeliveredDate()));
 
         $order = [
+          'pocketCode' => $order->getCoverCode(),
+          'countryName' => $order->getCountryName(),
+          'countryCode' => $order->getCountryCode(),
+          'family' => $order->getFamily(),
           'wipId' => $order->getWipId(),
           'quantity' => $order->getQuantity(),
           'id' => $order->getId()
@@ -111,7 +115,7 @@ class CreateDashboardOrdersHelper {
       
       // Erreur dormat de données
       if(!$order instanceof DashboardOrderModel) {
-        throw new \Exception('Erreur de format');
+        throw new \Exception('Error Instanceof model - CreateDashboardOrdersHelper', 500);
       }
             
       if($order->getPartNumber() === $partNumber) {

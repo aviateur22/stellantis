@@ -10,14 +10,13 @@ abstract class StaticData {
   // Role Stellantis
   const STELLANTIS_ROLE_NAME = 'STELLANTIS';
 
-  // Roles autorisés pour faire l'ajout de commandes
-  const FACTORY_AUTH_ORDER = [
+  // Liste des roles usine du groupe Stellantis
+  const FACTORY_STELLANTIS_ROLES_NAMES = [
     'poissy',
     'rennes',
     'sochaux',
     'mulhouse',
-    'kenitra',
-    'administrator'
+    'kenitra'
   ];
 
   // Constante des Status de commande 

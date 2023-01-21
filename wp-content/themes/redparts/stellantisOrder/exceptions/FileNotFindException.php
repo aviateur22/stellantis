@@ -12,7 +12,7 @@ class FileNotFindException extends Exception {
 
   function setExceptionMessage() {
     if(empty($this->message)) {
-      $this->message = 'Fichier inconnu';
+      $this->message = 'Unknow file';
     }
   }
 }

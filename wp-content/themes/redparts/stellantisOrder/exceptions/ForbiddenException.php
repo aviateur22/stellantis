@@ -12,7 +12,7 @@ class ForbiddenException extends Exception {
 
   function setExceptionMessage() {
     if(empty($this->message)) {
-      $this->message = 'Action interdite';
+      $this->message = 'You are not authorize to execute this action';
     }
   }
 }

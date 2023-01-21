@@ -88,6 +88,7 @@ if(isset($filename)){
 		echo(json_encode($data));
 	}
 	catch(\Throwable $th) {
-		echo('error: '. $th->getMessage());
+		http_response_code($th->getCode());
+  	echo('Error ' . $th->getMessage());
 	}
 }

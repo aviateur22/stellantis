@@ -1,6 +1,7 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/User.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 
 class AuthorizeHelper {
 
@@ -22,20 +23,9 @@ class AuthorizeHelper {
    * @return bool
    */
   public function isUserAuthorizeForNewOrder(): bool {
-    // Roles autorisés pour faire une commande
-    $authorizeOrderRoles = StaticData::FACTORY_AUTH_ORDER; 
+    // Vérification si rôle utilisateur dans la liste des roles des usine de STELLANTIS
+    $userRoleFind = isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES);
     
-    // Role de l'utilisateur connecté
-    $userRoles = $this->user->getRoles();
-    
-    // Vérification des droits
-    foreach($authorizeOrderRoles as $orderRole) {
-      foreach($userRoles as $userRole) {
-        if( strtolower($orderRole) === strtolower($userRole)) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return $userRoleFind;
   }
 }

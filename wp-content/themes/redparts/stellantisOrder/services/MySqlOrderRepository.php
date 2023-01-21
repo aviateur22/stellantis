@@ -186,7 +186,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     $order = $this->findOne($id);
 
     if(empty($order)) {
-      throw new \Exception('Order Not Find');
+      throw new \Exception('Order Not Find', 400);
     }
 
     $update = $wpdb->query( $wpdb->prepare(
