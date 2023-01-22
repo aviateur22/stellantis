@@ -39,7 +39,9 @@ require_once('./stellantisOrder/utils/StaticData.php');
     
     $data['updateOrder'] =  [
       'colorClassName' => $colorClassName,
-      'colorClassToRemove' => $colorClassToRemove
+      'colorClassToRemove' => $colorClassToRemove,
+      'deliveredDate' =>date('d-M-Y', strtotime($updatedOrder->deliveredDate)),
+      'quantity' => $updatedOrder->quantity
     ];
 
     echo(json_encode($data));

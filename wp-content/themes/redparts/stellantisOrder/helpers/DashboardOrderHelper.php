@@ -1,11 +1,14 @@
 <?php
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlForecastRepository.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/Order.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/DashboardOrderModel.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/OrderEntity.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/CreateDashboardOrdersHelper.php');
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php');
+
+
 
 class DashboardHelper extends CreateDashboardOrdersHelper {
 
@@ -26,9 +29,10 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
    *
    * @param string|null $startDay
    * @param string $endDay
+   * @param array $filterEntries - données du filtre orderDashboard
    * @return void
    */
-  public function setDashboardOrders(string $startDay = null, string $endDay) {
+  public function setDashboardOrders(string $startDay = null, string $endDay, array $filterEntries = null) {
     // Formate les dates de début et de fin
     $this->formatDayInterval($startDay, $endDay);
 
@@ -36,7 +40,12 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
     $this->setIntervalDayArray($startDay, $endDay);
 
     // Récupéaration des commandes en base de donnée
-    $this->getOrders($startDay, $endDay);
+    if(empty($filterEntries)) {
+      $this->getOrders($startDay, $endDay);
+    } else {
+      $this->getFilterOrders($startDay, $endDay, $filterEntries);
+    }
+    
 
     // Récupération
     $this->formatDashboardOrders();    
@@ -78,6 +87,53 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
 
     // Date de fin
     $endDay = date('Y-m-d 00:00:00', strtotime('+'.(StaticData::DASHBOARD_INTERVAL_DAY - 1).' day', strtotime($startDay)));
+  }
+
+  /**
+   * Récupération des commandes filtrées
+   *
+   * @param string|null $startDay
+   * @param string $endDay
+   * @param string $partNumber
+   * @return void
+   */
+  private function getfilterOrders(string $startDay = null, string $endDay, array $filterEntries) {    
+    // 
+    $partNumberInArray = $this->stringToArray($filterEntries['partNumber'], ',');
+    
+    // Données du filtre pour la requete en Base de données
+    $prepareFilterEntries = [
+      'partNumber' => $partNumberInArray,
+    ];
+
+    $orders = $this->orderRepository->findOrdersWithFilterPartNumber($startDay, $endDay, $prepareFilterEntries);
+    
+    foreach($orders as $order) {
+      $this->orders[] = $this->orderEntity($order);
+    }  
+  }
+
+  /**
+   * Renvoie une chaine de string en array
+   *
+   * @param string $stringFormat
+   * @param string $separator
+   * @return array
+   */
+  private function stringToArray(string $stringFormat, string $separator): array {
+    // Néttoyage des données text
+    $stringFormat = trim($stringFormat, $separator);
+    $stringFormat = trim($stringFormat);
+
+    // Transforme les données du filtre en Array
+    $arrayFormat = explode($separator, $stringFormat);
+
+    // Néttoyage de chaque élément du tableau
+    for($i = 0; $i < count($arrayFormat); $i++) {
+      $arrayFormat[$i] = trim($arrayFormat[$i]);
+    }
+
+    return $arrayFormat;
   }
   
   /**

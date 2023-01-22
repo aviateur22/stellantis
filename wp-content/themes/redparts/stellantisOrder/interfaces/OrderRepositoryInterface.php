@@ -103,4 +103,14 @@ interface OrderRepositoryInterface {
    * @return array
    */
   function findOrdersOnIntervalDay(string $daySart, string $dayEnd): array;
+
+  /**
+   * Recherche toutes les commandes filtré par date + partNumber
+   *
+   * @param string $daySart
+   * @param string $dayEnd
+   * @param string $partnumber
+   * @return array
+   */
+  function findOrdersWithFilterPartNumber(string $dayStart, string $dayEnd, array $partNumberArray): array;
 }

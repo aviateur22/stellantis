@@ -3,18 +3,29 @@ require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/helpers/DashboardOrderHelper.php');
 require_once('./stellantisOrder/html/DisplayDashboardOrder.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
+require_once('./stellantisOrder/utils/validators.php');
 error_reporting(E_ALL);
 
 
 // Initilisation
 try {
+  $startDate = $_POST['startDate'];
+
+  if(!empty($startDate)) {
+    if(!isDateValid($startDate)){
+      throw new \Exception('Unvalid date and time', 400);
+    }    
+  }
+
   $userHelper = new UserHelper();
   $user = $userHelper->getUser();
   
-  $orderRepository = new MySqlOrderRepository();
+  $orderRepository = new MySqlOrderRepository($user);
   $dashboardHelper = new DashboardHelper($orderRepository);
   
-  $test = $dashboardHelper->setDashboardOrders(null, '2023-02-25');
+  // Initilasation de la date de début d'affichage
+  $date = !empty($startDate) ? $startDate : null;
+  $setDashboard = $dashboardHelper->setDashboardOrders($date, '2023-02-25');
   
   // Récupération des données
   $dashboardOrders = $dashboardHelper->getDashboardOrders();

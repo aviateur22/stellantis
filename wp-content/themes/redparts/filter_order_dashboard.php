@@ -14,13 +14,28 @@ if(empty($startDate)) {
   throw new \Exception('Update order impossible: Missing required order informations', 400);
 }
 
+// Vérification format de la date
+if(!isDateValid($startDate)){
+  throw new \Exception('Unvalid date and time', 400);
+}
+
+// Données provenant du filtre de orderDashboard
+$filterEntries = [];
+
+// Ajout des PartNumber dans le tableau des filtres
+if(!empty($partNumber)) {
+  $filterEntries['partNumber'] = $partNumber;
+}
+
 $userHelper = new UserHelper();
 $user = $userHelper->getUser();
 
-$orderRepository = new MySqlOrderRepository();
+$orderRepository = new MySqlOrderRepository($user);
 $dashboardHelper = new DashboardHelper($orderRepository);
 
-$test = $dashboardHelper->setDashboardOrders($startDate, '2023-02-25');
+
+
+$setDashboard = $dashboardHelper->setDashboardOrders($startDate, '2023-02-25', $filterEntries);
 
 // Récupération des données
 $dashboardOrders = $dashboardHelper->getDashboardOrders();

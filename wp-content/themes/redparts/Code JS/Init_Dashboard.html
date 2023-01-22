@@ -204,26 +204,15 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	/**
 	 * Mise a jour de la couleur après un update de commande
 	 * 
-	 * @params {object} colorData - contient les données de couelur
+	 * @params {object} updatedOrder - contient les données de couelur
 	 */
-	function updateOrderColor(colorData) {
+	function updateOrderColor(updatedOrder) {
 		// Affichage Flash Message
 		displayFlashMessage('Succes de la mise à jour de votre commande');
 
 		if(!orderElement) {
 			return;
 		}
-
-		// Récupération HTML enfant ayant la couleur
-		const divOrderElement = orderElement.firstChild;
-
-		// Suppression des class de couleur
-		for(classColor of colorData.colorClassToRemove) {
-			divOrderElement.classList.remove(classColor)
-		}
-
-		// Ajoutr de la nouvelle class
-		divOrderElement.classList.add(colorData.colorClassName);
 
 		// Masque spinner chargement
 		if(spinnerLoaderElement) {
@@ -234,6 +223,16 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		if(updateOrderElement) {
 			updateOrderElement.hidden = true;			
 		}
+
+		reloadDashboard();
+	}
+
+	function reloadDashboard(updatedOrder) {
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
+		const startDate = document.getElementById('startDate').value;
+		var _variables = '&startDate=' + encodeURIComponent(startDate);
+		mode = 2; //JSON
+		AppelScriptPHP(_lien_scriptPHP, _variables);
 	}
 
 	function $_GET(param) {

@@ -83,5 +83,4 @@ function findColorOrderDisplay(string $wipId): string {
       return StaticData::CLASS_NAME_ORDERS_COLORS['BLOCKED_CLASS_NAME'];
     break;
   }
-
 }

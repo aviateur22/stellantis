@@ -3,6 +3,8 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/mo
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/exceptions/InvalidFormatException.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/User.php';
 require_once('/home/mdwfrkglvc/www/wp-config.php');
 
 /**
@@ -10,6 +12,21 @@ require_once('/home/mdwfrkglvc/www/wp-config.php');
  */
 class MySqlOrderRepository implements OrderRepositoryInterface {
 
+  /**
+   * utilisateur connecté
+   *
+   * @var User
+   */
+  protected User $user;
+
+  function __construct(User $user = null)
+  {
+    if($user) {
+      $this->user = $user;
+    }
+    
+    
+  }
   /**
    * Sauvegarde de plusieurs commandes
    *
@@ -147,8 +164,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $orderId
    * @return array - Liste des commandes
    */
-  function findAllByOrderId(string $orderId): array
-  { 
+  function findAllByOrderId(string $orderId): array { 
     global $wpdb;
     $query = "SELECT * FROM orders WHERE orderId = '" .$orderId."'";
     $findOrders = $wpdb->get_results($query, ARRAY_A);
@@ -189,6 +205,15 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
       throw new \Exception('Order Not Find', 400);
     }
 
+    //
+    $order = $order[0];
+
+    // Vérification si pas de conflit avec d'autre commande deja existante
+    $duplicatedOrder = $this->findOneDuplicatedOrder($order[0]->partNumber, $order[0]->deliveredDate);
+    if(empty($duplicatedOrder)) {
+      throw new \Exception('Order alreaOrder Not Find', 400);
+    }
+
     $update = $wpdb->query( $wpdb->prepare(
       "UPDATE orders SET quantity=%s, deliveredDate=%s, wipId = %s  WHERE id = %s",
       $quantity, $deliveredDate, $status, $id
@@ -220,8 +245,65 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    */
   function findOrdersOnIntervalDay(string $dayStart, string $dayEnd): array {
     global $wpdb;
-    $query = "SELECT * FROM orders WHERE wipId <> '".StaticData::ORDER_STATUS['PREPARATION']."' AND  deliveredDate >= '".$dayStart."' AND deliveredDate <= '".$dayEnd."'";
-    $findOrder = $wpdb->get_results($query, ARRAY_A);
-    return $findOrder;
+
+    // Filtre les commandes pour les usines Stellantis   
+    if(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
+      $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s",
+      StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd, $this->user->getFirstRole()), ARRAY_A);
+      return $findOrders;      
+    }
+
+    // Autre personne de connectée
+    $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s",
+    StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd), ARRAY_A);
+    return $findOrders;
   }
+
+  /**
+   * Recherche toutes les commandes filtré par date + partNumber
+   *
+   * @param string $daySart
+   * @param string $dayEnd
+   * @param array $filterEntries
+   * @return array
+   */
+  function findOrdersWithFilterPartNumber(string $dayStart, string $dayEnd, array $filterEntries): array {
+    global $wpdb;
+
+    // Recherche des PartNumbers
+    $findOrderInPartNumber = [];
+    if($filterEntries['partNumber']) {
+      $partNumberQueryPlaceHolder = $this->getPlaceholder($filterEntries['partNumber'], '%s');
+      $findOrderInPartNumber = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE partNumber IN ($partNumberQueryPlaceHolder)",$filterEntries['partNumber']), ARRAY_A);
+    }
+
+    // Recherche des Orders dans l'interval de temps
+    $findOrderInIntervallDay = $this->findOrdersOnIntervalDay($dayStart, $dayEnd);
+
+    // Commandes validant les différents filtres
+    $findOrders = [];
+
+    foreach($findOrderInPartNumber as $orderInPartNumber) {
+      foreach($findOrderInIntervallDay as $orderInIntervalDay) {
+        if($orderInPartNumber === $orderInIntervalDay) {
+          $findOrders[] = $orderInPartNumber;
+        }
+      }
+    }
+    return $findOrders;
+  }
+
+  /**
+   * Placeholder statment pour une requete 
+   *
+   * @param array $queryArray
+   * @param string $placeholder
+   * @return string
+   */
+  private function getPlaceholder(array $queryArray, string $placeholder): string {
+    $queryArrayCount = count($queryArray);
+    $queryStringPlaceHolder = array_fill(0, $queryArrayCount, $placeholder);
+    return implode(',', $queryStringPlaceHolder);
+  }
+
 }

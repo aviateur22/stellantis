@@ -70,7 +70,7 @@ class DisplayDashboardOrder {
      $html .= "<tbody>";
 
     // Parcours des dashboardOrders
-      
+      $row = 1;
       foreach($this->dashboardOrders as $order) {
         if($order instanceof DashboardOrderModel) {
           $html .= "<tr>";
@@ -81,13 +81,13 @@ class DisplayDashboardOrder {
             $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
             foreach($order->getQuantitiesByDate() as $quantity) {
               if(empty($quantity['order']['quantity'])) {
-                $html .= "<td class='td--empty'>";
+                $html .= "<td data-date=".$quantity['day']." data-row=".$row." class='td--empty'>";
                   $html .= "<div>";
                     $html .= '-';
                   $html .= "</div>";
                 $html .= "</td>";
               } else {
-                $html .= "<td onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
+                $html .= "<td data-date=".$quantity['day']." data-row=".$row." onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
                   $html .= "<div class='td--border ".findColorOrderDisplay((int)$quantity['order']['wipId'])."'>";
                     $html .= $quantity['order']['quantity'];
                   $html .= "</div>";
@@ -95,7 +95,8 @@ class DisplayDashboardOrder {
               }             
             }
           $html .= "</tr>";
-        }          
+        }
+        $row++;       
       }     
     
 
@@ -238,7 +239,7 @@ class DisplayDashboardOrder {
       return '
       <div class="group__control">
         <label for="status">Order Status</label>
-        <select id="displayStatus" name="status" id="status" required disabled>
+        <select id="displayStatus" name="status" id="status" required>
             <option value="">--Please choose an option--</option>
             <option value='.StaticData::ORDER_STATUS['PREFLIGHT_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['PREFLIGHT_MI'].'</option>
             <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_MI'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['ON_PROGRESS_MI'].'</option>
