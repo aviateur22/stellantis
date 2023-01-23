@@ -11,6 +11,7 @@ require_once('./stellantisOrder/helpers/DeleteHelper.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
 require_once('./stellantisOrder/helpers/AuthorizeHelper.php');
 require_once('./stellantisOrder/exceptions/ForbiddenException.php');
+require_once('./stellantisOrder/services/MySqlModelRepository.php');
 
 require('/home/mdwfrkglvc/www/wp-config.php');
 
@@ -43,7 +44,8 @@ if(isset($filename)){
 
 		// Implementation des modèles
 		$orderRepository = new MySqlOrderRepository();
-		$orderHelper = new OrderHelper($orderRepository);
+		$modelRepository = new MySqlModelRepository();
+		$orderHelper = new OrderHelper($orderRepository, $modelRepository);
 		$orderSource = new OrderFromExcelFile($filename, $orderHelper, $user);		
 		$displayOrder = new DisplayOrder();
 		$deleteHelper = new DeleteHelper($orderRepository);

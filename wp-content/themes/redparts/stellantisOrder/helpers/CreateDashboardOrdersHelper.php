@@ -74,16 +74,7 @@ class CreateDashboardOrdersHelper {
    * @return DashboardOrderModel
    */
   protected function createDashboardOrderModel(OrderEntity $order, array $quantityByDateArray): DashboardOrderModel {
-    return new DashboardOrderModel(      
-      $order->getCoverCode(),
-      $order->getModel(),
-      $order->getFamily(),      
-      $order->getPartNumber(),
-      $order->getCoverLink(),      
-      $order->getCountryCode(),
-      $order->getCountryName(),      
-      $quantityByDateArray
-    );
+    return new DashboardOrderModel($order, $quantityByDateArray);
   }
 
   /**

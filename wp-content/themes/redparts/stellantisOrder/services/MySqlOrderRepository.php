@@ -54,7 +54,9 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'model'=>$order->getModel(),
           'isValid' => $order->getIsValid(),
           'brand' =>$order->getBrand(),
-          'wipId' => $order->getWipId()
+          'wipId' => $order->getWipId(),
+          'version' => $order->getVersion(),
+          'year' => $order->getYear(),
         ));       
       } else {
         throw new InvalidFormatException();

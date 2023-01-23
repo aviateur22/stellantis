@@ -146,7 +146,9 @@ class Order {
     string $countryName,
     int $wipId,
     bool $isValid,
-    string $brand
+    string $brand,
+    string $version,
+    int $year
   ) {
     $this->coverCode = $coverCode;
     $this->model = $model;
@@ -164,6 +166,8 @@ class Order {
     $this->wipId = $wipId;
     $this->isValid = $isValid;
     $this->brand = $brand;
+    $this->version = $version;
+    $this->year = $year;
   }
   #Region Getter
 

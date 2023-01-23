@@ -8,8 +8,8 @@ interface ModelRepositoryInterface {
    * Renvoi les données sur un model
    * 
    * @param string $codeName
-   * @return string
+   * @return array - données du model
    */
-  function findOneByCode(string $codeName): string;
+  function findOneByCode(string $codeName): array;
 
 }

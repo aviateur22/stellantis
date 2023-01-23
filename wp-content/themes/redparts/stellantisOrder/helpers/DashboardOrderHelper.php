@@ -175,7 +175,9 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
       $order['countryName'],
       $order['wipId'],
       $order['isValid'],
-      $order['brand']
+      $order['brand'],
+      $order['version'],
+      $order['year']
     );
   }
   

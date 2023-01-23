@@ -112,7 +112,7 @@ class FtpTransfert implements OrderTransferInterface {
     
    // Récupéaration File Extension
     $fileExtension = $this->getFileInformation($formatedOrder->getOrderFilePath());
-    var_dump(self::RECEPIENT_INFORMATION['DESTINATION_FILE_PATH'].$formatedOrder->getFileName().'.'. $fileExtension);
+    
     // Transfert du fichier
     ftp_put(
       $ftpConnect,

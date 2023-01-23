@@ -77,23 +77,30 @@ class DisplayDashboardOrder {
         foreach($this->intervalDays as $day) {          
           $html .= "<th>" . $day['date'] . "</th>";
         }
-    $html .= "<tr>";  
-    $html .= "<thead>";
+    $html .= "</tr>";  
+    $html .= "</thead>";
         
      // Body
      $html .= "<tbody>";
 
     // Parcours des dashboardOrders
       $row = 1;
-      foreach($this->dashboardOrders as $order) {
-        if($order instanceof DashboardOrderModel) {
+      for($i = 0; $i < count($this->dashboardOrders); $i++) {
+        if($this->dashboardOrders[$i] instanceof DashboardOrderModel) {
+          if($i === 0) {
+            $html .= "<tr style='background: yellow;'>";
+            $html .= "<td colspan='5'>";
+            $html .= "<p>Donnée de la voiture</p>";
+            $html .= "</td>";
+            $html .= "</tr>";
+          }          
           $html .= "<tr>";
-            $html .= $this->createHtmlForOrderProperty($order->getFamily());
-            $html .= $this->createHtmlForOrderProperty($order->getCountryCode());
-            $html .= $this->createHtmlForOrderProperty($order->getCountryName());
-            $html .= $this->createHtmlForOrderProperty($order->getCoverCode());
-            $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
-            foreach($order->getQuantitiesByDate() as $quantity) {
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getFamily());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryCode());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryName());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCoverCode());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getPartNumber());
+            foreach($this->dashboardOrders[$i]->getQuantitiesByDate() as $quantity) {
               if(empty($quantity['order']['quantity'])) {
                 $html .= "<td data-date=".$quantity['day']." data-row=".$row." class='td--empty'>";
                   $html .= "<div>";
@@ -110,8 +117,35 @@ class DisplayDashboardOrder {
             }
           $html .= "</tr>";
         }
-        $row++;       
-      }     
+        $row++;
+      }
+      // foreach($this->dashboardOrders as $order) {
+      //   if($order instanceof DashboardOrderModel) {
+      //     $html .= "<tr>";
+      //       $html .= $this->createHtmlForOrderProperty($order->getFamily(), true);
+      //       $html .= $this->createHtmlForOrderProperty($order->getCountryCode());
+      //       $html .= $this->createHtmlForOrderProperty($order->getCountryName());
+      //       $html .= $this->createHtmlForOrderProperty($order->getCoverCode());
+      //       $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
+      //       foreach($order->getQuantitiesByDate() as $quantity) {
+      //         if(empty($quantity['order']['quantity'])) {
+      //           $html .= "<td data-date=".$quantity['day']." data-row=".$row." class='td--empty'>";
+      //             $html .= "<div>";
+      //               $html .= '-';
+      //             $html .= "</div>";
+      //           $html .= "</td>";
+      //         } else {
+      //           $html .= "<td data-date=".$quantity['day']." data-row=".$row." onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
+      //             $html .= "<div class='td--border ".$this->displayOrderColorHelper->checkUserRole((int)$quantity['order']['wipId'])."'>";
+      //               $html .= $quantity['order']['quantity'];
+      //             $html .= "</div>";
+      //           $html .= "</td>";
+      //         }             
+      //       }
+      //     $html .= "</tr>";
+      //   }
+      //   $row++;       
+      // }     
     
 
     // Fin HTML
@@ -131,9 +165,11 @@ class DisplayDashboardOrder {
    * @param string $orderProperty - La propriété a mettre au format HTML
    * @return string 
    */
-  function createHtmlForOrderProperty(string $orderProperty): string {
+  function createHtmlForOrderProperty(string $orderProperty, bool $addCarInformation = false): string {
     $htmlOrder = '<td>';
-    $htmlOrder .=  $orderProperty;
+    $htmlOrder .=    '<div>';
+    $htmlOrder .=       $orderProperty;
+    $htmlOrder .=     '</div>';
     $htmlOrder .= '</td>';
 
     return $htmlOrder;
