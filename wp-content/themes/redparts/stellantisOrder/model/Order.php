@@ -71,7 +71,7 @@ class Order {
    *
    * @var string
    */
-  protected string $wip;
+  protected int $wipId;
 
   /**
    * Site de destination
@@ -93,6 +93,13 @@ class Order {
    * @var string
    */
   protected string $family;
+
+  /**
+   * Marque commande
+   *
+   * @var string
+   */
+  protected string $brand;
 
   /**
    * Modele de voiture
@@ -123,8 +130,9 @@ class Order {
     string $orderDate,
     string $countryCode,
     string $countryName,
-    string $wip,
-    bool $isValid
+    int $wipId,
+    bool $isValid,
+    string $brand
   ) {
     $this->coverCode = $coverCode;
     $this->model = $model;
@@ -139,8 +147,9 @@ class Order {
     $this->orderDate = $orderDate;
     $this->countryCode = $countryCode;
     $this->countryName = $countryName;
-    $this->wip = $wip;
+    $this->wipId = $wipId;
     $this->isValid = $isValid;
+    $this->brand = $brand;
   }
   #Region Getter
 
@@ -248,8 +257,8 @@ class Order {
      *
      * @return string
      */
-    function getWip(): string {
-      return $this->wip;
+    function getWipId(): int {
+      return $this->wipId;
     }
 
     /**
@@ -261,8 +270,22 @@ class Order {
       return $this->coverLink;
     }
 
+    /**
+     * Renvoie isValid
+     *
+     * @return boolean
+     */
     function getIsValid(): bool {
       return $this->isValid;
+    }
+
+    /**
+     * Renvoie la marque
+     *
+     * @return string
+     */
+    function getBrand(): string {
+      return $this->brand;
     }
 
   #endRegion

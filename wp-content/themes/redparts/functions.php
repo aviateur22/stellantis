@@ -618,13 +618,6 @@ if ( ! function_exists( 'redparts' ) ) {
 ************************************** CUSTOM CODE ******************************
 ***********************************************************************************/
 
-// Constante des Statud de commande 
-const ORDER_STATUS = [
-	'PREPARATION' => 'PREPARATION',
-	'PREFLIGHT' => 'PREFLIGHT',
-	'READY' => 'READY',
-];
-
 //////////////////// GLOBAL VARIABLE /////////////////////////
 $tabColorStatut = array();
 $tabColorStatut['PREFLIGHT']='#FFFFFF';

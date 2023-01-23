@@ -1,12 +1,40 @@
 <div id='popup'></div>
 <script>
+
+	// Update spinner
+	let spinnerLoaderElement = null;
+
+	// Modal update commande
+	let updateOrderElement = null;
+
+	//Form contenant le formulaire de soumission d'un update
+	let updateOrderFormElement = null;
+
+	// Form contenant les filtres d'affichage
+	let filterOrderFormElement = null;
+
+	// Message Element
+	let flashMessageElement = null
+
+	// Select Date on filter
+	let selectDayFilterElement = null;
+
+	// Commande cliquée pour modification
+	let orderElement = null;
+
+	// Commmande récupérer en base de données
+	let findOrderInformation = {
+
+	}
+
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
  filtreText += "<h2>Filters</h2>";
-filtreText += "<p style='text-align:center'><label for='end'>End date</label>";
-	filtreText += '<input style="margin-left:10px;" type="date" id="end" name="end" value="2023-12-31" min="2022-01-01" max="2050-12-31"></p>';
+ filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>"; 
+filtreText += "<form id='filterOrderForm'>";
+	filtreText += '<input style="margin-left:10px;" type="date" id="startDate" name="startDate" min="2022-01-01" max="2050-12-31"></p>';
 	filtreText += "<table><tr><td><label for='family'>Family</label>";
-	filtreText += '<select style="display:block" id="family" name="family" multiple></td>';
+	filtreText += '<select style="display:block" id="family" name="family" multiple disabled></td>';
 filtreText += "<td><label for='countryCode'>Country Code</label>";
 filtreText += '<select style="display:block" id="countryCode" name="countryCode" multiple></td>';
 filtreText += "<td><label for='countryName'>Country Name</label>";
@@ -14,8 +42,272 @@ filtreText += '<select style="display:block" id="countryName" name="countryName"
 filtreText += "<td><label for='codePochette'>Code Pochette</label>";
 filtreText += '<select style="display:block" id="codePochette" name="codePochette" multiple></td>';
 	filtreText += "<td><label for='partNumber'>Part Number</label>";
-	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" value="ALL"></td>';
+	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" placeHolder="23AMOKKDEXX32D3,23AMOKKDEXX32A5"></td>';
 	filtreText += '</tr></table>';
+	filtreText += '<div class="button__container">'
+	filtreText += '<input style="width:120px; height: 50px; border-radius:5px; padding: 10px; margin: 10px;" type="submit" value="Refresh"/>'
+	filtreText += '<input style="width:120px; height: 50px; background: white; border-radius:5px; color: red; border: 0.5px solid red; padding: 10px; margin: 10px;" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'	
+	filtreText += '</div>'
+	filtreText += "</form>";
+
+
+	/**
+	 * Masque la modal update Order
+	 */
+	function hideUpdateOrder() {
+		if(updateOrderElement) {
+			updateOrderElement.hidden = true;
+		}		
+	}
+
+	/**
+	 * Affichage modal updateOrder element
+	 */
+	function displayUpdateOrderElement(element) {
+		// Récupération HtmlElement
+		orderElement = element;
+
+		// Affichage modal
+		if(updateOrderElement) {
+			updateOrderElement.hidden = false;			
+		}
+
+		// Affichage spinner chargement
+		if(spinnerLoaderElement) {
+				spinnerLoaderElement.hidden = false;
+		}
+
+		// Récupération id de la commande
+		const orderId = element.dataset.orderId;
+
+		if(!orderId) {
+			return alert('impossible de récupérer la commande');
+		}
+
+		// Recherche de la commande en base de données
+		findOrder(orderId);
+	}
+
+	/**
+	 * Soumission formulaire
+	 * @params {string} orderId
+	 */
+	function findOrder(orderId){
+		mode === 2;
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_order_information.php";
+		let _variables = 'orderid=' + encodeURIComponent(orderId);
+		AppelScriptPHP(_lien_scriptPHP, _variables);
+	}
+
+	/**
+	 * Soumission formulaire
+	 * @params {event} event
+	 */
+	function updateOrder(event) {
+		mode === 2;
+		event.preventDefault();
+
+		// Affichage spinner chargement
+		if(spinnerLoaderElement) {
+				spinnerLoaderElement.hidden = false;
+		}
+
+		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));		
+		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/update_order_on_dashboard.php";
+		AppelScriptPHP(_lien_scriptPHP, formData);
+	}
+
+	/**
+	 * Filtre les commandes
+	 * @params {event} event
+	 * @params {bool} clearFilter
+	 */
+	function filterOrder(event, clearFilter = false) {
+		mode === 2;		
+		event.preventDefault();
+
+		// Reset du filtre
+		if(clearFilter) {			
+			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
+			AppelScriptPHP(_lien_scriptPHP, null);
+
+			// Reset date du filtre
+			selectDayFilterElement = document.getElementById('startDate');
+
+			// Reset des PartNumber
+			const filterPartNumberElement = document.getElementById('partNumber');
+			filterPartNumberElement.value = '';
+
+			if(selectDayFilterElement) {
+				// date du jour
+				selectDayFilterElement.valueAsDate = new Date()
+			}
+		} else {		
+			const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
+			console.log(formData);
+			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
+			AppelScriptPHP(_lien_scriptPHP, formData);
+		}		
+	}
+
+	/**
+	 * Mise a jour de la modal updateOrder avec les données de la base de données
+	 * 
+	 * @params {object} findOrder
+	 */
+	function updateOrderModalElement(findOrder) {
+		
+		// Données commandes
+		const orderInformation = findOrder.order;
+		const processedWith = findOrder.processedWith;
+		const orderStatusLabel = findOrder.orderStatus;
+		const orderStatusClassNamecolor = findOrder.orderColorClassName;
+
+		// Récupération HTML element
+		const partNumberElement = document.getElementById('displayPartNumber');
+		const quantityElement = document.getElementById('displayQuantity');
+		const deliveredDateElement = document.getElementById('displayDeliveredDate');
+		const statusElement = document.getElementById('displayStatus');
+		const idElement = document.getElementById('id');
+		const processedWithElement = document.getElementById('processedWith');
+		const coverCodeElement = document.getElementById('coverCode');
+		const brandElement = document.getElementById('brand');
+		const coverLinkElement = document.getElementById('coverLink');
+		const statusLabelElement = document.getElementById('statusLabel');
+
+		// Mise a jour de la vue
+		if(partNumberElement && quantityElement && deliveredDateElement && statusElement && 
+			processedWithElement && coverCodeElement && coverLinkElement && brandElement && statusLabelElement) {
+			
+			// Societé traitant la commande
+			processedWithElement.innerText = processedWith;
+
+			// code couverture
+			coverCodeElement.innerText = orderInformation.coverCode;
+
+			// Marque 
+			brandElement.innerText = orderInformation.brand;
+
+			// lien documentation PDF
+			coverLinkElement.innerText = orderInformation.coverLink;
+
+			// Id commande
+			idElement.value = orderInformation.id;
+
+			// Partnumber
+			partNumberElement.innerText = orderInformation.partNumber;
+
+			// quantity
+			quantityElement.value = orderInformation.quantity;
+
+			// Date de livraiosn
+			deliveredDateElement.value = orderInformation.deliveredDate;
+
+			// Select Option
+			statusElement.value = orderInformation.wipId.toLowerCase();
+
+			// Statut actuelle de la commande
+			statusLabelElement.innerText = orderStatusLabel;
+
+			// Suppression ancienne class
+			statusLabelElement.className = '';
+
+			// Ajout nouvelle classe
+			statusLabelElement.classList.add(orderStatusClassNamecolor);
+		}	
+	}
+
+	/**
+	 * Transforme les données en format urlEncoded
+	 * @params {object} datas - Données a passer au format urlEnconded
+	 */
+	function urlEncoded(datas) {
+		let formBody = [];
+		for (let property in datas) {
+			let encodedKey = encodeURIComponent(property);
+			let encodedValue = encodeURIComponent(datas[property]);
+			formBody.push(encodedKey + "=" + encodedValue);
+		}
+
+		return formBody.join("&");
+	}
+
+	/**
+	 * Affichage flashMessage
+	 * 
+	 * @params {text} message - message a afficher
+	 * @params {bool} error - Flash error
+	 */
+	function displayFlashMessage(message, error) {
+		if(flashMessageElement) {
+
+
+			// Affichage message
+			flashMessageElement.classList.add('flash--fade');
+
+			// Message a afficher
+			document.getElementById('flashMessageText').innerText = message;
+
+			// Masque le message
+			setTimeout(()=>{
+				flashMessageElement.classList.remove('flash--fade');
+			}, 5000)
+		}
+	}
+
+	/**
+	 * Mise a jour de l'affichage des commandes apres modification
+	 * 
+	 * @params {object} updatedOrder - contient les données de couelur
+	 */
+	function updateDisplayOrder(updatedOrder) {
+		// Affichage Flash Message
+		displayFlashMessage('Succes de la mise à jour de votre commande');
+
+		if(!orderElement) {
+			return;
+		}
+
+		// Masque spinner chargement
+		if(spinnerLoaderElement) {
+			spinnerLoaderElement.hidden = true;
+		}
+
+		// Masque la modal update Order
+		if(updateOrderElement) {
+			updateOrderElement.hidden = true;			
+		}
+
+		reloadDashboard();
+	}
+
+	/**
+	 *  Rechargement du dashboard
+	 */
+	function reloadDashboard(updatedOrder) {
+		// Vérification si PartNumber présent dans le filtre
+		const filterPartNumberElement = document.getElementById('partNumber');
+
+		// Lien script PHP
+		let _lien_scriptPHP = '';
+
+		// Retour requete 
+		mode = 2;
+
+		if(filterPartNumberElement.value.length === 0) {
+			
+			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
+			const startDate = document.getElementById('startDate').value;
+			var _variables = '&startDate=' + encodeURIComponent(startDate);			
+			AppelScriptPHP(_lien_scriptPHP, _variables);
+		} else {
+			filterForm = document.getElementById('filterOrderForm');
+			const formData = urlEncoded(Object.fromEntries(new FormData(filterForm)));			
+			console.log(formData);
+			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
+			AppelScriptPHP(_lien_scriptPHP, formData);
+		}
+	}
 
 	function $_GET(param) {
 		var vars = {};
@@ -43,7 +335,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	var mode = 1;
 	var type;
 
-	window.onload=function(){
+	window.onload=function(){	
 
 		/////////////////////////// EVENT /////////////////////////////////////////////
 		document.getElementById("message").addEventListener('input', resetMessage);
@@ -89,6 +381,13 @@ gestionAppel();
 
 		/////////////////////////////////// INIT //////////////////////////////////////////
 		document.getElementById("filter-div").innerHTML = filtreText;
+
+		// Select day on filter
+		selectDayFilterElement = document.getElementById('startDate');
+		if(selectDayFilterElement) {
+			// date du jour
+			selectDayFilterElement.valueAsDate = new Date()
+		}
 
 		type = "1";
 		//id_lot= $_GET('id_lot');
@@ -174,7 +473,7 @@ for(x=1;x<5000;x++)
 		chargement();
 		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
 
-		const dateFin = document.getElementById('end').value;
+		const dateFin = document.getElementById('startDate').value;
 		// const appareil = document.getElementById('appareil');
 		//
 		// var sappareil = "";
@@ -205,7 +504,6 @@ for(x=1;x<5000;x++)
 
 
 		//Afficher résultats par défaut
-
 		httpRequest.onreadystatechange = alertContents;
 		httpRequest.open('POST', lien_scriptPHP);
 		httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -246,7 +544,7 @@ for(x=1;x<5000;x++)
 				}
 				if(mode>2){
 					data = httpRequest.responseText;
-					if(data.substring(0,6) == 'Erreur')
+					if(data.substring(0,5) == 'Error')
 					{
 
 						alert(data);
@@ -266,7 +564,21 @@ for(x=1;x<5000;x++)
 				}
 			}
 			else {
-				alert('Il y a eu une erreur. Merci de nous contacter.');
+
+				// Masque spinner chargement
+				if(spinnerLoaderElement) {
+						spinnerLoaderElement.hidden = true;
+				}
+
+				// Récupération du message d'erreur 
+				data = httpRequest.responseText;
+
+				if(!data) {
+					return alert('Il y a eu une erreur. Merci de nous contacter.');
+				}
+
+				alert(data);
+				
 			}
 		}
 	}
@@ -283,8 +595,66 @@ for(x=1;x<5000;x++)
 	function majResult(data)
 	{
 		//MAJ Titre et WIP
+		if(data['orders']) {
+			document.getElementById('resultat-div').innerHTML = data['orders'];
 
-		document.getElementById('resultat-div').innerHTML = data['orders'];
+			// Modal update commande
+			updateOrderElement = document.getElementById('updateOrder');			
+			
+			// Masque la modal de modification d'une commande
+			if(updateOrderElement) {
+				updateOrderElement.hidden = true;
+			}
+		}
+
+		// Résulat d'une recherche de commande
+		if(data['findOrder']) {
+
+			// Mise a jour de l'affichage
+			updateOrderModalElement(data['findOrder']);			
+			
+		}
+
+		// Resultat d'un update d'une commande
+		if(data['updateOrder']) {
+			const result = data['updateOrder'];	
+
+			// Modification affichage des commandes
+			if(result) {
+				updateDisplayOrder(result);				
+			}			
+		}		
+
+		// Loader de chargement
+		spinnerLoaderElement = document.getElementById('loader');
+
+		// Modal update commande
+		updateOrderElement = document.getElementById('updateOrder');
+
+		// Formulaire de soumission
+		updateOrderFormElement = document.getElementById('updateOrderForm');
+
+		// Formulaire de filtre
+		filterOrderFormElement = document.getElementById('filterOrderForm');
+
+		// Flash Message
+		flashMessageElement = document.getElementById('flashMessage');
+
+		if(updateOrderFormElement) {
+			// Ajout soumission formulaire
+			updateOrderFormElement.addEventListener('submit', updateOrder)
+		}
+
+		if(filterOrderFormElement) {
+			// Ajout soumission formulaire de filtre
+			filterOrderFormElement.addEventListener('submit', filterOrder);
+		}
+
+		// Masque la fenetre de chargement de la modal de modification
+		if(spinnerLoaderElement) {
+			spinnerLoaderElement.hidden = true;
+		}
+
 
 		// for(x=0;x<2;x++)
 		// {

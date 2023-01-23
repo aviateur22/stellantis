@@ -293,7 +293,14 @@ function orderConfirm(btnElement)
 				}
 			}
 			else {
-				alert('There in an error. Please contact support.');
+				// Récupération du message d'erreur 
+				data = httpRequest.responseText;
+
+				if(!data) {
+					return alert('Il y a eu une erreur. Merci de nous contacter.');
+				}
+
+				alert(data);
 			}
 		}
 	}

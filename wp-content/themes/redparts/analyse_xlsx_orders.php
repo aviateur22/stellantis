@@ -8,6 +8,9 @@ require_once('./stellantisOrder/exceptions/FileNotFindException.php');
 require_once('./stellantisOrder/helpers/OrderHelper.php');
 require_once('./stellantisOrder/html/DisplayOrder.php');
 require_once('./stellantisOrder/helpers/DeleteHelper.php');
+require_once('./stellantisOrder/helpers/UserHelper.php');
+require_once('./stellantisOrder/helpers/AuthorizeHelper.php');
+require_once('./stellantisOrder/exceptions/ForbiddenException.php');
 
 require('/home/mdwfrkglvc/www/wp-config.php');
 
@@ -26,10 +29,22 @@ if(isset($filename)){
 			throw new FileNotFindException();
 		}	
 
+		// Utilisateur
+		$userHelper = new UserHelper();
+  	$user = $userHelper->getUser();
+
+		// Authorize
+		$authorize = new AuthorizeHelper($user);
+		$isAuthorizeForAction = $authorize->isUserAuthorizeForNewOrder();
+
+		if(!$isAuthorizeForAction) {
+			throw new ForbiddenException();
+		}
+
 		// Implementation des modèles
 		$orderRepository = new MySqlOrderRepository();
 		$orderHelper = new OrderHelper($orderRepository);
-		$orderSource = new OrderFromExcelFile($filename, $orderHelper);		
+		$orderSource = new OrderFromExcelFile($filename, $orderHelper, $user);		
 		$displayOrder = new DisplayOrder();
 		$deleteHelper = new DeleteHelper($orderRepository);
 		
@@ -73,6 +88,12 @@ if(isset($filename)){
 		echo(json_encode($data));
 	}
 	catch(\Throwable $th) {
-		echo($th->getMessage());
+		// Récupération code HTTP
+    $statusCode = $th->getCode() === 0 ? 500 : $th->getCode();
+
+    //Renvoie HTTP Response code
+    http_response_code($statusCode);
+    
+    echo('Error ' . $th->getMessage());
 	}
 }

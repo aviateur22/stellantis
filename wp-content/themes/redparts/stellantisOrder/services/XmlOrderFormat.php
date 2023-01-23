@@ -92,7 +92,6 @@ class XmlOrderFormat implements OrderFormatInterface {
     $livre->appendChild($xmlFile->createElement('coverCode', $order['coverCode']));
     $livre->appendChild($xmlFile->createElement('quantity', $order['quantity']));
     $livre->appendChild($xmlFile->createElement('deliveredDate', $order['deliveredDate']));
-    $livre->appendChild($xmlFile->createElement('wip', $order['wip']));
     $livre->appendChild($xmlFile->createElement('coverLink', $order['coverLink']));
     $livre->appendChild($xmlFile->createElement('family', $order['family']));
     $livre->appendChild($xmlFile->createElement('model', $order['model']));

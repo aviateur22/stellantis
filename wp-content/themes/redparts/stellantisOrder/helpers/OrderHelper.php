@@ -1,4 +1,5 @@
 <?php
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once('/home/mdwfrkglvc/www/wp-config.php');
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 
@@ -27,6 +28,13 @@ class OrderHelper {
    * @var string
    */
   protected string $orderBuyer;
+
+  /**
+   * Marque voiture
+   *
+   * @var string
+   */
+  protected string $brand;
 
   /**
    * Liste commandes en echec
@@ -68,7 +76,6 @@ class OrderHelper {
   {
     $this->orderRepository = $orderRepository;
     $this->orderDate = date('y-m-d');
-    $this->orderFrom = $this->getOrderFrom();
     $this->orderId = uniqid();
   }
 
@@ -79,6 +86,7 @@ class OrderHelper {
    */
   function getNewOrderStdClass(): stdClass {
     $orderStdClass = new stdClass;
+    $orderStdClass->brand = $this->brand;
     $orderStdClass->orderId = $this->orderId; 
     $orderStdClass->coverCode = ''; 
     $orderStdClass->model = ''; 
@@ -92,14 +100,14 @@ class OrderHelper {
     $orderStdClass->orderDate = $this->orderDate; 
     $orderStdClass->countryCode = ''; 
     $orderStdClass->countryName = ''; 
-    $orderStdClass->wip = 'PREPARATION';
+    $orderStdClass->wipId = StaticData::ORDER_STATUS['PREPARATION'];
     $orderStdClass->isValid = true;
 
     return $orderStdClass;
   }
   
   /**
-   * Undocumented function
+   * Vérification du partNumber
    *
    * @param string|null $partNumber
    * @return boolean
@@ -113,6 +121,16 @@ class OrderHelper {
   }
 
   /**
+   * MAJ de la marque
+   *
+   * @param string $brand
+   * @return void
+   */
+  function setBrand(string $brand): void {
+    $this->brand = $brand;
+  }
+
+  /**
    * MAJ du orderBuyer
    *
    * @param string $orderBuyer 
@@ -120,6 +138,16 @@ class OrderHelper {
    */
   function setOrderBuyer(string $orderBuyer): void {
     $this->orderBuyer = $orderBuyer;
+  }
+
+  /**
+   * MAJ de orderFrom
+   *
+   * @param string $orderFrom
+   * @return void
+   */
+  function setOrderFrom(string $orderFrom): void {
+    $this->orderFrom =$orderFrom;
   }
 
   /**
@@ -224,16 +252,6 @@ class OrderHelper {
    */
   public function getModel() {
 
-  }
-  
-  /**
-   * Récupération identifiant dela personne faisant la commande
-   *
-   * @return string
-   */
-  private function getOrderFrom(): string {
-    $user_info = wp_get_current_user();
-    return $user_info->first_name . " " . $user_info->last_name;
   }
 
   /**
