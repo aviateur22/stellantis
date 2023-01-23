@@ -117,7 +117,8 @@ abstract class StaticData {
       'PROGRESS_CLASS_NAME' => 'status--progress',
       'READY_CLASS_NAME' => 'status--ready',
       'DELIVERED_CLASS_NAME' => 'status--delivered',
-      'BLOCKED_CLASS_NAME' => 'status--blocked'
+      'BLOCKED_CLASS_NAME' => 'status--blocked',
+      'BLINKING_CLASS_NAME' => 'status--blinking'
     ];
     
   #endRegion

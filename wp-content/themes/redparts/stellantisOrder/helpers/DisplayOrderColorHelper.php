@@ -73,8 +73,13 @@ class DisplayOrderColorHelper {
       return StaticData::CLASS_NAME_ORDERS_COLORS['DELIVERED_CLASS_NAME'];
 
     } elseif($this->wipId < min($factoryWipIdArray)) {
+      // Ajout clignotement si WipId === delivered
+      $blinkingClassName = $this->isBlinking($factoryWipIdArray);
+      
       // Si wipId inférieur à factoryWipIdArray
-      return StaticData::CLASS_NAME_ORDERS_COLORS['PREFLIGHT_CLASS_NAME'];
+      $orderClassName = StaticData::CLASS_NAME_ORDERS_COLORS['PREFLIGHT_CLASS_NAME'];
+
+      return (trim($blinkingClassName . ' ' . $orderClassName)); 
 
     } else {
       // Autre role
@@ -119,6 +124,25 @@ class DisplayOrderColorHelper {
         return StaticData::CLASS_NAME_ORDERS_COLORS['BLOCKED_CLASS_NAME'];
       break;
     }
+  }
+
+  /**
+   * Vérification si ajout de BLINKING_CLASS_NAME pour faire clignoter la commande
+   *
+   * @param array $factoryWipIdArray
+   * @return string - className
+   */
+  function isBlinking(array $factoryWipIdArray): string {
+    
+    // Preflight id de l'usine
+    $preflightId = min($factoryWipIdArray);
+
+    // Si wipid === StatusDelivered
+    if(($preflightId - 1) === $this->wipId && in_array(($preflightId - 1), StaticData::DELIVERED_ID)) {
+      return StaticData::CLASS_NAME_ORDERS_COLORS['BLINKING_CLASS_NAME']; 
+    }
+
+    return "";
   }
 
 }

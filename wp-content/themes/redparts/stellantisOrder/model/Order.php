@@ -115,6 +115,20 @@ class Order {
    */
   protected bool $isValid;
 
+  /**
+   * Année
+   *
+   * @var integer
+   */
+  protected int $year;
+
+  /**
+   * Version
+   *
+   * @var string
+   */
+  protected string $version;
+
 
   function __construct(
     string $orderId,
@@ -286,6 +300,24 @@ class Order {
      */
     function getBrand(): string {
       return $this->brand;
+    }
+
+    /**
+     * Renvoie la version
+     *
+     * @return string
+     */
+    function getVersion(): string {
+      return $this->version;
+    }
+
+    /**
+     * Renvoie l'année
+     *
+     * @return integer
+     */
+    function getYear(): int {
+      return $this->year;
     }
 
   #endRegion

@@ -2,6 +2,7 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once('/home/mdwfrkglvc/www/wp-config.php');
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 
 /**
  * Helper pour construction d'un nouvelle Commande
@@ -102,6 +103,8 @@ class OrderHelper {
     $orderStdClass->countryName = ''; 
     $orderStdClass->wipId = StaticData::ORDER_STATUS['PREPARATION'];
     $orderStdClass->isValid = true;
+    $orderStdClass->version = '';
+    $orderStdClass->year = 0;
 
     return $orderStdClass;
   }
@@ -261,5 +264,17 @@ class OrderHelper {
    */
   private function isCoverLinkFind():bool {
     return true;
+  }
+
+  private function setYear(string $partNumber) {
+
+  }
+
+  private function setVersion(string $partNumber) {
+
+  }
+
+  private function setModel(string $partNumber) {
+
   }
 }
