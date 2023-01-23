@@ -97,8 +97,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $orderId
    * @return array
    */
-  function findErrorOrders(string $orderId): array
-  {
+  function findErrorOrders(string $orderId): array {
     global $wpdb;
     $findOrders = $wpdb->get_results(
       $wpdb->prepare(
@@ -118,8 +117,11 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    */
   function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array {
     global $wpdb;
-    $query = "SELECT partNumber FROM orders WHERE partNumber = '" .$partNumber."' AND deliveredDate ='".$deliveredDate."' AND wipId <>'".StaticData::ORDER_STATUS['PREPARATION']."'";
-    $findOrder = $wpdb->get_results($query, ARRAY_A);
+    $findOrder = $wpdb->get_results(
+      $wpdb->prepare(
+        "SELECT partNumber FROM orders WHERE partNumber = %s AND deliveredDate = %s AND wipId <> %s",
+        $partNumber, $deliveredDate, StaticData::ORDER_STATUS['PREPARATION']
+      ), ARRAY_A);
     return $findOrder;
   }
 
@@ -205,15 +207,18 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
       throw new \Exception('Order Not Find', 400);
     }
 
-    //
-    $order = $order[0];
-
+    // Commande
+    $existingOrder = $order[0];    
     // Vérification si pas de conflit avec d'autre commande deja existante
-    $duplicatedOrder = $this->findOneDuplicatedOrder($order[0]->partNumber, $order[0]->deliveredDate);
-    if(empty($duplicatedOrder)) {
-      throw new \Exception('Order alreaOrder Not Find', 400);
-    }
+    if(date('Y-m-d', strtotime($existingOrder->deliveredDate)) !== date('Y-m-d', strtotime($deliveredDate))) {
+      
+      $findDuplicatedOrder = $this->findOneDuplicatedOrder($existingOrder->partNumber, $deliveredDate);      
+      if(!empty($findDuplicatedOrder)) {
+        throw new \Exception('Update impossible, Order already exist on ' . date('d-M-Y', strtotime($deliveredDate)), 400);
+      }
+    }    
 
+    // Update commande
     $update = $wpdb->query( $wpdb->prepare(
       "UPDATE orders SET quantity=%s, deliveredDate=%s, wipId = %s  WHERE id = %s",
       $quantity, $deliveredDate, $status, $id

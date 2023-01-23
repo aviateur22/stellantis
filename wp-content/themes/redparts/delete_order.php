@@ -22,6 +22,11 @@ try {
   echo(json_encode($data));
 }
 catch (Throwable $th) {
-  http_response_code($th->getCode());
+  // Récupération code HTTP
+  $statusCode = $th->getCode() === 0 ? 500 : $th->getCode();
+
+  //Renvoie HTTP Response code
+  http_response_code($statusCode);
+  
   echo('Error ' . $th->getMessage());
 }

@@ -1,5 +1,7 @@
 <?php
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
+require_once('./stellantisOrder/helpers/FindOrderInformationHelper.php');
+require_once('./stellantisOrder/helpers/UserHelper.php');
 
 /**
  * Récupératon des données d'une commande
@@ -7,29 +9,52 @@ require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 
  error_reporting(E_ALL);
 
- try {
- /**
+try {
+  /**
   * Id de la commande
   */
   $orderId = $_POST['orderid'];
 
   if(!isset($orderId)) {
-    throw new \Exception('Impossible de récupérer Id de la commande');
+    throw new \Exception('Impossible de récupérer Id de la commande', 400);
   }
 
+  // User
+  $userHelper = new UserHelper();
+  $user = $userHelper->getUser();
+
+  // Service + helper
+  $displayOrderColorHelper = new DisplayOrderColorHelper($user);
   $orderRepository = new MySqlOrderRepository();
+  $findOrderInformationHelper = new FindOrderInformationHelper($orderRepository, $displayOrderColorHelper);
 
-  // Recherche commande en base de données
-  $order = $orderRepository->findOne($orderId);  
+  // Recherche Commande
+  $order = $findOrderInformationHelper->findOrder($orderId);
 
-  if(count($order) === 0 ) {
-    throw new \Exception('Commande non trouvée', 404);
-  }
+  // Recherche de l'usine ayant la commande
+  $processedWith = $findOrderInformationHelper->findProcessedWith((int)$order['wipId']);
+
+  $orderStatusName = $findOrderInformationHelper->getOrderStatusLabel((int)$order['wipId']);
+
+  $orderClassName = $findOrderInformationHelper->getOrderstatusColorClassName((int)$order['wipId']);
 
   
-  $data['findOrder'] = $order;
+  $data['findOrder'] = [
+    'order' => $order,
+    'processedWith' => $processedWith,
+    'orderStatus' => $orderStatusName,
+    'orderColorClassName' => $orderClassName
+  ];
+  
   echo(json_encode($data));
- } catch (\Throwable $th) {
+
+} catch (\Throwable $th) {
+  // Récupération code HTTP
+  $statusCode = $th->getCode() === 0 ? 500 : $th->getCode();
+
+  //Renvoie HTTP Response code
+  http_response_code($statusCode);
+  
   echo('Error ' . $th->getMessage());
  }
  

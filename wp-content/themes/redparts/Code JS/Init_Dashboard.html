@@ -34,7 +34,7 @@
 filtreText += "<form id='filterOrderForm'>";
 	filtreText += '<input style="margin-left:10px;" type="date" id="startDate" name="startDate" min="2022-01-01" max="2050-12-31"></p>';
 	filtreText += "<table><tr><td><label for='family'>Family</label>";
-	filtreText += '<select style="display:block" id="family" name="family" multiple></td>';
+	filtreText += '<select style="display:block" id="family" name="family" multiple disabled></td>';
 filtreText += "<td><label for='countryCode'>Country Code</label>";
 filtreText += '<select style="display:block" id="countryCode" name="countryCode" multiple></td>';
 filtreText += "<td><label for='countryName'>Country Name</label>";
@@ -127,11 +127,21 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		event.preventDefault();
 
 		// Reset du filtre
-		if(clearFilter) {
-			const dateFin = document.getElementById('startDate').value;
-			var _variables = 'type=' + encodeURIComponent(type) + '&dateFin=' + encodeURIComponent(dateFin);
+		if(clearFilter) {			
 			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
-			AppelScriptPHP(_lien_scriptPHP, _variables);
+			AppelScriptPHP(_lien_scriptPHP, null);
+
+			// Reset date du filtre
+			selectDayFilterElement = document.getElementById('startDate');
+
+			// Reset des PartNumber
+			const filterPartNumberElement = document.getElementById('partNumber');
+			filterPartNumberElement.value = '';
+
+			if(selectDayFilterElement) {
+				// date du jour
+				selectDayFilterElement.valueAsDate = new Date()
+			}
 		} else {		
 			const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
 			console.log(formData);
@@ -146,21 +156,65 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	 * @params {object} findOrder
 	 */
 	function updateOrderModalElement(findOrder) {
+		
+		// Données commandes
+		const orderInformation = findOrder.order;
+		const processedWith = findOrder.processedWith;
+		const orderStatusLabel = findOrder.orderStatus;
+		const orderStatusClassNamecolor = findOrder.orderColorClassName;
+
+		// Récupération HTML element
 		const partNumberElement = document.getElementById('displayPartNumber');
 		const quantityElement = document.getElementById('displayQuantity');
 		const deliveredDateElement = document.getElementById('displayDeliveredDate');
 		const statusElement = document.getElementById('displayStatus');
 		const idElement = document.getElementById('id');
+		const processedWithElement = document.getElementById('processedWith');
+		const coverCodeElement = document.getElementById('coverCode');
+		const brandElement = document.getElementById('brand');
+		const coverLinkElement = document.getElementById('coverLink');
+		const statusLabelElement = document.getElementById('statusLabel');
 
-		if(partNumberElement && quantityElement && deliveredDateElement && statusElement) {
-			idElement.value = findOrder[0].id;
-			partNumberElement.innerText = findOrder[0].partNumber;
-			quantityElement.value = findOrder[0].quantity;
-			deliveredDateElement.value = findOrder[0].deliveredDate;
-			statusElement.value = findOrder[0].wipId.toLowerCase();
-		}
+		// Mise a jour de la vue
+		if(partNumberElement && quantityElement && deliveredDateElement && statusElement && 
+			processedWithElement && coverCodeElement && coverLinkElement && brandElement && statusLabelElement) {
+			
+			// Societé traitant la commande
+			processedWithElement.innerText = processedWith;
 
-		console.log(findOrder);
+			// code couverture
+			coverCodeElement.innerText = orderInformation.coverCode;
+
+			// Marque 
+			brandElement.innerText = orderInformation.brand;
+
+			// lien documentation PDF
+			coverLinkElement.innerText = orderInformation.coverLink;
+
+			// Id commande
+			idElement.value = orderInformation.id;
+
+			// Partnumber
+			partNumberElement.innerText = orderInformation.partNumber;
+
+			// quantity
+			quantityElement.value = orderInformation.quantity;
+
+			// Date de livraiosn
+			deliveredDateElement.value = orderInformation.deliveredDate;
+
+			// Select Option
+			statusElement.value = orderInformation.wipId.toLowerCase();
+
+			// Statut actuelle de la commande
+			statusLabelElement.innerText = orderStatusLabel;
+
+			// Suppression ancienne class
+			statusLabelElement.className = '';
+
+			// Ajout nouvelle classe
+			statusLabelElement.classList.add(orderStatusClassNamecolor);
+		}	
 	}
 
 	/**
@@ -202,11 +256,11 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	}
 
 	/**
-	 * Mise a jour de la couleur après un update de commande
+	 * Mise a jour de l'affichage des commandes apres modification
 	 * 
 	 * @params {object} updatedOrder - contient les données de couelur
 	 */
-	function updateOrderColor(updatedOrder) {
+	function updateDisplayOrder(updatedOrder) {
 		// Affichage Flash Message
 		displayFlashMessage('Succes de la mise à jour de votre commande');
 
@@ -227,12 +281,32 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		reloadDashboard();
 	}
 
+	/**
+	 *  Rechargement du dashboard
+	 */
 	function reloadDashboard(updatedOrder) {
-		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
-		const startDate = document.getElementById('startDate').value;
-		var _variables = '&startDate=' + encodeURIComponent(startDate);
-		mode = 2; //JSON
-		AppelScriptPHP(_lien_scriptPHP, _variables);
+		// Vérification si PartNumber présent dans le filtre
+		const filterPartNumberElement = document.getElementById('partNumber');
+
+		// Lien script PHP
+		let _lien_scriptPHP = '';
+
+		// Retour requete 
+		mode = 2;
+
+		if(filterPartNumberElement.value.length === 0) {
+			
+			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
+			const startDate = document.getElementById('startDate').value;
+			var _variables = '&startDate=' + encodeURIComponent(startDate);			
+			AppelScriptPHP(_lien_scriptPHP, _variables);
+		} else {
+			filterForm = document.getElementById('filterOrderForm');
+			const formData = urlEncoded(Object.fromEntries(new FormData(filterForm)));			
+			console.log(formData);
+			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
+			AppelScriptPHP(_lien_scriptPHP, formData);
+		}
 	}
 
 	function $_GET(param) {
@@ -310,7 +384,6 @@ gestionAppel();
 
 		// Select day on filter
 		selectDayFilterElement = document.getElementById('startDate');
-
 		if(selectDayFilterElement) {
 			// date du jour
 			selectDayFilterElement.valueAsDate = new Date()
@@ -523,23 +596,32 @@ for(x=1;x<5000;x++)
 	{
 		//MAJ Titre et WIP
 		if(data['orders']) {
-			document.getElementById('resultat-div').innerHTML = data['orders'];	
+			document.getElementById('resultat-div').innerHTML = data['orders'];
+
+			// Modal update commande
+			updateOrderElement = document.getElementById('updateOrder');			
+			
+			// Masque la modal de modification d'une commande
+			if(updateOrderElement) {
+				updateOrderElement.hidden = true;
+			}
 		}
 
 		// Résulat d'une recherche de commande
 		if(data['findOrder']) {
 
 			// Mise a jour de l'affichage
-			updateOrderModalElement(data['findOrder']);
+			updateOrderModalElement(data['findOrder']);			
+			
 		}
 
 		// Resultat d'un update d'une commande
 		if(data['updateOrder']) {
 			const result = data['updateOrder'];	
 
+			// Modification affichage des commandes
 			if(result) {
-				updateOrderColor(result);
-				
+				updateDisplayOrder(result);				
 			}			
 		}		
 
@@ -571,7 +653,8 @@ for(x=1;x<5000;x++)
 		// Masque la fenetre de chargement de la modal de modification
 		if(spinnerLoaderElement) {
 			spinnerLoaderElement.hidden = true;
-		}	
+		}
+
 
 		// for(x=0;x<2;x++)
 		// {

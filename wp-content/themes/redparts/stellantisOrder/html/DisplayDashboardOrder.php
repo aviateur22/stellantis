@@ -2,6 +2,7 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/User.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/DisplayOrderColorHelper.php';
 
 /**
  * Undocumented class
@@ -29,10 +30,23 @@ class DisplayDashboardOrder {
    */
   protected array $intervalDays;
 
-  function __construct(array $dashboardOrders, array $intervalDays, User $user) {
+  /**
+   * Helper pour selection des couleurs des commandes
+   *
+   * @var DisplayOrderColorHelper
+   */
+  protected DisplayOrderColorHelper $displayOrderColorHelper;
+
+  function __construct(
+    array $dashboardOrders, 
+    array $intervalDays, 
+    User $user, 
+    DisplayOrderColorHelper $displayOrderColorHelper
+    ) {
     $this->dashboardOrders = $dashboardOrders;
     $this->intervalDays = $intervalDays;
     $this->user = $user;
+    $this->displayOrderColorHelper = $displayOrderColorHelper;
   }
 
   /**
@@ -88,7 +102,7 @@ class DisplayDashboardOrder {
                 $html .= "</td>";
               } else {
                 $html .= "<td data-date=".$quantity['day']." data-row=".$row." onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
-                  $html .= "<div class='td--border ".findColorOrderDisplay((int)$quantity['order']['wipId'])."'>";
+                  $html .= "<div class='td--border ".$this->displayOrderColorHelper->checkUserRole((int)$quantity['order']['wipId'])."'>";
                     $html .= $quantity['order']['quantity'];
                   $html .= "</div>";
                 $html .= "</td>";
@@ -158,20 +172,50 @@ class DisplayDashboardOrder {
       </div>          
       <form id="updateOrderForm" class="update__form" method="post">
         <h4 class="update__title">Order information</h4>
-        <div class="update__content">
+        <div class="update__content">          
           <input id="id" name="id" type="hidden">
-          <div class="group__control">
-            <label for="quantity">PartNumber</label>
-            <p id="displayPartNumber">XXXX</p>
+          <div class="update__information">
+            <div class="status__information">
+              <div class="group__control">
+                <label class="text--strong text--left" for="processedWith"> Being processed at </label>
+                <p id="processedWith">XXXX</p>
+              </div>
+              <div class="group__control">
+                <label class="text--strong text--left" for="statusLabel"> Actual status </label>
+                <p id="statusLabel">XXXX</p>
+              </div>
+            </div>
+            
+            <div class="group__control">
+              <label class="text--strong text--right" for="quantity">PartNumber</label>
+              <p id="displayPartNumber">XXXX</p>
+            </div>
           </div>
+          <div class="update__car__information">
+            <div class="group__control">
+              <label class="text--strong text--left" for="coverCode">Cover Code</label>
+              <p id="coverCode">XXXX</p>
+            </div>
+            <div class="group__control">
+              <label class="text--strong text--right" for="brand">Car Brand</label>
+              <p id="brand">XXXX</p>
+            </div>
+          </div>          
           <div class="group__control">
-            <label for="quantity">Quantity</label>
-            <input min="1" id="displayQuantity" name="quantity" id="quantity" type="number">
+            <label class="text--strong text--left" for="coverLink">Cover Link</label>
+            <p id="coverLink">XXXX</p>
           </div>
-          <div class="group__control">
-            <label for="deliveredDate">Delivered Date</label>
-            <input id="displayDeliveredDate" name="deliveredDate" id="deliveredDate" type="date">
+          <div class="update__information">
+            <div class="group__control">
+              <label class="text--strong text--left" for="quantity">Quantity</label>
+              <input min="1" id="displayQuantity" name="quantity" id="quantity" type="number">
+            </div>
+            <div class="group__control">
+              <label class="text--strong text--left" for="deliveredDate">Delivered Date</label>
+              <input id="displayDeliveredDate" name="deliveredDate" id="deliveredDate" type="date">
+            </div>
           </div>
+          
           '.$this->setPopupSelectectOption().'                                
         </div>
         <div class="modal__button__container">
@@ -185,7 +229,7 @@ class DisplayDashboardOrder {
   }
 
   /**
-   * Undocumented function
+   * Renvoie du HTML SELECT Input de la modal de modification d'une commande
    *
    * @return void
    */
@@ -225,7 +269,7 @@ class DisplayDashboardOrder {
       return '
       <div class="group__control">
         <label for="status">Order Status</label>
-        <select id="displayStatus" name="status" id="status" disabled>
+        <select id="displayStatus" name="status" id="status" required>
             <option value="">--Please choose an option--</option>
             <option value='.StaticData::ORDER_STATUS['PREFLIGHT_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['PREFLIGHT'].'</option>
             <option value='.StaticData::ORDER_STATUS['ON_PROGRESS_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['ON_PROGRESS'].'</option>
@@ -237,7 +281,7 @@ class DisplayDashboardOrder {
     } elseif(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
       // Utilisateur avec roles des usines de Stellantis - Rennes-Poissy-Sochaux....
       return '
-      <div class="group__control">
+      <div style="visibility: collapse"  class="group__control">
         <label for="status">Order Status</label>
         <select id="displayStatus" name="status" id="status" required>
             <option value="">--Please choose an option--</option>

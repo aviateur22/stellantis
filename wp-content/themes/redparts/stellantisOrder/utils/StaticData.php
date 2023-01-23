@@ -120,5 +120,13 @@ abstract class StaticData {
       'BLOCKED_CLASS_NAME' => 'status--blocked'
     ];
     
-  #endRegion 
+  #endRegion
+
+  #region Maury + Stellantis name
+    const MILLAU_FACTORY_NAME = "MILLAU FACTORY";
+
+    const MANCHECOURT_FACTORY_NAME = "MANCHECOURT FACTORY";
+
+    const STELLANTIS_NAME = "STELLANTIS";
+  #endRegion
 }

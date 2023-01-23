@@ -11,7 +11,7 @@ require_once('./stellantisOrder/utils/StaticData.php');
  error_reporting(E_ALL);
 
  try {
-   /**
+    /**
     * Id de la commande
     */
     $orderId = $_POST['id'];
@@ -46,7 +46,11 @@ require_once('./stellantisOrder/utils/StaticData.php');
 
     echo(json_encode($data));
  } catch (\Throwable $th) {
+    // Récupération code HTTP
+    $statusCode = $th->getCode() === 0 ? 500 : $th->getCode();
 
-    http_response_code($th->getCode());
+    //Renvoie HTTP Response code
+    http_response_code($statusCode);
+    
     echo('Error ' . $th->getMessage());
  }

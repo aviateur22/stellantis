@@ -2,6 +2,7 @@
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/helpers/DashboardOrderHelper.php');
 require_once('./stellantisOrder/html/DisplayDashboardOrder.php');
+require_once('./stellantisOrder/helpers/DisplayOrderColorHelper.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
 require_once('./stellantisOrder/utils/validators.php');
 error_reporting(E_ALL);
@@ -30,10 +31,9 @@ if(!empty($partNumber)) {
 $userHelper = new UserHelper();
 $user = $userHelper->getUser();
 
+$displayOrderColorHelper = new DisplayOrderColorHelper($user);
 $orderRepository = new MySqlOrderRepository($user);
 $dashboardHelper = new DashboardHelper($orderRepository);
-
-
 
 $setDashboard = $dashboardHelper->setDashboardOrders($startDate, '2023-02-25', $filterEntries);
 
@@ -41,10 +41,8 @@ $setDashboard = $dashboardHelper->setDashboardOrders($startDate, '2023-02-25', $
 $dashboardOrders = $dashboardHelper->getDashboardOrders();
 $intervalDays = $dashboardHelper->getIntervalDays();
 
-
-
 // Creation html
-$displayDashboardOrder = new DisplayDashboardOrder($dashboardOrders, $intervalDays, $user);
+$displayDashboardOrder = new DisplayDashboardOrder($dashboardOrders, $intervalDays, $user, $displayOrderColorHelper);
 
 
 $data['orders'] = $displayDashboardOrder->createHtml();
@@ -53,6 +51,11 @@ $data['orders'] = $displayDashboardOrder->createHtml();
 echo(json_encode($data));
 
 } catch(\Throwable $th) {
-  http_response_code($th->getCode());
-  echo('Error: ' .$th->getMessage());
+  // Récupération code HTTP
+  $statusCode = $th->getCode() === 0 ? 500 : $th->getCode();
+
+  //Renvoie HTTP Response code
+  http_response_code($statusCode);
+  
+  echo('Error ' . $th->getMessage());
 }
