@@ -255,7 +255,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
 
     // Filtre les commandes pour les usines Stellantis   
     if(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
-      $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s",
+      $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
       StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd, $this->user->getFirstRole()), ARRAY_A);
       return $findOrders;      
     }
@@ -281,7 +281,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     $findOrderInPartNumber = [];
     if($filterEntries['partNumber']) {
       $partNumberQueryPlaceHolder = $this->getPlaceholder($filterEntries['partNumber'], '%s');
-      $findOrderInPartNumber = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE partNumber IN ($partNumberQueryPlaceHolder)",$filterEntries['partNumber']), ARRAY_A);
+      $findOrderInPartNumber = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE partNumber IN ($partNumberQueryPlaceHolder) ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",$filterEntries['partNumber']), ARRAY_A);
     }
 
     // Recherche des Orders dans l'interval de temps

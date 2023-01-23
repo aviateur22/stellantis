@@ -87,13 +87,16 @@ class DisplayDashboardOrder {
       $row = 1;
       for($i = 0; $i < count($this->dashboardOrders); $i++) {
         if($this->dashboardOrders[$i] instanceof DashboardOrderModel) {
-          if($i === 0) {
-            $html .= "<tr style='background: yellow;'>";
-            $html .= "<td colspan='5'>";
-            $html .= "<p>Donnée de la voiture</p>";
-            $html .= "</td>";
-            $html .= "</tr>";
-          }          
+
+          // Header de séparation usine
+          if($i ===0) {
+            $html .= $this->setRowHeader($this->dashboardOrders[$i]);
+          } else {
+            $html .= $this->setRowHeader($this->dashboardOrders[$i], $this->dashboardOrders[$i - 1]);
+          }
+          
+
+          // Commande
           $html .= "<tr>";
             $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getFamily());
             $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryCode());
@@ -364,5 +367,29 @@ class DisplayDashboardOrder {
       </div>';
 
     }
+  }
+
+  private function setRowHeader(DashboardOrderModel $order, DashboardOrderModel $previousOrder = null): string {
+    $previousOrderInformation = empty($previousOrder) ? '' : $previousOrder->getOrderBuyer().$previousOrder->getBrand().$previousOrder->getModel().$previousOrder->getYear().$previousOrder->getVersion();
+    $orderInformation = $order->getOrderBuyer().$order->getBrand().$order->getModel().$order->getYear().$order->getVersion();
+
+    if(!$previousOrder || ($orderInformation !== $previousOrderInformation)) {
+  
+      $html = "<tr style='background: yellow;'>";
+      $html .= "<td colspan='5'>";
+      $html .= "<p>";
+      $html .= $order->getOrderBuyer();
+      $html .= $order->getBrand();
+      $html .= $order->getModel();
+      $html .= $order->getYear();
+      $html .= $order->getVersion();
+      $html .= "</p>";
+      $html .= "</td>";
+      $html .= "</tr>";
+
+      return $html;
+    }
+    return '';
+    
   }
 }

@@ -272,8 +272,8 @@ class OrderHelper {
       throw new \Exception('Non-exsitent model ' . $modelCode, 400);
     }
 
-    if($model['model'] === $modelOnOrder) {
-      throw new \Exception('Discrepency between model order and database ' . $modelCode, 400);
+    if(strtolower($model['model']) !== strtolower($modelOnOrder)) {
+      throw new \Exception('Discrepency between modelOrder '.strtolower($modelOnOrder).' and databaseModel ' . strtolower($model['model']), 400);
     }
     return true;
   }
