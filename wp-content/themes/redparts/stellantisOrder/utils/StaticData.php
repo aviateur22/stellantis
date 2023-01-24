@@ -17,7 +17,7 @@ abstract class StaticData {
   const MANCHECOURT_FACTORY_ROLE_NAME = 'MANCHECOURT';
 
   // Role Stellantis
-  const STELLANTIS_ROLE_NAME = 'STELLANTIS';
+  const STELLANTIS_ROLE_NAME = 'ADMIN_STELLANTIS';
 
   // Liste des roles usine du groupe Stellantis
   const FACTORY_STELLANTIS_ROLES_NAMES = [
