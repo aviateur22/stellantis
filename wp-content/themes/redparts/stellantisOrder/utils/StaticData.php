@@ -91,7 +91,7 @@ abstract class StaticData {
 
     // Affichage des statuts pour Stellantis, Manchecourt et Millau
     const STATUS_DISPLAY_NAME_ROLE_ST_MI_MA = [
-      'BEFORE_PREFLIGHT' => 'PREFLIGHT',
+      'BEFORE_PREFLIGHT' => 'WAITING PREFLIGHT',
       'PREFLIGHT' => 'PREFLIGHT',
       'ON_PROGRESS' => 'ON PROGRESS',
       'READY' => 'READY',
@@ -123,6 +123,7 @@ abstract class StaticData {
   #region className affichant la couleur des commandes
 
     const CLASS_NAME_ORDERS_COLORS = [
+      'BEFORE_PREFLIGHT_CLASS_NAME' => 'status--before--preflight',
       'PREFLIGHT_CLASS_NAME' => 'status--preflight',
       'PROGRESS_CLASS_NAME' => 'status--progress',
       'READY_CLASS_NAME' => 'status--ready',

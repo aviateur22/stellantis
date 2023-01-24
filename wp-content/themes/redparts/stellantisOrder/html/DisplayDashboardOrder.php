@@ -82,7 +82,7 @@ class DisplayDashboardOrder {
       $html .= "<th>Cover Code</th>";
       $html .= "<th>Part Number</th>";
         foreach($this->intervalDays as $day) {          
-          $html .= "<th>" . $day['date'] . "</th>";
+          $html .= "<th><div class='header__day'>" . $day['date'] . "</div></th>";
         }
     $html .= "</tr>";  
     $html .= "</thead>";

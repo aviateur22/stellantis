@@ -77,7 +77,7 @@ class DisplayOrderColorHelper {
       $blinkingClassName = $this->isBlinking($factoryWipIdArray);
       
       // Si wipId inférieur à factoryWipIdArray
-      $orderClassName = StaticData::CLASS_NAME_ORDERS_COLORS['PREFLIGHT_CLASS_NAME'];
+      $orderClassName = StaticData::CLASS_NAME_ORDERS_COLORS['BEFORE_PREFLIGHT_CLASS_NAME'];
 
       return (trim($blinkingClassName . ' ' . $orderClassName)); 
 
