@@ -1,16 +1,13 @@
 <?php
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlForecastRepository.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php');
 
 /**
  * Helper prévision impression
  */
 class ForecastPrintHelper {
-  /**
-   * Nombre de semaine
-   */
-  const FORECAST_WEEK = 8;
-
+ 
   /**
    * Forecast respository
    *
@@ -31,10 +28,10 @@ class ForecastPrintHelper {
    * 
    * @return void
    */
-  function getForecastOrdersQuantity(string $orderDeliveredDate, string $partNumber, int $orderQuantity): int {
+  function getForecastOrdersQuantity(string $orderDeliveredDate, string $partNumber): int {
 
     // Nombre de semaine de prévision
-    $forecastWeek = '+' . self::FORECAST_WEEK . ' week';
+    $forecastWeek = '+' . StaticData::PRINT_FORECAST_WEEK . ' week';
     
     // Jour de début
     $dayStart = date('Y-m-d', strtotime( '+1 day', strtotime($orderDeliveredDate)));

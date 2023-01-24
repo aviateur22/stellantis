@@ -35,7 +35,7 @@ try {
   $processedWith = $findOrderInformationHelper->findProcessedWith((int)$order['wipId']);
 
   $orderStatusName = $findOrderInformationHelper->getOrderStatusLabel((int)$order['wipId']);
-
+  
   $orderClassName = $findOrderInformationHelper->getOrderstatusColorClassName((int)$order['wipId']);
 
   

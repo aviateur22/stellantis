@@ -158,9 +158,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         $orderStdClass->countryCode = $countryData['countryCode'];
         $orderStdClass->countryName = $countryData['country'];
 
-        // Link impression
-        $coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
-        $orderStdClass->coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);
+        // Link doc PDF
+        $coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);        
 
         if(empty($coverLink)) {           
           $orderStdClass->isValid = false;
@@ -170,6 +169,21 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
           $orderStdClass->coverLink = $coverLink;
         }
 
+        // Version 
+        $version = substr($orderStdClass->partNumber, 2, 1);
+        $orderStdClass->version = $version;
+        if(!is_string($version)) {
+          $this->orderHelper->addOrderToErrorList($orderStdClass->partNumber);
+          $orderStdClass->isValid = false;
+        }
+
+        // Année
+        $year = substr($orderStdClass->partNumber, 0, 2);
+        $orderStdClass->year = $year;
+        if(!is_numeric($year)) {
+          $this->orderHelper->addOrderToErrorList($orderStdClass->partNumber);
+          $orderStdClass->isValid = false;
+        }
         break;
 
       // Model
@@ -180,7 +194,11 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
           return;
         }
 
+        // Model de la voiture
         $orderStdClass->model = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
+
+        // Vérification cohérence Model
+        $this->orderHelper->isModelValid($orderStdClass->partNumber,  $orderStdClass->model);
         break;
 
       // Quantité
@@ -195,14 +213,13 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
 
         // Si quantité = 0        
         if(strval($orderStdClass->quantity) === '0' || !is_numeric($orderStdClass->quantity)) {          
-          $this->orderHelper->addToQuantityErrorOrder($orderStdClass->partNumber);
+          $this->orderHelper->addOrderToErrorList($orderStdClass->partNumber);
           $orderStdClass->isValid = false;
         }
-
-
         break;
       
-      // Date      
+      
+        // Date de livraison
       case 4: 
 
         // Si partNumber valide
@@ -213,6 +230,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         $date = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
         $orderStdClass->deliveredDate = \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
 
+        $orderStdClass->forecastPrint = $this->orderHelper->calculPrintForecast($orderStdClass->partNumber, $orderStdClass->deliveredDate);
+        
         // Vérification si commande déja existante        
         $isOrderDuplicate = $this->orderHelper->isOrderDuplicate($orderStdClass->partNumber, $orderStdClass->deliveredDate);
 
@@ -251,7 +270,10 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       $orderStdClass->countryName,
       $orderStdClass->wipId,
       $orderStdClass->isValid,
-      $orderStdClass->brand
+      $orderStdClass->brand,
+      $orderStdClass->version,
+      $orderStdClass->year,
+      $orderStdClass->forecastPrint
     );   
     return $order;
   }

@@ -37,6 +37,13 @@ class DisplayDashboardOrder {
    */
   protected DisplayOrderColorHelper $displayOrderColorHelper;
 
+  /**
+   * Background Header séparation
+   *
+   * @var string
+   */
+  protected string $headerBackground = StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_2'];
+
   function __construct(
     array $dashboardOrders, 
     array $intervalDays, 
@@ -75,25 +82,35 @@ class DisplayDashboardOrder {
       $html .= "<th>Cover Code</th>";
       $html .= "<th>Part Number</th>";
         foreach($this->intervalDays as $day) {          
-          $html .= "<th>" . $day['date'] . "</th>";
+          $html .= "<th><div class='header__day'>" . $day['date'] . "</div></th>";
         }
-    $html .= "<tr>";  
-    $html .= "<thead>";
+    $html .= "</tr>";  
+    $html .= "</thead>";
         
      // Body
      $html .= "<tbody>";
 
     // Parcours des dashboardOrders
       $row = 1;
-      foreach($this->dashboardOrders as $order) {
-        if($order instanceof DashboardOrderModel) {
+      for($i = 0; $i < count($this->dashboardOrders); $i++) {
+        if($this->dashboardOrders[$i] instanceof DashboardOrderModel) {
+
+          // Header de séparation usine
+          if($i ===0) {
+            $html .= $this->setRowHeader($this->dashboardOrders[$i]);
+          } else {
+            $html .= $this->setRowHeader($this->dashboardOrders[$i], $this->dashboardOrders[$i - 1]);
+          }
+          
+
+          // Commande
           $html .= "<tr>";
-            $html .= $this->createHtmlForOrderProperty($order->getFamily());
-            $html .= $this->createHtmlForOrderProperty($order->getCountryCode());
-            $html .= $this->createHtmlForOrderProperty($order->getCountryName());
-            $html .= $this->createHtmlForOrderProperty($order->getCoverCode());
-            $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
-            foreach($order->getQuantitiesByDate() as $quantity) {
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getFamily());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryCode());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryName());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCoverCode());
+            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getPartNumber());
+            foreach($this->dashboardOrders[$i]->getQuantitiesByDate() as $quantity) {
               if(empty($quantity['order']['quantity'])) {
                 $html .= "<td data-date=".$quantity['day']." data-row=".$row." class='td--empty'>";
                   $html .= "<div>";
@@ -110,8 +127,35 @@ class DisplayDashboardOrder {
             }
           $html .= "</tr>";
         }
-        $row++;       
-      }     
+        $row++;
+      }
+      // foreach($this->dashboardOrders as $order) {
+      //   if($order instanceof DashboardOrderModel) {
+      //     $html .= "<tr>";
+      //       $html .= $this->createHtmlForOrderProperty($order->getFamily(), true);
+      //       $html .= $this->createHtmlForOrderProperty($order->getCountryCode());
+      //       $html .= $this->createHtmlForOrderProperty($order->getCountryName());
+      //       $html .= $this->createHtmlForOrderProperty($order->getCoverCode());
+      //       $html .= $this->createHtmlForOrderProperty($order->getPartNumber());
+      //       foreach($order->getQuantitiesByDate() as $quantity) {
+      //         if(empty($quantity['order']['quantity'])) {
+      //           $html .= "<td data-date=".$quantity['day']." data-row=".$row." class='td--empty'>";
+      //             $html .= "<div>";
+      //               $html .= '-';
+      //             $html .= "</div>";
+      //           $html .= "</td>";
+      //         } else {
+      //           $html .= "<td data-date=".$quantity['day']." data-row=".$row." onclick='displayUpdateOrderElement(this);' data-order-id=".$quantity['order']['id']." >";
+      //             $html .= "<div class='td--border ".$this->displayOrderColorHelper->checkUserRole((int)$quantity['order']['wipId'])."'>";
+      //               $html .= $quantity['order']['quantity'];
+      //             $html .= "</div>";
+      //           $html .= "</td>";
+      //         }             
+      //       }
+      //     $html .= "</tr>";
+      //   }
+      //   $row++;       
+      // }     
     
 
     // Fin HTML
@@ -131,9 +175,11 @@ class DisplayDashboardOrder {
    * @param string $orderProperty - La propriété a mettre au format HTML
    * @return string 
    */
-  function createHtmlForOrderProperty(string $orderProperty): string {
+  function createHtmlForOrderProperty(string $orderProperty, bool $addCarInformation = false): string {
     $htmlOrder = '<td>';
-    $htmlOrder .=  $orderProperty;
+    $htmlOrder .=    '<div>';
+    $htmlOrder .=       $orderProperty;
+    $htmlOrder .=     '</div>';
     $htmlOrder .= '</td>';
 
     return $htmlOrder;
@@ -326,6 +372,59 @@ class DisplayDashboardOrder {
             <option value='.StaticData::ORDER_STATUS['BLOCKED_ST'].'>'.StaticData::STATUS_DISPLAY_NAME_ROLE_OTHER['BLOCKED_ST'].'</option>
         </select>
       </div>';
+
+    }
+  }
+
+  /**
+   * Gestion affichage header de séparation
+   *
+   * @param DashboardOrderModel $order - Commande au rang N
+   * @param DashboardOrderModel|null $previousOrder - Commande au rang N-1
+   * @return string
+   */
+  private function setRowHeader(DashboardOrderModel $order, DashboardOrderModel $previousOrder = null): string {
+    // Order information rang N-1
+    $previousOrderInformation = empty($previousOrder) ? '' : $previousOrder->getOrderBuyer().$previousOrder->getBrand().$previousOrder->getModel().$previousOrder->getYear().$previousOrder->getVersion();
+    
+    // Orderinformation rang N
+    $orderInformation = $order->getOrderBuyer().$order->getBrand().$order->getModel().$order->getYear().$order->getVersion();
+   
+    if(!$previousOrder || ($orderInformation !== $previousOrderInformation)) {
+      // Alterne la couleur du header de séparation
+      $this->toogleColor();
+
+      $html = "<tr class='".$this->headerBackground."'>";
+        $html .= "<td class='' colspan='5'>";
+          $html .= "<p class='header__separator__text'>";
+            $html .= $order->getOrderBuyer()."_";
+            $html .= $order->getBrand()."_";
+            $html .= $order->getModel()."_";
+            $html .= $order->getYear()."_";
+            $html .= $order->getVersion() ;
+          $html .= "</p>";
+        $html .= "</td>";
+      $html .= "</tr>";
+
+      return $html;
+    }
+    return '';
+    
+  }
+
+  /**
+   * Gestion toggle header color
+   *
+   * @return void
+   */
+  private function toogleColor(): void {
+    
+    // Gestion couleur couleur background
+    if($this->headerBackground === StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_1']) {
+      $this->headerBackground = StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_2'];
+
+    } elseif($this->headerBackground === StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_2']) {
+      $this->headerBackground = StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_1'];
 
     }
   }

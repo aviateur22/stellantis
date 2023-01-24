@@ -67,14 +67,19 @@ class DisplayOrderColorHelper {
     
     // Suppression id = blocked qui est en derniere position du tableau
     $removedLastElement = array_pop($factoryWipIdArray);
-    
+
     if($this->wipId > max($factoryWipIdArray)) {
       // Si wipId supérieur à factoryWipIdArray
       return StaticData::CLASS_NAME_ORDERS_COLORS['DELIVERED_CLASS_NAME'];
 
-    } elseif($this->wipId < min($factoryWipIdArray)) {
+    } elseif($this->wipId < min($factoryWipIdArray) || in_array($this->wipId, StaticData::BEFORE_PREFLIGHT_ID)) {
+      // Vérification si ajout class de clignotement (WipId === delivered ou before_preflight)
+      $blinkingClassName = $this->isBlinking($factoryWipIdArray);
+      
       // Si wipId inférieur à factoryWipIdArray
-      return StaticData::CLASS_NAME_ORDERS_COLORS['PREFLIGHT_CLASS_NAME'];
+      $orderClassName = StaticData::CLASS_NAME_ORDERS_COLORS['BEFORE_PREFLIGHT_CLASS_NAME'];
+
+      return (trim($blinkingClassName . ' ' . $orderClassName)); 
 
     } else {
       // Autre role
@@ -89,13 +94,13 @@ class DisplayOrderColorHelper {
    */
   function findColorOrderDisplay(int $wipId = null): string {
 
-    if($wipId) {
+    if(isset($wipId)) {
       $this->wipId = $wipId;
     }
 
-    switch($this->wipId) {
+    switch($this->wipId) {      
       // Preflight
-      case in_array($this->wipId, StaticData::PREFLIGHT_ID):
+      case in_array($this->wipId, StaticData::PREFLIGHT_ID) || in_array($this->wipId, StaticData::BEFORE_PREFLIGHT_ID):
         return StaticData::CLASS_NAME_ORDERS_COLORS['PREFLIGHT_CLASS_NAME'];
       break;
 
@@ -119,6 +124,33 @@ class DisplayOrderColorHelper {
         return StaticData::CLASS_NAME_ORDERS_COLORS['BLOCKED_CLASS_NAME'];
       break;
     }
+  }
+
+  /**
+   * Vérification si ajout de BLINKING_CLASS_NAME pour faire clignoter la commande
+   *
+   * @param array $factoryWipIdArray
+   * @return string - className
+   */
+  function isBlinking(array $factoryWipIdArray): string {
+
+    // Preflight id de l'usine
+    $preflightId = min($factoryWipIdArray);
+   
+    // Si wipid === StatusDelivered
+    $calculatedDeliveredId = $preflightId - 1;
+    if($calculatedDeliveredId === $this->wipId && in_array($calculatedDeliveredId, StaticData::DELIVERED_ID)) {
+      
+      // Clignotement pour Manchecourt et Stellantis
+      return StaticData::CLASS_NAME_ORDERS_COLORS['BLINKING_CLASS_NAME'];
+
+    } elseif (in_array($this->wipId, StaticData::BEFORE_PREFLIGHT_ID) && in_array($this->wipId, $factoryWipIdArray)) {      
+      // Clignotement pour Millau (cas partculier WipId = 0)
+      return StaticData::CLASS_NAME_ORDERS_COLORS['BLINKING_CLASS_NAME'];
+
+    }
+
+    return "";
   }
 
 }

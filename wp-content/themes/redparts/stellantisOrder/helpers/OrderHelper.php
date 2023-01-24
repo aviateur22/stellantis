@@ -1,7 +1,10 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
-require_once('/home/mdwfrkglvc/www/wp-config.php');
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlModelRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
+require_once('/home/mdwfrkglvc/www/wp-config.php');
 
 /**
  * Helper pour construction d'un nouvelle Commande
@@ -71,10 +74,30 @@ class OrderHelper {
    */
   protected OrderRepositoryInterface $orderRepository;
 
+  /**
+   * Model Repository
+   *
+   * @var ModelRepositoryInterface
+   */
+  protected ModelRepositoryInterface $modelRespository;
 
-  function __construct(OrderRepositoryInterface $orderRepository)
-  {
+  /**
+   * Calcul prévision des impressions
+   *
+   * @var ForecastPrintHelper
+   */
+  protected ForecastPrintHelper $forecastPrinthelper;
+
+
+  function __construct(
+    OrderRepositoryInterface $orderRepository, 
+    ModelRepositoryInterface $modelRepository,
+    ForecastPrintHelper $forecastPrintHelper
+  ) {
     $this->orderRepository = $orderRepository;
+    $this->modelRespository = $modelRepository;
+    
+    $this->forecastPrinthelper = $forecastPrintHelper;
     $this->orderDate = date('y-m-d');
     $this->orderId = uniqid();
   }
@@ -102,6 +125,9 @@ class OrderHelper {
     $orderStdClass->countryName = ''; 
     $orderStdClass->wipId = StaticData::ORDER_STATUS['PREPARATION'];
     $orderStdClass->isValid = true;
+    $orderStdClass->version = '';
+    $orderStdClass->year = 0;
+    $orderStdClass->forecastPrint = 0;
 
     return $orderStdClass;
   }
@@ -113,7 +139,7 @@ class OrderHelper {
    * @return boolean
    */
   function isPartNumberValid($partNumber): bool {    
-    $pattern = "/[0-9][0-9][a-zA-Z\d+]*/"; 
+    $pattern = "/[0-9][0-9][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z\d+]*/"; 
     if(empty($partNumber) || !preg_match($pattern, $partNumber)) {
       return false;
     }
@@ -148,6 +174,17 @@ class OrderHelper {
    */
   function setOrderFrom(string $orderFrom): void {
     $this->orderFrom =$orderFrom;
+  }
+
+  function calculPrintForecast(string $partNumber, string $deliveredDate) {
+
+    // Vérification de la date
+    if(!isDateValid($deliveredDate)) {
+      throw new \Exception('Faile to validate déliveredDate');
+    }
+    $printForecast = $this->forecastPrinthelper->getForecastOrdersQuantity($partNumber, $deliveredDate);
+
+    return $printForecast;
   }
 
   /**
@@ -232,7 +269,7 @@ class OrderHelper {
    * @param string $partNumber
    * @return void
    */
-  public function addToQuantityErrorOrder(string $partNumber) {
+  public function addOrderToErrorList(string $partNumber) {
     $this->errorOnQuantityOrders[] = $partNumber;
   }
 
@@ -243,6 +280,27 @@ class OrderHelper {
    */
   public function getFamily() {
 
+  }
+  /**
+   * Vérification validité model
+   *
+   * @param string $partNumber
+   * @param string $modelOnOrder
+   * @return boolean
+   */
+  public function isModelValid(string $partNumber, string $modelOnOrder): bool {
+    $modelCode = strtolower(substr($partNumber, 3, 4));
+    
+    $model = $this->modelRespository->findOneByCode($modelCode);
+    
+    if(empty($model)) {
+      throw new \Exception('Non-exsitent model ' . $modelCode, 400);
+    }
+
+    if(strtolower($model['model']) !== strtolower($modelOnOrder)) {
+      throw new \Exception('Discrepency between modelOrder '.strtolower($modelOnOrder).' and databaseModel ' . strtolower($model['model']), 400);
+    }
+    return true;
   }
 
   /**

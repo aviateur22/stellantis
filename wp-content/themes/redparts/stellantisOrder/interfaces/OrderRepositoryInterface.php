@@ -69,11 +69,10 @@ interface OrderRepositoryInterface {
   /**
    * Modidfication des statuts d'une commande suivant le orderId
    *
-   * @param string $wipValue
    * @param string $orderId
    * @return void
    */
-  function updateWip(string $wipValue, string $orderId): void;
+  function updateWip(string $orderId): void;
 
   /**
    * Mise a jour d'une commande

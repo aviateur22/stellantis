@@ -115,6 +115,27 @@ class Order {
    */
   protected bool $isValid;
 
+  /**
+   * Année
+   *
+   * @var integer
+   */
+  protected int $year;
+
+  /**
+   * Version
+   *
+   * @var string
+   */
+  protected string $version;
+
+  /**
+   * Undocumented variable
+   *
+   * @var integer
+   */
+  protected int $printForecast;
+
 
   function __construct(
     string $orderId,
@@ -132,7 +153,10 @@ class Order {
     string $countryName,
     int $wipId,
     bool $isValid,
-    string $brand
+    string $brand,
+    string $version,
+    int $year,
+    int $printForecast
   ) {
     $this->coverCode = $coverCode;
     $this->model = $model;
@@ -150,6 +174,9 @@ class Order {
     $this->wipId = $wipId;
     $this->isValid = $isValid;
     $this->brand = $brand;
+    $this->version = $version;
+    $this->year = $year;
+    $this->printForecast = $printForecast;
   }
   #Region Getter
 
@@ -286,6 +313,33 @@ class Order {
      */
     function getBrand(): string {
       return $this->brand;
+    }
+
+    /**
+     * Renvoie la version
+     *
+     * @return string
+     */
+    function getVersion(): string {
+      return $this->version;
+    }
+
+    /**
+     * Renvoie l'année
+     *
+     * @return integer
+     */
+    function getYear(): int {
+      return $this->year;
+    }
+
+    /**
+     * Renvoi le nombre d'impression
+     *
+     * @return integer
+     */
+    function getPrintForecast(): int {
+      return $this->printForecast;
     }
 
   #endRegion
