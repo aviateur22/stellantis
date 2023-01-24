@@ -52,9 +52,9 @@ class FindOrderInformationHelper {
    */
   public function findProcessedWith(int $wipId): string {
     
-    switch($wipId) {     
+    switch($wipId) {
       // Millau
-      case in_array($wipId, StaticData::MILLAU_ID):
+      case in_array($wipId, StaticData::MILLAU_ID, true):
         return StaticData::MILLAU_FACTORY_NAME;
       break;
       
@@ -80,7 +80,12 @@ class FindOrderInformationHelper {
    */
   public function getOrderStatusLabel(int $wipId): string {
 
-    switch($wipId) {       
+    switch($wipId) {
+      // BEFORE PreFlight
+      case in_array($wipId, StaticData::BEFORE_PREFLIGHT_ID):
+        return StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['BEFORE_PREFLIGHT'];        
+      break;
+
       // PreFlight
       case in_array($wipId, StaticData::PREFLIGHT_ID):
         return StaticData::STATUS_DISPLAY_NAME_ROLE_ST_MI_MA['PREFLIGHT'];        

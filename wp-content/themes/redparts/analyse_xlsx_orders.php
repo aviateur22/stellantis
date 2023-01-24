@@ -4,8 +4,10 @@
  */
 require_once('./stellantisOrder/services/OrderFromExcelFile.php');
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
+require_once('./stellantisOrder/services/MySqlForecastRepository.php');
 require_once('./stellantisOrder/exceptions/FileNotFindException.php');
 require_once('./stellantisOrder/helpers/OrderHelper.php');
+require_once('./stellantisOrder/helpers/ForecastPrintHelper.php');
 require_once('./stellantisOrder/html/DisplayOrder.php');
 require_once('./stellantisOrder/helpers/DeleteHelper.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
@@ -45,7 +47,9 @@ if(isset($filename)){
 		// Implementation des modèles
 		$orderRepository = new MySqlOrderRepository();
 		$modelRepository = new MySqlModelRepository();
-		$orderHelper = new OrderHelper($orderRepository, $modelRepository);
+		$forecastOrderRepository = new MySqlForecastRepository();
+		$forecastPrintHelper = new ForecastPrintHelper($forecastOrderRepository);
+		$orderHelper = new OrderHelper($orderRepository, $modelRepository, $forecastPrintHelper);
 		$orderSource = new OrderFromExcelFile($filename, $orderHelper, $user);		
 		$displayOrder = new DisplayOrder();
 		$deleteHelper = new DeleteHelper($orderRepository);

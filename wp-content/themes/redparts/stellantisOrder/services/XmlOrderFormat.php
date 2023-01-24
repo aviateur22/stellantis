@@ -95,11 +95,7 @@ class XmlOrderFormat implements OrderFormatInterface {
     $livre->appendChild($xmlFile->createElement('coverLink', $order['coverLink']));
     $livre->appendChild($xmlFile->createElement('family', $order['family']));
     $livre->appendChild($xmlFile->createElement('model', $order['model']));
-
-    // TODO Prevision sous 8 semaine
-    $prevision = $this->forecastPrintHelper->getForecastOrdersQuantity($order['deliveredDate'], $order['partNumber'], (int)$order['quantity']);
-      
-    $livre->appendChild($xmlFile->createElement('orderForecastPrevisions', strval($prevision)));    
+    $livre->appendChild($xmlFile->createElement('orderForecastPrevisions', $order['forecastPrint']));    
 
     // Format + Sauvegarde
     $xmlFile->formatOutput = true;

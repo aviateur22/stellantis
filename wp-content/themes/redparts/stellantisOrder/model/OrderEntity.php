@@ -31,7 +31,8 @@ class OrderEntity extends Order {
     bool $isValid,
     string $brand,
     string $version,
-    int $year
+    int $year,
+    int $printForecast
     ) {
     parent::__construct (
       $orderId,
@@ -51,7 +52,8 @@ class OrderEntity extends Order {
       $isValid,
       $brand,
       $version,
-      $year
+      $year,
+      $printForecast
     );
     
     $this->id = $id;

@@ -177,7 +177,8 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
       $order['isValid'],
       $order['brand'],
       $order['version'],
-      $order['year']
+      $order['year'],
+      $order['forecastPrint']
     );
   }
   

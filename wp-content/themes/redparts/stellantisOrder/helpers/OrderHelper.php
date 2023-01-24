@@ -2,6 +2,7 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlModelRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 require_once('/home/mdwfrkglvc/www/wp-config.php');
 
@@ -74,17 +75,29 @@ class OrderHelper {
   protected OrderRepositoryInterface $orderRepository;
 
   /**
-   * Undocumented variable
+   * Model Repository
    *
    * @var ModelRepositoryInterface
    */
   protected ModelRepositoryInterface $modelRespository;
 
+  /**
+   * Calcul prévision des impressions
+   *
+   * @var ForecastPrintHelper
+   */
+  protected ForecastPrintHelper $forecastPrinthelper;
 
-  function __construct(OrderRepositoryInterface $orderRepository, ModelRepositoryInterface $modelRepository)
-  {
+
+  function __construct(
+    OrderRepositoryInterface $orderRepository, 
+    ModelRepositoryInterface $modelRepository,
+    ForecastPrintHelper $forecastPrintHelper
+  ) {
     $this->orderRepository = $orderRepository;
     $this->modelRespository = $modelRepository;
+    
+    $this->forecastPrinthelper = $forecastPrintHelper;
     $this->orderDate = date('y-m-d');
     $this->orderId = uniqid();
   }
@@ -114,6 +127,7 @@ class OrderHelper {
     $orderStdClass->isValid = true;
     $orderStdClass->version = '';
     $orderStdClass->year = 0;
+    $orderStdClass->forecastPrint = 0;
 
     return $orderStdClass;
   }
@@ -160,6 +174,17 @@ class OrderHelper {
    */
   function setOrderFrom(string $orderFrom): void {
     $this->orderFrom =$orderFrom;
+  }
+
+  function calculPrintForecast(string $partNumber, string $deliveredDate) {
+
+    // Vérification de la date
+    if(!isDateValid($deliveredDate)) {
+      throw new \Exception('Faile to validate déliveredDate');
+    }
+    $printForecast = $this->forecastPrinthelper->getForecastOrdersQuantity($partNumber, $deliveredDate);
+
+    return $printForecast;
   }
 
   /**
@@ -294,13 +319,5 @@ class OrderHelper {
    */
   private function isCoverLinkFind():bool {
     return true;
-  }
-
-  private function setYear(string $partNumber) {
-
-  }
-
-  private function setVersion(string $partNumber) {
-
   }
 }

@@ -10,7 +10,7 @@ interface OrderTransferInterface {
    * @param array $orderPaths
    * @return void
    */
-  function transfertOrders(array $orderPaths): void;
+  function transfertOrders(array $orderPaths): bool;
 
   /**
    * Récupération addresse d'envoie

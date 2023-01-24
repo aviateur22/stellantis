@@ -57,6 +57,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'wipId' => $order->getWipId(),
           'version' => $order->getVersion(),
           'year' => $order->getYear(),
+          'forecastPrint' =>$order->getPrintForecast()
         ));       
       } else {
         throw new InvalidFormatException();
@@ -183,11 +184,12 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $orderId
    * @return void
    */
-  function updateWip(string $wipValue, string $orderId): void {
+  function updateWip(string $orderId): void {
     global $wpdb;
     $wpdb->query( $wpdb->prepare(
-      "UPDATE orders SET wipId = %s WHERE orderid = %s",
-      $wipValue, $orderId
+      
+      "UPDATE orders SET wipId = IF(forecastPrint + quantity >= ".StaticData::MINIMUM_ORDER_QUANTITY_MANCHECOURT.", ".StaticData::ORDER_STATUS['BEFORE_PREFLIGHT_MA'].", ".StaticData::ORDER_STATUS['BEFORE_PREFLIGHT_MI'].") WHERE orderid = %s",
+      $orderId
       )
     );    
   }

@@ -218,7 +218,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         }
         break;
       
-      // Date      
+      
+        // Date de livraison
       case 4: 
 
         // Si partNumber valide
@@ -229,6 +230,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         $date = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
         $orderStdClass->deliveredDate = \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
 
+        $orderStdClass->forecastPrint = $this->orderHelper->calculPrintForecast($orderStdClass->partNumber, $orderStdClass->deliveredDate);
+        
         // Vérification si commande déja existante        
         $isOrderDuplicate = $this->orderHelper->isOrderDuplicate($orderStdClass->partNumber, $orderStdClass->deliveredDate);
 
@@ -269,7 +272,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       $orderStdClass->isValid,
       $orderStdClass->brand,
       $orderStdClass->version,
-      $orderStdClass->year
+      $orderStdClass->year,
+      $orderStdClass->forecastPrint
     );   
     return $order;
   }

@@ -32,7 +32,8 @@ class DashboardOrderModel extends Order {
         $order->getIsValid(),
         $order->getBrand(),
         $order->getVersion(),
-        $order->getYear()
+        $order->getYear(),
+        $order->getPrintForecast()
       );
       $this->quantitiesByDate = $quantitiesByDate;
   }

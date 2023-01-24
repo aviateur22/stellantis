@@ -36,10 +36,14 @@ try {
   $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();    
 
   // Transfert Fichier
-  $ftpTransfert->transfertOrders($formatedPathOrders);
+  $isTransfertSuccess = $ftpTransfert->transfertOrders($formatedPathOrders);
+
+  if(!$isTransfertSuccess) {
+    throw new \Exception('Error transferring oreder file, process cancel', 500);
+  }
 
   // Mise a jour du statut des commandes
-  $ftpTransfert->updateOrderStatus();  
+  $ftpTransfert->updateOrderStatus();
 
   echo "Tranfert commandes OK";
 }

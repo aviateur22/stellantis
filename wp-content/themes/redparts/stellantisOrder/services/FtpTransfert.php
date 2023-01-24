@@ -44,16 +44,19 @@ class FtpTransfert implements OrderTransferInterface {
    * @param array $formatedOrders - Array de Object FormatedOrder
    * @return void
    */
-  function transfertOrders(array $formatedOrders): void {
+  function transfertOrders(array $formatedOrders): bool {
 
     foreach($formatedOrders as $formatedOrder) {
-      if($formatedOrder instanceof FormatedOrder) {
-
-        // Récupération données pour envoie
-        $this->getFactoryRecipient($formatedOrder);      
-
+      // Format des données invalide
+      if(!$formatedOrder instanceof FormatedOrder) {
+        throw new InvalidFormatException();
       }
+      
+      // Récupération données pour envoie
+      $this->getFactoryRecipient($formatedOrder);            
     }
+
+    return true;
   }
 
   /**
@@ -141,8 +144,9 @@ class FtpTransfert implements OrderTransferInterface {
    *
    * @return void
    */
-  function updateOrderStatus(): void  {    
+  function updateOrderStatus(): void  {
+    
     // Mise a jour du statut des commandes
-    $this->orderRepository->updateWip(StaticData::ORDER_STATUS['PREFLIGHT_MI'], $this->orderId);
+    $this->orderRepository->updateWip($this->orderId);
   }
 }
