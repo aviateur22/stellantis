@@ -130,6 +130,11 @@ abstract class StaticData {
       'BLOCKED_CLASS_NAME' => 'status--blocked',
       'BLINKING_CLASS_NAME' => 'status--blinking'
     ];
+
+    const CLASS_NAME_HEADER_COLOR = [
+      'HEADER_COLOR_1' => 'header--color--one',
+      'HEADER_COLOR_2' => 'header--color--two'
+    ];
     
   #endRegion
 

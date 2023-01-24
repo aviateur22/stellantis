@@ -37,6 +37,13 @@ class DisplayDashboardOrder {
    */
   protected DisplayOrderColorHelper $displayOrderColorHelper;
 
+  /**
+   * Background Header séparation
+   *
+   * @var string
+   */
+  protected string $headerBackground = StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_2'];
+
   function __construct(
     array $dashboardOrders, 
     array $intervalDays, 
@@ -369,27 +376,56 @@ class DisplayDashboardOrder {
     }
   }
 
+  /**
+   * Gestion affichage header de séparation
+   *
+   * @param DashboardOrderModel $order - Commande au rang N
+   * @param DashboardOrderModel|null $previousOrder - Commande au rang N-1
+   * @return string
+   */
   private function setRowHeader(DashboardOrderModel $order, DashboardOrderModel $previousOrder = null): string {
+    // Order information rang N-1
     $previousOrderInformation = empty($previousOrder) ? '' : $previousOrder->getOrderBuyer().$previousOrder->getBrand().$previousOrder->getModel().$previousOrder->getYear().$previousOrder->getVersion();
+    
+    // Orderinformation rang N
     $orderInformation = $order->getOrderBuyer().$order->getBrand().$order->getModel().$order->getYear().$order->getVersion();
-
+   
     if(!$previousOrder || ($orderInformation !== $previousOrderInformation)) {
-  
-      $html = "<tr style='background: yellow;'>";
-      $html .= "<td colspan='5'>";
-      $html .= "<p>";
-      $html .= $order->getOrderBuyer();
-      $html .= $order->getBrand();
-      $html .= $order->getModel();
-      $html .= $order->getYear();
-      $html .= $order->getVersion();
-      $html .= "</p>";
-      $html .= "</td>";
+      // Alterne la couleur du header de séparation
+      $this->toogleColor();
+
+      $html = "<tr class='".$this->headerBackground."'>";
+        $html .= "<td class='' colspan='5'>";
+          $html .= "<p class='header__separator__text'>";
+            $html .= $order->getOrderBuyer()."_";
+            $html .= $order->getBrand()."_";
+            $html .= $order->getModel()."_";
+            $html .= $order->getYear()."_";
+            $html .= $order->getVersion() ;
+          $html .= "</p>";
+        $html .= "</td>";
       $html .= "</tr>";
 
       return $html;
     }
     return '';
     
+  }
+
+  /**
+   * Gestion toggle header color
+   *
+   * @return void
+   */
+  private function toogleColor(): void {
+    
+    // Gestion couleur couleur background
+    if($this->headerBackground === StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_1']) {
+      $this->headerBackground = StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_2'];
+
+    } elseif($this->headerBackground === StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_2']) {
+      $this->headerBackground = StaticData::CLASS_NAME_HEADER_COLOR['HEADER_COLOR_1'];
+
+    }
   }
 }
