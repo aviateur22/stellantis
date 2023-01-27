@@ -1,50 +1,38 @@
 <?php
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlModelRepository.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
-require_once('/home/mdwfrkglvc/www/wp-config.php');
 
 /**
- * Helper pour construction d'un nouvelle Commande
+ * Undocumented class
  */
 class OrderHelper {
 
   /**
-   * OrderId
+   * Object contenant les données de 1 commande
    *
-   * @var string
+   * @var stdClass
    */
-  protected string $orderId;
+  protected stdClass $orderStdClass;
 
   /**
-   * Date de commande
+   * Model repository
    *
-   * @var string
+   * @var ModelRepositoryInterface
    */
-  protected string $orderDate;
+  protected ModelRepositoryInterface $modelRepository;
 
   /**
-   * OrderBuyer
+   * Order repository
    *
-   * @var string
+   * @var OrderRepositoryInterface
    */
-  protected string $orderBuyer;
-
-  /**
-   * Marque voiture
-   *
-   * @var string
-   */
-  protected string $brand;
+  protected OrderRepositoryInterface $orderRepository;
 
   /**
    * Liste commandes en echec
    *
    * @var array
    */
-  protected array $failureOrders = [];
+  protected array $missingCoverLinkOrders = [];
 
   /**
    * Liste commandes en echec
@@ -58,266 +46,322 @@ class OrderHelper {
    *
    * @var array
    */
-  protected array $errorOnQuantityOrders = [];
+  protected array $otherErrorOnOrders = [];
 
   /**
-   * Personne faisant la commande
-   *
-   * @var string
-   */
-  protected string $orderFrom;
-
-   /**
-   * Orders Repository
-   *
-   * @var OrderRepositoryInterface
-   */
-  protected OrderRepositoryInterface $orderRepository;
-
-  /**
-   * Model Repository
-   *
-   * @var ModelRepositoryInterface
-   */
-  protected ModelRepositoryInterface $modelRespository;
-
-  /**
-   * Calcul prévision des impressions
+   * Prévision impression Commande sur les prochaines semaines
    *
    * @var ForecastPrintHelper
    */
-  protected ForecastPrintHelper $forecastPrinthelper;
-
+  protected ForecastPrintHelper $forecastPrintHelper;
 
   function __construct(
-    OrderRepositoryInterface $orderRepository, 
+    OrderRepositoryInterface $orderRepository,
     ModelRepositoryInterface $modelRepository,
-    ForecastPrintHelper $forecastPrintHelper
-  ) {
+    ForecastPrintHelper $forecastPrintHelper    
+    ) {    
+    $this->modelRepository = $modelRepository;
     $this->orderRepository = $orderRepository;
-    $this->modelRespository = $modelRepository;
-    
-    $this->forecastPrinthelper = $forecastPrintHelper;
-    $this->orderDate = date('y-m-d');
-    $this->orderId = uniqid();
+    $this->forecastPrintHelper = $forecastPrintHelper;
   }
 
   /**
-   * Initilaisalstion propriété des commandes
+   * Validation des données de la commandes
    *
-   * @return stdClass
+   * @param stdClass $orderStdClass
+   * @return void
    */
-  function getNewOrderStdClass(): stdClass {
-    $orderStdClass = new stdClass;
-    $orderStdClass->brand = $this->brand;
-    $orderStdClass->orderId = $this->orderId; 
-    $orderStdClass->coverCode = ''; 
-    $orderStdClass->model = ''; 
-    $orderStdClass->family = ''; 
-    $orderStdClass->orderFrom = $this->orderFrom; 
-    $orderStdClass->orderBuyer = $this->orderBuyer; 
-    $orderStdClass->deliveredDate = ''; 
-    $orderStdClass->quantity = ''; 
-    $orderStdClass->partNumber = ''; 
-    $orderStdClass->coverLink = ''; 
-    $orderStdClass->orderDate = $this->orderDate; 
-    $orderStdClass->countryCode = ''; 
-    $orderStdClass->countryName = ''; 
-    $orderStdClass->wipId = StaticData::ORDER_STATUS['PREPARATION'];
-    $orderStdClass->isValid = true;
-    $orderStdClass->version = '';
-    $orderStdClass->year = 0;
-    $orderStdClass->forecastPrint = 0;
+  function areOrderPropertiesValid(stdClass $orderStdClass) {
 
-    return $orderStdClass;
+    $this->orderStdClass = $orderStdClass;
+   
+    // Si partNumber Invalide
+    if(!$this->isPartNumberValid()) {
+      return false;
+    }
+
+    $this->isDeliveredDateValid();
+    $this->isOrderDuplicated();
+    $this->isModelValid();
+    $this->isFamilyValid();
+    $this->isQuantityValid();
+    $this->isYearValid();
+    $this->isVersionValid();
+    
+
+    // Récupération des données manquantes à partir du PartNumber
+    $this->orderStdClass->coverLink = $this->findCoverLink(); 
+    $CountryInfo = $this->getCountryInformation();
+    $this->orderStdClass->countryName = $CountryInfo['country'];
+    $this->orderStdClass->countryCode = $CountryInfo['countryCode'];
+    $this->orderStdClass->forecastPrint = $this->getForecastPrint();
+    $this->formatDeliveredDate();
+    return true;
+  }  
+
+  /**
+   * Renvoie un nouvel Objet Order
+   *
+   * @param \stdClass $carData
+   * @return Order
+   */
+  function createOrder(): Order {  
+    $order = new Order(
+      $this->orderStdClass->orderId,
+      $this->orderStdClass->coverCode,
+      $this->orderStdClass->model,
+      $this->orderStdClass->family,
+      $this->orderStdClass->orderFrom,
+      $this->orderStdClass->orderBuyer,
+      $this->orderStdClass->deliveredDate,
+      $this->orderStdClass->quantity,
+      $this->orderStdClass->partNumber,
+      $this->orderStdClass->coverLink,
+      $this->orderStdClass->orderDate,
+      $this->orderStdClass->countryCode,
+      $this->orderStdClass->countryName,
+      $this->orderStdClass->wipId,
+      $this->orderStdClass->isValid,
+      $this->orderStdClass->brand,
+      $this->orderStdClass->version,
+      $this->orderStdClass->year,
+      $this->orderStdClass->forecastPrint
+    );   
+    return $order;
+  }
+
+  /**
+   * Renvoie les commandes dupliquées
+   *
+   * @return array
+   */
+  function getDuplicateOrders(): array {
+    return $this->duplicateOrders;
+  }
+
+  /**
+   * Renvoie les commandes avec liens documentation PFD manquant
+   *
+   * @return array
+   */
+  function getMissingCoverLinkOrders(): array {
+    return $this->missingCoverLinkOrders;
+  }
+
+  /**
+   * Renvoie les commandes avec d'autres erreurs
+   *
+   * @return array
+   */
+  function getOtherErrorOrders(): array {
+    return $this->otherErrorOnOrders;
   }
   
   /**
-   * Vérification du partNumber
+   * Vérification du PartNumber
    *
-   * @param string|null $partNumber
    * @return boolean
    */
-  function isPartNumberValid($partNumber): bool {    
+  private function isPartNumberValid(): bool {
     $pattern = "/[0-9][0-9][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z\d+]*/"; 
-    if(empty($partNumber) || !preg_match($pattern, $partNumber)) {
+    if(empty($this->orderStdClass->partNumber) || !preg_match($pattern, $this->orderStdClass->partNumber)) {
       return false;
     }
     return true;
   }
 
   /**
-   * MAJ de la marque
+   * Vérification si PartNumber deja existant au méme date
    *
-   * @param string $brand
-   * @return void
+   * @return boolean
    */
-  function setBrand(string $brand): void {
-    $this->brand = $brand;
-  }
-
-  /**
-   * MAJ du orderBuyer
-   *
-   * @param string $orderBuyer 
-   * @return void
-   */
-  function setOrderBuyer(string $orderBuyer): void {
-    $this->orderBuyer = $orderBuyer;
-  }
-
-  /**
-   * MAJ de orderFrom
-   *
-   * @param string $orderFrom
-   * @return void
-   */
-  function setOrderFrom(string $orderFrom): void {
-    $this->orderFrom =$orderFrom;
-  }
-
-  function calculPrintForecast(string $partNumber, string $deliveredDate) {
-
-    // Vérification de la date
-    if(!isDateValid($deliveredDate)) {
-      throw new \Exception('Faile to validate déliveredDate');
-    }
-    $printForecast = $this->forecastPrinthelper->getForecastOrdersQuantity($partNumber, $deliveredDate);
-
-    return $printForecast;
-  }
-
-  /**
-   * Récupération des données du pays
-   *
-   * @param string $partNumber
-   * @return array
-   */
-  public function getCountryInformation(string $partNumber): array {
-    return [
-      'country' => 'FRANCE',
-      'countryCode' => 'FR'
-    ];
-  }
-
-  /**
-   * Récupération des données de liens d'impression
-   *
-   * @param string $partNumber
-   * @return string
-   */
-  public function getCoverLink(string $partNumber): string {
-    // Lien documentation trouvé
-    $isCoverLinkFind = $this->isCoverLinkFind($partNumber);
-
-    if(!$isCoverLinkFind) {
-      $this->failureOrders[] = $partNumber;
-      return '';
-    }
-
-    return 'www-link/'. $partNumber .'/impression/document/'. $partNumber;
-  }
-
-  /**
-   * Renvoie la liste des commandes en echec
-   *
-   * @return array
-   */
-  public function getFailureOrders(): array {
-    return $this->failureOrders;
-  }
-
-  /**
-   * Renvoie la liste des commanded duplisuées
-   *
-   * @return array
-   */
-  public function getDuplicateOrders(): array {
-    return $this->duplicateOrders;
-  }
-
-  /**
-   * Renvoie la liste des Commandes avec une quantité = 0
-   *
-   * @return array
-   */
-  public function getErrorQuantityOrders(): array {
-    return $this->errorOnQuantityOrders;
-  }
-
-  /**
-   * Vérification des commandes en double
-   *
-   * @param string $partNumber
-   * @param string $deliveredDate
-   * @return void
-   */
-  public function isOrderDuplicate(string $partNumber, string $deliveredDate): bool {
-    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($partNumber, $deliveredDate);   
+  private function isOrderDuplicated(): bool {
+    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($this->orderStdClass->partNumber, $this->orderStdClass->deliveredDate);  
     
     // Commande dupliqué
     if(count($duplicateOrder) > 0) {
-      $this->duplicateOrders[] = $partNumber;
+      $this->duplicateOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
       return true;
     }
     return false;
   }
-
+  
   /**
-   * Ajout d'une commande en erreur de quantité
+   * Vérification du Model
    *
-   * @param string $partNumber
-   * @return void
-   */
-  public function addOrderToErrorList(string $partNumber) {
-    $this->errorOnQuantityOrders[] = $partNumber;
-  }
-
-  /**
-   * Renvoi la famille
-   *
-   * @return void
-   */
-  public function getFamily() {
-
-  }
-  /**
-   * Vérification validité model
-   *
-   * @param string $partNumber
-   * @param string $modelOnOrder
    * @return boolean
    */
-  public function isModelValid(string $partNumber, string $modelOnOrder): bool {
-    $modelCode = strtolower(substr($partNumber, 3, 4));
+  private function isModelValid(): bool {    
+
+    $modelCode = strtolower(substr($this->orderStdClass->partNumber, 3, 4));
     
-    $model = $this->modelRespository->findOneByCode($modelCode);
+    $model = $this->modelRepository->findOneByCode($modelCode);  
     
     if(empty($model)) {
-      throw new \Exception('Non-exsitent model ' . $modelCode, 400);
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;  
+      $this->orderStdClass->isValid = false; 
+
+      return false;
     }
 
-    if(strtolower($model['model']) !== strtolower($modelOnOrder)) {
-      throw new \Exception('Discrepency between modelOrder '.strtolower($modelOnOrder).' and databaseModel ' . strtolower($model['model']), 400);
+    if(strtolower($model['code']) !== strtolower($this->orderStdClass->model)) {      
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return false;
     }
     return true;
-  }
+  } 
 
   /**
-   * Renvoie le modèle
-   *
-   * @return void
-   */
-  public function getModel() {
-
-  }
-
-  /**
-   * Recherche du lien d'impression de la documentation
+   * Vérification de la version
    *
    * @return boolean
    */
-  private function isCoverLinkFind():bool {
+  private function isVersionValid(): bool {
+    $version = strtolower(substr($this->orderStdClass->partNumber, 2, 1));
+
+    if($version !== strtolower($this->orderStdClass->version) || !is_string($this->orderStdClass->version)) {
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return false;
+    }
+
     return true;
   }
+
+  /**
+   * Vérification de l'année
+   *
+   * @return boolean
+   */
+  private function isYearValid(): bool {
+    $year = strtolower(substr($this->orderStdClass->partNumber, 0, 2));
+
+    if($year !== $this->orderStdClass->year || !is_numeric($this->orderStdClass->year)) {      
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Vérification de la Familly
+   *
+   * @return boolean
+   */
+  private function isFamilyValid():bool {
+    return true;
+  }  
+
+  /**
+   * Vérification de la quantité
+   *
+   * @return boolean
+   */
+  private function isQuantityValid():bool {
+    // Si quantité = 0 ou pas numérique     
+    if(strval($this->orderStdClass->quantity) === '0' || !is_numeric($this->orderStdClass->quantity)) {             
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Vérification de la Documentation PDF
+   *
+   * @return string
+   */
+  private function findCoverLink(): string {
+    // Lien documentation trouvé
+    $coverLinkFind = $this->getCoverLink($this->orderStdClass->partNumber);
+
+    if(empty($coverLinkFind)) {     
+      $this->missingCoverLinkOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return '';
+    }
+
+    return $coverLinkFind;
+  }
+
+  /**
+   * Vérification de la date de livraison
+   *
+   * @return boolean
+   */
+  private function isDeliveredDateValid(): bool{    
+    // Controle de la date de livraison
+    if(empty($this->orderStdClass->deliveredDate)) {
+      $this->getDeliveredDateFromSorpDate();
+    }
+
+    $isDateValid = isDateValid($this->orderStdClass->deliveredDate);
+
+    if(!$isDateValid) {     
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;;
+      throw new Exception('DeliveredDate Unvalid, Check input file', 400);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Formate la date de livraison
+   *
+   * @return void
+   */
+  private function formatDeliveredDate(): void {
+    $this->orderStdClass->deliveredDate = date('d-M-Y', strtotime($this->orderStdClass->deliveredDate));
+  }
+
+  /**
+   * Détermination date de livraison si deliveredDate non définie
+   *
+   * @return void
+   */
+  private function getDeliveredDateFromSorpDate() {
+    // Nombre de jour à déduire sur le SORP date
+    $daysToRemove = '-' . StaticData::NUMBER_DAY_REMOVE_ON_SORP_DATE . ' days';
+    
+    // Jour de début
+    $this->orderStdClass->deliveredDate = date('Y-m-d', strtotime($daysToRemove, strtotime($this->orderStdClass->sorpDate)));
+  }
+
+  /**
+   * Récupération info Pays
+   *
+   * @return array
+   */
+  private function getCountryInformation(): array {
+    return [
+      'country' => 'UNDEFINED',
+      'countryCode' => 'UNDEFINED'
+    ];
+  }
+  
+  /**
+   * Renvoie le liens docuementation PDF
+   *
+   * @return string|null
+   */
+  private function getCoverLink(): string {
+    return 'www-link/'. $this->orderStdClass->partNumber .'/impression/document/'. $this->orderStdClass->partNumber;
+  }
+
+  /**
+   * Renvoie la prévision d'impression
+   *
+   * @return int
+   */
+  private function getForecastPrint(): int {    
+    $printForecast = $this->forecastPrintHelper->getForecastOrdersQuantity($this->orderStdClass->partNumber, $this->orderStdClass->deliveredDate);
+    return $printForecast;
+  }  
 }

@@ -1,60 +1,108 @@
 <?php
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/ExcelFileHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderSourceInterface.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/Order.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/User.php';
 
-/**
- * Extraction données a partir d'un fichier Excel
- */
 class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface {
 
   /**
-   * Structure Document EXCEL
+   * Structure du docuement Excel pour les commandes
    *
    */
   const FILE_STRUCTURE = [
     'ROW_START' => 7,
     'COLUMN_START' => 1
-  ]; 
+  ];
 
   /**
-   * Liste des commandes clients ectrait du fichier Xls
+   * Données permettant de valider le document Excel
+   * Espaces entre les mots supprimés
+   * Text en lowercase
+   *
+   */
+  const VALIDATE_WORDS = [
+    [
+      'WORD' => 'brand',
+      'ROW' => 1,
+      'COLULMN' => 0
+    ],
+    [
+      'WORD' => 'carlinename',
+      'ROW' => 1,
+      'COLULMN' => 2
+    ],
+    [
+      'WORD' => 'codepochett',
+      'ROW' => 6,
+      'COLULMN' => 0
+    ],
+    [
+      'WORD' => 'package',
+      'ROW' => 6,
+      'COLULMN' => 1
+    ],
+    [
+      'WORD' => 'carline',
+      'ROW' => 6,
+      'COLULMN' => 2
+    ],    
+    [
+      'WORD' => 'modelyear',
+      'ROW' => 1,
+      'COLULMN' => 4
+    ]
+  ];
+
+  /**
+   * Liste des données communes au fichier de commandes
    *
    * @var array
    */
-  protected array $orders = [];
-  
+  private array $inCommonInformations = [];
+
   /**
-   * OrderHelper
+   * Order $orders
+   *
+   * @var array
+   */
+  protected array $orders = []; 
+
+  /**
+   * Helper pour vérification des commandes
    *
    * @var OrderHelper
    */
   protected OrderHelper $orderHelper;
 
   /**
-   * Utilisateur 
+   * Utilisateur
    *
    * @var User
    */
   protected User $user;
 
-  function __construct(string $fileName, OrderHelper $orderHelper, User $user)
-  { 
+  /**
+   * Order repository
+   *
+   * @var OrderRepositoryInterface
+   */
+  protected OrderRepositoryInterface $orderRepository;
+
+  function  __construct(string $fileName, OrderHelper $orderHelper, User $user, $orderRepository) {
     // Constructeur parent
     parent::__construct($fileName); 
+
     $this->orderHelper = $orderHelper;
     $this->user = $user;
-  }
+    $this->orderRepository = $orderRepository;
+  } 
 
   /**
-   * Lecture du fichier contenant les commandes
+   * Nouveau StdClass pour stocker les données d'une commande
    *
    * @return void
    */
-  function readOrderSourceData(): void {
-   
+  function initializeFile() {
     // Vérification disponibilité PHPExcel
     $this->isPhpExcelAvailbale();
 
@@ -64,217 +112,236 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     // Vérification du format du fichier
     $this->isOrderWorksheetReadable();
 
-    // Parcours du fichier excel
-    $this->browseOrderDataFile();
+    // Vérification de validité du fichier
+    if(!$this->isOrderFileValid()) {
+      throw new InvalidFormatException('Provided file is not valid for Orders', 400);
+    }
+
+    // Récupération des données communes a toutes les commandes
+    $this->getInCommonInformations();
+    
+    // Lecture du fichier
+    $this->readOrderSourceData();
+
+    // Sauvegarde des commandes
+    $this->orderRepository->save($this->orders);
   }
 
   /**
-   * Renvoie la liste des commandes
+   * Vérification validité du fichier
+   *
+   * @return boolean
+   */
+  function isOrderFileValid(): bool {    
+    $isFileValid = true;
+
+    // Vérification concordence des mots
+    foreach(self::VALIDATE_WORDS as $word) {
+      $wordOnFile = preg_replace("/\s+/", "", strtolower($this->readCellValue($word['ROW'], $word['COLULMN'])));
+      
+      if($wordOnFile !== $word['WORD']) {
+        $isFileValid = false;
+      }
+    };
+    
+    // Renvoie fichier Valid
+    return $isFileValid;
+  }
+
+  /**
+   * Parcours le conte,u du fichier
+   *
+   * @return void
+   */
+  function readOrderSourceData(): void {
+   
+    // Derniere ligne
+    $LAST_ROW = $this->activeSheet->getHighestRow();
+
+    for($row = self::FILE_STRUCTURE['ROW_START']; $row < $LAST_ROW; $row++) {     
+      
+      if($this->readCellValue($row, 0) !== '') {
+        // Nouveau OrderStdClass
+        $orderStdClass = $this->getNewOrderStdClass();
+
+        // CoverCode
+        $orderStdClass->coverCode = $this->readCellValue($row, 0);
+
+        // PartNumber
+        $orderStdClass->partNumber = $this->readCellValue($row, 1);
+
+        // Quantity
+        $orderStdClass->quantity = $this->readCellValue($row, 3);
+
+        // DeliveredDate
+        $orderStdClass->deliveredDate = $this->readCellValue($row, 4, true);
+    
+        // Validation des proprité des commandes
+        $isOrderStdClassValid = $this->orderHelper->areOrderPropertiesValid($orderStdClass);
+
+        if($isOrderStdClassValid) {
+          $this->orders[] = $this->orderHelper->createOrder();
+        }
+      }    
+    }    
+  }
+
+  /**
+   * Renvoie les commendes
    *
    * @return array
    */
   function getOrders(): array {
     return $this->orders;
-  }  
- 
+  } 
+  
   /**
-   * Parcours du fichier commande
+   * Object pour stocker les données de 1 commande
+   *
+   * @return stdClass
+   */
+  private function getNewOrderStdClass(): stdClass {
+    // orderStdClass
+    $orderStdClass = new stdClass;
+
+    $orderStdClass->brand = $this->inCommonInformations['brand'];
+    $orderStdClass->orderId = $this->inCommonInformations['orderId'];    
+    $orderStdClass->model = $this->inCommonInformations['model'];
+    $orderStdClass->family = $this->inCommonInformations['family'];
+    $orderStdClass->orderFrom = $this->inCommonInformations['orderFrom'];
+    $orderStdClass->orderBuyer = $this->inCommonInformations['orderBuyer'];
+    $orderStdClass->orderDate = $this->inCommonInformations['orderDate'];
+    $orderStdClass->wipId = $this->inCommonInformations['wipId'];
+    $orderStdClass->isValid = $this->inCommonInformations['isValid'];
+    $orderStdClass->version = $this->inCommonInformations['version'];
+    $orderStdClass->year = $this->inCommonInformations['year'];
+    $orderStdClass->sorpDate = $this->inCommonInformations['sorpDate'];
+    $orderStdClass->coverCode = '';
+    $orderStdClass->deliveredDate = '';
+    $orderStdClass->quantity = ''; 
+    $orderStdClass->coverLink = '';    
+    $orderStdClass->countryCode = ''; 
+    $orderStdClass->countryName = '';     
+    $orderStdClass->forecastPrint = 0;
+
+    return $orderStdClass;
+  }
+
+  /**
+   * Renvoie les données d'une cellule
+   *
+   * @param integer $row
+   * @param integer $col
+   * @param bool $isDate - Si date a renvoyer
+   * @return string|null
+   */
+  private function readCellValue(int $row, int $col, bool $isDate = false): string {       
+    if(!$isDate) {      
+      return is_null($this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue())  ?
+        '' :
+        $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
+    }
+
+    $date = is_null($this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue())  ?
+      '' :
+      $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
+    
+   return \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
+
+
+  }
+
+  /**
+   * Récupération des données communes aux commandes
    *
    * @return void
    */
-  private function browseOrderDataFile() {    
-    // Récupération du site faisant la commande    
-    $orderBuyer = $this->user->getFirstRole();
-    
-    // Récupération de la marque de  la voiture
-    $brand = $this->activeSheet->getCell('A2')->getValue();
+  private function getInCommonInformations() {    
 
-    // Personne faisant la commande
-    $orderFrom = $this->user->getFistNameAndLastName();
-    
-    // Mise a jour de OrderBuyer
-    $this->orderHelper->setOrderBuyer($orderBuyer);
+    // Récupération du Nom et Prénom
+    $this->inCommonInformations['orderFrom'] = $this->user->getFistNameAndLastName();
 
-    // Mise a jour de la marque
-    $this->orderHelper->setBrand($brand);
+    // Role de l'utilisateur
+    $this->inCommonInformations['orderBuyer'] = $this->user->getFirstRole();
 
-    // Mise a jour de la personne faisoant la commande
-    $this->orderHelper->setOrderFrom($orderFrom);
+    // Id du fichier de commandes
+    $this->inCommonInformations['orderId'] = uniqid();
 
-    // Derniere ligne
-    $LAST_ROW = $this->activeSheet->getHighestRow();
+    // Marque 
+    $this->inCommonInformations['brand'] = $this->activeSheet->getCell('A2')->getValue();
 
-    // Derniere colonne
-    $LAST_COLUMN = $this->activeSheet->getHighestDataColumn();
-    $COLUMN_COUNT_NUMBER = PHPExcel_Cell::columnIndexFromString($LAST_COLUMN);    
+    // Model
+    $this->inCommonInformations['model'] = $this->activeSheet->getCell('D2')->getValue();
+
+    // Famille de la voiture
+    $this->inCommonInformations['family'] = '';
+
+    // Validité de la commande
+    $this->inCommonInformations['isValid'] = true;
+
+    // Date de lecture du fichier
+    $this->inCommonInformations['orderDate'] = date('Y-m-d');
+
+    // Statut initial des commandes présentent dans le fichier
+    $this->inCommonInformations['wipId'] = StaticData::ORDER_STATUS['PREPARATION'];
+
+    // Version
+    $this->inCommonInformations['version'] = $this->getYearAndVersion($this->activeSheet->getCell('E2')->getValue())['version'];
    
-    for($row = self::FILE_STRUCTURE['ROW_START']; $row < $LAST_ROW; $row++) {
-      
-      // Nouveau OrderStdClass
-      $orderStdClass = $this->orderHelper->getNewOrderStdClass();      
-      
-      for($col = self::FILE_STRUCTURE['COLUMN_START']; $col <= $COLUMN_COUNT_NUMBER; $col++ ) {
-        
-        $this->completeOrderStdClass($orderStdClass, $row, ($col - 1));        
-      }
-      
-      // Ajout à la liste des commandes
-      if($this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
-        $this->orders[] = $this->createOrder($orderStdClass);
-      }
-    }
-  }
-
-
-  /**
-   * Complete le Order StdClass à partir du fichier XLS et 
-   *
-   * @param stdClass $carData
-   * @param integer $row - Ligne fuchier xls
-   * @param integer $col - Colonne fichier xls
-   * @param OrderHelper $orderHelper - Helper pour aider à la création d'une nouvlle commande
-   * @return void
-   */
-  private function completeOrderStdClass(stdClass &$orderStdClass, int $row, int $col) {
-
-    switch($col) {
-      // Code pochette
-      case 0: 
-        $orderStdClass->coverCode = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-        break;
-
-      // PartNumber
-      case 1: 
-        $cellValue = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-
-        if(!$this->orderHelper->isPartNumberValid($cellValue)) {
-          return;
-        }
-        // PartNumber
-        $orderStdClass->partNumber = $cellValue;
-
-        // Récupération des données pays
-        $countryData = $this->orderHelper->getCountryInformation($orderStdClass->partNumber);
-        $orderStdClass->countryCode = $countryData['countryCode'];
-        $orderStdClass->countryName = $countryData['country'];
-
-        // Link doc PDF
-        $coverLink = $this->orderHelper->getCoverLink($orderStdClass->partNumber);        
-
-        if(empty($coverLink)) {           
-          $orderStdClass->isValid = false;
-          $orderStdClass->coverLink = '';
-
-        } else {
-          $orderStdClass->coverLink = $coverLink;
-        }
-
-        // Version 
-        $version = substr($orderStdClass->partNumber, 2, 1);
-        $orderStdClass->version = $version;
-        if(!is_string($version)) {
-          $this->orderHelper->addOrderToErrorList($orderStdClass->partNumber);
-          $orderStdClass->isValid = false;
-        }
-
-        // Année
-        $year = substr($orderStdClass->partNumber, 0, 2);
-        $orderStdClass->year = $year;
-        if(!is_numeric($year)) {
-          $this->orderHelper->addOrderToErrorList($orderStdClass->partNumber);
-          $orderStdClass->isValid = false;
-        }
-        break;
-
-      // Model
-      case 2:
-
-        // Si partNumber valide
-        if(!$this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
-          return;
-        }
-
-        // Model de la voiture
-        $orderStdClass->model = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-
-        // Vérification cohérence Model
-        $this->orderHelper->isModelValid($orderStdClass->partNumber,  $orderStdClass->model);
-        break;
-
-      // Quantité
-      case 3:
-
-        // Si partNumber valide
-        if(!$this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
-          return;
-        }
-
-        $orderStdClass->quantity = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-
-        // Si quantité = 0        
-        if(strval($orderStdClass->quantity) === '0' || !is_numeric($orderStdClass->quantity)) {          
-          $this->orderHelper->addOrderToErrorList($orderStdClass->partNumber);
-          $orderStdClass->isValid = false;
-        }
-        break;
-      
-      
-        // Date de livraison
-      case 4: 
-
-        // Si partNumber valide
-        if(!$this->orderHelper->isPartNumberValid($orderStdClass->partNumber)) {
-          return;
-        }
-
-        $date = $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-        $orderStdClass->deliveredDate = \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
-
-        $orderStdClass->forecastPrint = $this->orderHelper->calculPrintForecast($orderStdClass->partNumber, $orderStdClass->deliveredDate);
-        
-        // Vérification si commande déja existante        
-        $isOrderDuplicate = $this->orderHelper->isOrderDuplicate($orderStdClass->partNumber, $orderStdClass->deliveredDate);
-
-        // Commande dupliquée
-        if($isOrderDuplicate) {
-          $orderStdClass->isValid = false;
-        }
-        break;
-        
-
-      default:  
-      break;
-    }
+    // Année
+    $this->inCommonInformations['year'] =  $this->getYearAndVersion($this->activeSheet->getCell('E2')->getValue())['year'];
+    
+    // Date de référence sur le fichier
+    $this->inCommonInformations['sorpDate'] = $this->getSorpDate($this->activeSheet->getCell('A3')->getValue());
   }
 
   /**
-   * Renvoie un nouvel Objet Order
+   * Récupération Date SORP
    *
-   * @param \stdClass $carData
-   * @return Order
+   * @param string $sorpText
+   * @return string
    */
-  private function createOrder(\stdClass $orderStdClass): Order {  
-    $order = new Order(
-      $orderStdClass->orderId,
-      $orderStdClass->coverCode,
-      $orderStdClass->model,
-      $orderStdClass->family,
-      $orderStdClass->orderFrom,
-      $orderStdClass->orderBuyer,
-      $orderStdClass->deliveredDate,
-      $orderStdClass->quantity,
-      $orderStdClass->partNumber,
-      $orderStdClass->coverLink,
-      $orderStdClass->orderDate,
-      $orderStdClass->countryCode,
-      $orderStdClass->countryName,
-      $orderStdClass->wipId,
-      $orderStdClass->isValid,
-      $orderStdClass->brand,
-      $orderStdClass->version,
-      $orderStdClass->year,
-      $orderStdClass->forecastPrint
-    );   
-    return $order;
+  private function getSorpDate(string $sorpText): string {
+    // Suppression du mot sorp
+    // Suppression des espaces 
+    // remplace les . par des -
+    // Suppression des espaces
+    $sorpText = trim(preg_replace("/\s+/", "", strtolower($sorpText)));
+    $sorpText = strval(str_replace('.', '-',trim(str_replace('sorp:','', strtolower($sorpText)))));
+    
+    // Format Date
+    $sorpDate = \PHPExcel_Style_NumberFormat::toFormattedString($sorpText, 'YYYY-MM-DD');
+
+    if(!isDateValid($sorpDate)){
+      throw new \Exception('SORP Invalid date format', 400);
+    }
+    
+    return $sorpDate;
+  }
+
+  /**
+   * Récupération Année et Version du model
+   *
+   * @return array|null
+   */
+  private function getYearAndVersion(string $versionAndYearText): array {
+    // Suppression des espaces
+    $yearVersion = trim(preg_replace("/\s+/", "", strtolower($versionAndYearText)));
+
+    // Données fichier invalide
+    if(strlen($yearVersion) < 3) {
+      throw new InvalidFormatException('Excel File not valid to determin Year and Version', 400);
+    }
+
+    // Année
+    $year = substr($versionAndYearText, 0, 2);
+
+    // Version
+    $version = strtoupper(substr($versionAndYearText, 2, 1));
+
+    return [
+      'year' => $year,
+      'version' => $version
+    ];
   }
 }

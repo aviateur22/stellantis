@@ -2,11 +2,9 @@
 /**
  * Fichier lecture gestion order se stallentis
  */
-require_once('./stellantisOrder/services/OrderFromExcelFile.php');
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/services/MySqlForecastRepository.php');
 require_once('./stellantisOrder/exceptions/FileNotFindException.php');
-require_once('./stellantisOrder/helpers/OrderHelper.php');
 require_once('./stellantisOrder/helpers/ForecastPrintHelper.php');
 require_once('./stellantisOrder/html/DisplayOrder.php');
 require_once('./stellantisOrder/helpers/DeleteHelper.php');
@@ -14,7 +12,8 @@ require_once('./stellantisOrder/helpers/UserHelper.php');
 require_once('./stellantisOrder/helpers/AuthorizeHelper.php');
 require_once('./stellantisOrder/exceptions/ForbiddenException.php');
 require_once('./stellantisOrder/services/MySqlModelRepository.php');
-
+require_once('./stellantisOrder/helpers/OrderHelper.php');
+require_once('./stellantisOrder/services/OrderFromExcelFile.php');
 require('/home/mdwfrkglvc/www/wp-config.php');
 
 error_reporting(E_ALL);
@@ -48,33 +47,37 @@ if(isset($filename)){
 		$orderRepository = new MySqlOrderRepository();
 		$modelRepository = new MySqlModelRepository();
 		$forecastOrderRepository = new MySqlForecastRepository();
-		$forecastPrintHelper = new ForecastPrintHelper($forecastOrderRepository);
-		$orderHelper = new OrderHelper($orderRepository, $modelRepository, $forecastPrintHelper);
-		$orderSource = new OrderFromExcelFile($filename, $orderHelper, $user);		
+		$forecastPrintHelper = new ForecastPrintHelper($forecastOrderRepository);		
 		$displayOrder = new DisplayOrder();
 		$deleteHelper = new DeleteHelper($orderRepository);
-		
-		// Lecture des données
-		$orderSource->readOrderSourceData();		
+		$orderHelper = new OrderHelper($orderRepository, $modelRepository, $forecastPrintHelper);
+		$orderSource = new OrderFromExcelFile($filename, $orderHelper, $user, $orderRepository);
 
-		// Récupération des commandes
-		$orders = $orderSource->getOrders();
-
-		// Récupération des commandes en erreur
-		$duplicatedOrders = $orderHelper->getDuplicateOrders();
-		$failureOrders = $orderHelper->getFailureOrders();
-		$quantityErrorOrders = $orderHelper->getErrorQuantityOrders();
-
-		// Sauvegarde des commandes
-		$orderRepository->save($orders);
+		// Initialisation lecture fichier
+		$orderSource->initializeFile();
 
 		//Nettoyages des ancienne données
 		$deleteHelper->deleteOldgeneratedOrderFile();
 		$deleteHelper->deleteUnusedOrders();
 
+		// Commandes dupliqués
+		$duplicatedOrders = $orderHelper->getDuplicateOrders();
+
+		// Commandes sans Documentation PDF
+		$missingCoverLinkOrders = $orderHelper->getMissingCoverLinkOrders();
+
+		// Commandes avec d'autres types erreurs
+		$otherErrorOrders = $orderHelper->getOtherErrorOrders();
+
+
 		// Creation HTML des commandes
-		$displayOrder->setDuplicateAndFailureOrder($duplicatedOrders, $failureOrders, $quantityErrorOrders);
-		$ordersHtml = $displayOrder->createHtmlFromOrders($orders);
+		$displayOrder->setDuplicateAndFailureOrder(
+			$duplicatedOrders, 
+			$missingCoverLinkOrders, 
+			$otherErrorOrders
+		);
+		
+		$ordersHtml = $displayOrder->createHtmlFromOrders($orderSource->getOrders());
 
 		// Renvoie des données HTML
 		$data['result'] = $ordersHtml;
@@ -86,12 +89,13 @@ if(isset($filename)){
 		$data['duplicatedOrders'] = $duplicatedOrders;
 
 		// Commandes sans quantité
-		$data['quantityErrorOrders'] = $quantityErrorOrders;
+		$data['quantityErrorOrders'] = $otherErrorOrders;
 
 		// Commande sans CoverLink
-		$data['failureOrders'] = [];
+		$data['failureOrders'] = $missingCoverLinkOrders;
 
 		echo(json_encode($data));
+
 	}
 	catch(\Throwable $th) {
 		// Récupération code HTTP

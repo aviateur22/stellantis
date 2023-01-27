@@ -15,7 +15,7 @@ try {
 
   // Repository
   $mySqlOrderRepository = new MySqlOrderRepository(); 
-  $mySqlOrderRepository->deleteOne($partNumber, $orderId, $deliveredDate);
+  $mySqlOrderRepository->deleteOne($partNumber, $orderId, date('Y-m-d', strtotime($deliveredDate)));
   
   // Renvoie des données 
   $data['delete-result'] = true;

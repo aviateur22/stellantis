@@ -40,9 +40,9 @@ function isUserRoleFindInArrayOfRoles(User $user, array $roles): bool {
  * Valide une date
  *
  * @param string $date - date a vérifier
- * @return void
+ * @return bool
  */
-function isDateValid(string $date) {
+function isDateValid(string $date): bool {
   $year =(int)date("Y",strtotime($date));
   $month =(int)date("m",strtotime($date));
   $day = (int)date("d",strtotime($date));
