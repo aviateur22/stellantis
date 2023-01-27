@@ -1,5 +1,9 @@
 <?php
 abstract class StaticData {
+
+  // Jour a supprimer sur la date SORP
+  const NUMBER_DAY_REMOVE_ON_SORP_DATE = 7;
+
   // Nombre de semaine pour calculer les prévisions
   const PRINT_FORECAST_WEEK = 8;
 

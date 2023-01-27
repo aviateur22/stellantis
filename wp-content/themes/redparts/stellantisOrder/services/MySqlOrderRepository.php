@@ -49,7 +49,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'partNumber' => $order->getPartNumber(),
           'coverCode' => $order->getCoverCode(),
           'quantity' => $order->getQuantity(),
-          'deliveredDate' => $order->getDeliveredDate(),
+          'deliveredDate' => date('Y-m-d', strtotime($order->getDeliveredDate())),
           'coverLink'=> $order->getCoverLink(),
           'model'=>$order->getModel(),
           'isValid' => $order->getIsValid(),

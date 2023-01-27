@@ -26,7 +26,7 @@ class ForecastPrintHelper {
    * @param string $partNumber - PartNumber de la commande
    * @param int orderQuantity- Quantité dela commande
    * 
-   * @return void
+   * @return int
    */
   function getForecastOrdersQuantity(string $orderDeliveredDate, string $partNumber): int {
 
