@@ -43,6 +43,11 @@ function isUserRoleFindInArrayOfRoles(User $user, array $roles): bool {
  * @return bool
  */
 function isDateValid(string $date): bool {
+  // Vérifie les date 1-jan-1970
+  if(date('Y-m-d', strtotime($date)) === date('Y-m-d', strtotime('1970-01-01'))) {
+    return false;
+  }
+
   $year =(int)date("Y",strtotime($date));
   $month =(int)date("m",strtotime($date));
   $day = (int)date("d",strtotime($date));

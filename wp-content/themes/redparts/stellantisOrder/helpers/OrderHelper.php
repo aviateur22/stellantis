@@ -75,11 +75,8 @@ class OrderHelper {
 
     $this->orderStdClass = $orderStdClass;
    
-    // Si partNumber Invalide
-    if(!$this->isPartNumberValid()) {
-      return false;
-    }
-
+    
+    $this->isPartNumberValid();
     $this->isDeliveredDateValid();
     $this->isOrderDuplicated();
     $this->isModelValid();
@@ -96,7 +93,6 @@ class OrderHelper {
     $this->orderStdClass->countryCode = $CountryInfo['countryCode'];
     $this->orderStdClass->forecastPrint = $this->getForecastPrint();
     $this->formatDeliveredDate();
-    return true;
   }  
 
   /**
@@ -165,6 +161,9 @@ class OrderHelper {
   private function isPartNumberValid(): bool {
     $pattern = "/[0-9][0-9][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z][a-zA-Z\d+]*/"; 
     if(empty($this->orderStdClass->partNumber) || !preg_match($pattern, $this->orderStdClass->partNumber)) {
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;  
+      $this->orderStdClass->isValid = false; 
+
       return false;
     }
     return true;
@@ -198,18 +197,27 @@ class OrderHelper {
     
     $model = $this->modelRepository->findOneByCode($modelCode);  
     
+    // Aucun model present en base de données
     if(empty($model)) {
       $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;  
-      $this->orderStdClass->isValid = false; 
-
+      $this->orderStdClass->isValid = false;      
       return false;
     }
 
+    // Vérification du model Code
     if(strtolower($model['code']) !== strtolower($this->orderStdClass->model)) {      
       $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
       $this->orderStdClass->isValid = false;
       return false;
     }
+
+    // Vérification du model name
+    if(strtolower($model['model']) !== strtolower($this->orderStdClass->modelName)) {
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return false;
+    }
+
     return true;
   } 
 
@@ -361,7 +369,7 @@ class OrderHelper {
    * @return int
    */
   private function getForecastPrint(): int {    
-    $printForecast = $this->forecastPrintHelper->getForecastOrdersQuantity($this->orderStdClass->partNumber, $this->orderStdClass->deliveredDate);
+    $printForecast = $this->forecastPrintHelper->getForecastOrdersQuantity($this->orderStdClass->deliveredDate, $this->orderStdClass->partNumber);
     return $printForecast;
   }  
 }

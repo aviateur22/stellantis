@@ -83,7 +83,7 @@ class FtpTransfert implements OrderTransferInterface {
 
       break;
 
-      case $formatedOrder->getOrderQuantity() > 100:
+      case $formatedOrder->getOrderQuantity() >= 100:
         // Connection FTP
         $ftpConnect = ftp_connect(
           self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
@@ -96,7 +96,7 @@ class FtpTransfert implements OrderTransferInterface {
         );
         break;
 
-      default: 
+      default:        
           throw new FtpException();
       break;
     }

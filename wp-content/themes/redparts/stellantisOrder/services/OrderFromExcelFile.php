@@ -170,6 +170,9 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         // PartNumber
         $orderStdClass->partNumber = $this->readCellValue($row, 1);
 
+        //Model Name
+        $orderStdClass->modelName = $this->readCellValue($row, 2);
+
         // Quantity
         $orderStdClass->quantity = $this->readCellValue($row, 3);
 
@@ -177,11 +180,11 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         $orderStdClass->deliveredDate = $this->readCellValue($row, 4, true);
     
         // Validation des proprité des commandes
-        $isOrderStdClassValid = $this->orderHelper->areOrderPropertiesValid($orderStdClass);
+        $this->orderHelper->areOrderPropertiesValid($orderStdClass);
 
-        if($isOrderStdClassValid) {
-          $this->orders[] = $this->orderHelper->createOrder();
-        }
+        // Ajout de la commande
+        $this->orders[] = $this->orderHelper->createOrder();
+        
       }    
     }    
   }
@@ -274,7 +277,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->inCommonInformations['model'] = $this->activeSheet->getCell('D2')->getValue();
 
     // Famille de la voiture
-    $this->inCommonInformations['family'] = '';
+    $this->inCommonInformations['family'] = 'UNDEFINED';
 
     // Validité de la commande
     $this->inCommonInformations['isValid'] = true;
@@ -286,18 +289,31 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->inCommonInformations['wipId'] = StaticData::ORDER_STATUS['PREPARATION'];
 
     // Version
-    $this->inCommonInformations['version'] = $this->getYearAndVersion($this->activeSheet->getCell('E2')->getValue())['version'];
+    $this->inCommonInformations['version'] = empty($this->activeSheet->getCell('E2')->getValue()) ?
+      $this->getYearAndVersion('') :
+      $this->getYearAndVersion($this->activeSheet->getCell('E2')->getValue())['version'];
    
     // Année
-    $this->inCommonInformations['year'] =  $this->getYearAndVersion($this->activeSheet->getCell('E2')->getValue())['year'];
+    $this->inCommonInformations['year'] =  empty($this->activeSheet->getCell('E2')->getValue()) ?
+      $this->getYearAndVersion('') :
+      $this->getYearAndVersion($this->activeSheet->getCell('E2')->getValue())['year'];
     
     // Date de référence sur le fichier
-    $this->inCommonInformations['sorpDate'] = $this->getSorpDate($this->activeSheet->getCell('A3')->getValue());
+    $this->inCommonInformations['sorpDate'] = empty($this->activeSheet->getCell('A3')->getValue()) ?
+      $this->getSorpDate('') :
+      $this->getSorpDate($this->activeSheet->getCell('A3')->getValue());
+
+    // Controle de la données
+    foreach($this->inCommonInformations as $key=> $value) {
+      if(empty($value)) {
+        throw new \Exception('Some information missing on input file: '. $key);
+      }
+    }
   }
 
   /**
    * Récupération Date SORP
-   *
+   *  
    * @param string $sorpText
    * @return string
    */
@@ -336,8 +352,16 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     // Année
     $year = substr($versionAndYearText, 0, 2);
 
+    if(!is_numeric($year)) {
+      throw new InvalidFormatException('Excel File not valid to determin Year and Version', 400);
+    }
+
     // Version
     $version = strtoupper(substr($versionAndYearText, 2, 1));
+
+    if(!is_string($version)) {
+      throw new InvalidFormatException('Excel File not valid to determin Year and Version', 400);
+    }
 
     return [
       'year' => $year,
