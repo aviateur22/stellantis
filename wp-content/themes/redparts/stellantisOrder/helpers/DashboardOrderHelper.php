@@ -210,7 +210,10 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
   }
 
   /**
-   * Undocumented function
+   * Regroupement des commandes par :
+   * - PartNumber
+   * - OrderBuyer
+   * 
    *
    * @return void
    */

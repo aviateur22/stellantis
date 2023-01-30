@@ -1,7 +1,11 @@
 <?php
 require_once('./stellantisOrder/services/MySqlOrderRepository.php');
-require_once('./stellantisOrder/helpers/UpdateDashboardOrderHelper.php');
 require_once('./stellantisOrder/utils/StaticData.php');
+require_once('./stellantisOrder/helpers/UserHelper.php');
+require_once('./stellantisOrder/model/User.php');
+require_once('./stellantisOrder/model/updateOrder/UpdateOrderModel.php');
+require_once('./stellantisOrder/model/updateOrder/MFAndOtherUpdateOrder.php');
+require_once('./stellantisOrder/model/updateOrder/StellantisFactoryUpdateOrder.php');
 
 
 /**
@@ -11,6 +15,7 @@ require_once('./stellantisOrder/utils/StaticData.php');
  error_reporting(E_ALL);
 
  try {
+
     /**
     * Id de la commande
     */
@@ -18,24 +23,42 @@ require_once('./stellantisOrder/utils/StaticData.php');
     $quantity = $_POST['quantity'];
     $deliveredDate = $_POST['deliveredDate'];
     $status = $_POST['status'];
+    
 
-    if(empty($orderId) || empty($quantity) || empty($deliveredDate) || empty($status)) {
+    if(empty($orderId) || empty($quantity) || empty($deliveredDate)) {
       throw new \Exception('Update impossible: Missing required order informations', 400);
     }
 
-    // Instanciation des services et helpers
+    // User
+    $userHelper = new UserHelper();
+    $user = $userHelper->getUser();
+
+    // Si utilisateur Maury ou autre alors vérification de la disponibilité du statut
+    if(!isUserRoleFindInArrayOfRoles($user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {     
+      if(empty($status)) {
+        throw new \Exception('Update impossible: Missing required order informations', 400);
+      }
+    }
+    
     $orderRepository = new MySqlOrderRepository();
-    $updateDashboardOrder = new UpdateDashboardOrderHelper($orderRepository);
 
+    // Model pour mettre à jour une commande
+    $updateOrderModel = isUserRoleFindInArrayOfRoles($user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES) ?
+      // Instance pour les usine de stellantis
+      new StellantisFactoryUpdateOrder($orderRepository, $orderId, $deliveredDate, $quantity) :
+
+      // Autres
+      new MFAndOtherUpdateOrder($orderRepository, $orderId, $deliveredDate, $quantity, $status);
+   
     // Mise a jour de la commande
-    $updateDashboardOrder->updateOrder($orderId, $quantity, $deliveredDate, $status);  
-
+    $updateOrderModel->updateOrder();
+    
     // Récupérationd de la commande mise a jour 
-    $updatedOrder = $updateDashboardOrder->findUpdatedOrder($orderId);
-
+    $updatedOrder = $updateOrderModel->findUpdatedOrder();
+    
     // Récupération de la nouveau nom de la class color
-    $colorClassName = $updateDashboardOrder->findClassNameOrderColor($updatedOrder->wipId);
-    $colorClassToRemove = $updateDashboardOrder->findColorClassToRemove();
+    $colorClassName = $updateOrderModel->findClassNameOrderColor($updatedOrder->wipId);
+    $colorClassToRemove = $updateOrderModel->findColorClassToRemove();    
     
     $data['updateOrder'] =  [
       'colorClassName' => $colorClassName,

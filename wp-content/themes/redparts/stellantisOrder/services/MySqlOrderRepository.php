@@ -203,7 +203,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param string $status
    * @return int
    */
-  public function update(string $id, string $quantity, string $deliveredDate, string $status): int {
+  public function update(string $id, string $quantity, string $deliveredDate, string $status = null): int {
     global $wpdb;
     $order = $this->findOne($id);
 
@@ -222,13 +222,22 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
       }
     }    
 
-    // Update commande
-    $update = $wpdb->query( $wpdb->prepare(
-      "UPDATE orders SET quantity=%s, deliveredDate=%s, wipId = %s  WHERE id = %s",
-      $quantity, $deliveredDate, $status, $id
-      )
-    );
-
+    // Si statut non défini
+    if(empty($status)) {
+      // Update commande
+      $update = $wpdb->query( $wpdb->prepare(
+        "UPDATE orders SET quantity=%s, deliveredDate=%s WHERE id = %s",
+        $quantity, $deliveredDate, $id
+        )
+      );
+    } else {
+      // Update commande
+      $update = $wpdb->query( $wpdb->prepare(
+        "UPDATE orders SET quantity=%s, deliveredDate=%s, wipId = %s  WHERE id = %s",
+        $quantity, $deliveredDate, $status, $id
+        )
+      );
+    }
     return $update;
   }
 

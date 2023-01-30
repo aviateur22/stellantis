@@ -5,6 +5,7 @@ require_once('./stellantisOrder/html/DisplayDashboardOrder.php');
 require_once('./stellantisOrder/helpers/DisplayOrderColorHelper.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
 require_once('./stellantisOrder/utils/validators.php');
+require_once('./stellantisOrder/helpers/html/UpdateOrderModalHelper.php');
 error_reporting(E_ALL);
 
 
@@ -35,9 +36,15 @@ try {
   $intervalDays = $dashboardHelper->getIntervalDays();
   
   
-  
   // Creation html
-  $displayDashboardOrder = new DisplayDashboardOrder($dashboardOrders, $intervalDays, $user, $displayOrderColorHelper);
+  $updateOrderModalHelper = new UpdateOrderModalHelper($user);
+  $displayDashboardOrder = new DisplayDashboardOrder(
+    $dashboardOrders, 
+    $intervalDays, 
+    $user, 
+    $displayOrderColorHelper, 
+    $updateOrderModalHelper
+  );
   
   
   $data['orders'] = $displayDashboardOrder->createHtml();

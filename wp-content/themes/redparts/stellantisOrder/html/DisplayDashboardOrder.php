@@ -3,6 +3,7 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/mo
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/DisplayOrderColorHelper.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/html/UpdateOrderModalHelper.php';
 
 /**
  * Undocumented class
@@ -38,6 +39,13 @@ class DisplayDashboardOrder {
   protected DisplayOrderColorHelper $displayOrderColorHelper;
 
   /**
+   * Helper pour l'affichage de la modal de modification d'une commande
+   *
+   * @var UpdateOrderModalHelper
+   */
+  protected UpdateOrderModalHelper $updateOrderModalHelper;
+
+  /**
    * Background Header séparation
    *
    * @var string
@@ -48,12 +56,14 @@ class DisplayDashboardOrder {
     array $dashboardOrders, 
     array $intervalDays, 
     User $user, 
-    DisplayOrderColorHelper $displayOrderColorHelper
+    DisplayOrderColorHelper $displayOrderColorHelper,
+    UpdateOrderModalHelper $updateOrderModalHelper
     ) {
     $this->dashboardOrders = $dashboardOrders;
     $this->intervalDays = $intervalDays;
     $this->user = $user;
     $this->displayOrderColorHelper = $displayOrderColorHelper;
+    $this->updateOrderModalHelper = $updateOrderModalHelper;
   }
 
   /**
@@ -161,10 +171,9 @@ class DisplayDashboardOrder {
     // Fin HTML
     $html .= "</tbody>";
     $html .= "</table>";
-    $html .= "</div>";
-
+    $html .= "</div>";     
     // Modal information
-    $html .= $this->popup();
+    $html .= $this->updateOrderModalHelper->updateOrderModal();
 
     return $html;
   }
