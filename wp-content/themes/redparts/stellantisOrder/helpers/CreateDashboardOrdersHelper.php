@@ -29,7 +29,7 @@ class CreateDashboardOrdersHelper {
    * @param string $partNumber
    * @return void
    */
-  protected function iterateThroughOrders(string $partNumber, array &$quantityByDateArray) {
+  protected function iterateThroughOrders(string $partNumber, array &$quantityByDateArray, string $orderBuyer) {
     foreach($this->orders as $order) {      
 
       // Vérification format de la données
@@ -37,7 +37,7 @@ class CreateDashboardOrdersHelper {
         throw new \Exception('Error Instanceof model - CreateDashboardOrdersHelper', 500);
       }
 
-      if($order->getPartNumber() === $partNumber) {
+      if($order->getPartNumber() === $partNumber && $order->getOrderBuyer() === $orderBuyer) {
 
         $deliveredDate = date('Y-m-d 00:00:00', strtotime($order->getdeliveredDate()));
 
@@ -51,6 +51,7 @@ class CreateDashboardOrdersHelper {
           'id' => $order->getId()
         ];
       
+        // Rajoute les données de la commandes dans le tableau de datz
         for($i = 0; $i < count($quantityByDateArray); $i++) {
           $dateInArray = date('Y-m-d 00:00:00', strtotime($quantityByDateArray[$i]['day']));
           // var_dump($quantity['day']);
@@ -101,7 +102,7 @@ class CreateDashboardOrdersHelper {
    * @param string $partNumber
    * @return bool
    */
-  protected function isParNumberInDashboardArray(string $partNumber): bool {
+  protected function isParNumberInDashboardArray(string $partNumber, string $orderBuyer): bool {
     foreach($this->dashboardOrders as $order) {
       
       // Erreur dormat de données
@@ -109,7 +110,7 @@ class CreateDashboardOrdersHelper {
         throw new \Exception('Error Instanceof model - CreateDashboardOrdersHelper', 500);
       }
             
-      if($order->getPartNumber() === $partNumber) {
+      if($order->getPartNumber() === $partNumber && $order->getOrderBuyer() === $orderBuyer) {
         return true;
       }
     }

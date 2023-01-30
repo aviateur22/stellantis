@@ -73,8 +73,7 @@ class OrderHelper {
    */
   function areOrderPropertiesValid(stdClass $orderStdClass) {
 
-    $this->orderStdClass = $orderStdClass;
-   
+    $this->orderStdClass = $orderStdClass;  
     
     $this->isPartNumberValid();
     $this->isDeliveredDateValid();
@@ -175,7 +174,7 @@ class OrderHelper {
    * @return boolean
    */
   private function isOrderDuplicated(): bool {
-    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($this->orderStdClass->partNumber, $this->orderStdClass->deliveredDate);  
+    $duplicateOrder = $this->orderRepository->findOneDuplicatedOrder($this->orderStdClass->partNumber, $this->orderStdClass->deliveredDate, $this->orderStdClass->orderBuyer);  
     
     // Commande dupliqué
     if(count($duplicateOrder) > 0) {

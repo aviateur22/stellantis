@@ -33,6 +33,7 @@ try {
   
   // Récupération des données
   $dashboardOrders = $dashboardHelper->getDashboardOrders();
+  
   $intervalDays = $dashboardHelper->getIntervalDays();
   
   

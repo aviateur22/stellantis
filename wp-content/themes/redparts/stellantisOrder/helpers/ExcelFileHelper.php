@@ -42,16 +42,6 @@ class ExcelFileHelper {
       throw new PhpExcelException();
     }    
   }
-  
-  /**
-   * TODO :: Vérification format du Document orderWorksheet   * 
-   *
-   * @return boolean
-   */
-  protected function isOrderWorksheetReadable(): bool {  
-  
-    return true;
-  }
 
   /**
    * Récupération Page active de la commande
