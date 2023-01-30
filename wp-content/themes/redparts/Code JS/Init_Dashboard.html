@@ -176,7 +176,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		const statusLabelElement = document.getElementById('statusLabel');
 
 		// Mise a jour de la vue
-		if(partNumberElement && quantityElement && deliveredDateElement && statusElement && 
+		if(partNumberElement && quantityElement && deliveredDateElement &&
 			processedWithElement && coverCodeElement && coverLinkElement && brandElement && statusLabelElement) {
 			
 			// Societé traitant la commande
@@ -201,10 +201,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			quantityElement.value = orderInformation.quantity;
 
 			// Date de livraiosn
-			deliveredDateElement.value = orderInformation.deliveredDate;
-
-			// Select Option
-			statusElement.value = orderInformation.wipId.toLowerCase();
+			deliveredDateElement.value = orderInformation.deliveredDate;			
 
 			// Statut actuelle de la commande
 			statusLabelElement.innerText = orderStatusLabel;
@@ -215,6 +212,12 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			// Ajout nouvelle classe
 			statusLabelElement.classList.add(orderStatusClassNamecolor);
 		}	
+
+		// Si Select Statut Option 
+		if(statusElement) {
+			// Select Option
+			statusElement.value = orderInformation.wipId.toLowerCase();
+		}
 	}
 
 	/**
@@ -278,7 +281,11 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			updateOrderElement.hidden = true;			
 		}
 
-		reloadDashboard();
+		// Rechargement
+		setTimeout(()=> {
+			reloadDashboard();
+		}, 3000);
+		
 	}
 
 	/**
@@ -342,8 +349,6 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		function resetMessage() {
 			document.getElementById("resultat").innerHTML ="<p></p>";
 		}
-
-		document.getElementById("btn-go").addEventListener('click', rechercheGo);
 
 function rechercheGo(e)
 {

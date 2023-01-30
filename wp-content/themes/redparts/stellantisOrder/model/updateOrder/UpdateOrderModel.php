@@ -1,37 +1,40 @@
 <?php
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
 
-/**
- * Modification d'une commande sur le dashboard
- */
-class UpdateDashboardOrderHelper {
+abstract class UpdateOrderModel {
+
+  // N° de la commande a changer
+  protected int $orderId;
+
+  // Quantité
+  protected int $orderQuantity;
+
+  // Date de livraison
+  protected string $orderDeliveredDate;
 
   /**
-   * orderRespository
+   * Repository Order
    *
    * @var OrderRepositoryInterface
    */
   protected OrderRepositoryInterface $orderRepository;
 
-  function __construct(OrderRepositoryInterface $orderRepository) {
+  function __construct(OrderRepositoryInterface $orderRepository, int $orderId, string $orderDeliveredDate, int $orderQuantity) {
     $this->orderRepository = $orderRepository;
+    $this->orderId = $orderId;
+    $this->orderDeliveredDate = $orderDeliveredDate;
+    $this->orderQuantity = $orderQuantity;    
   }
 
- /**
+  /**
   * Mise a jour d'une commande
   *
-  * @param string $orderId
-  * @param string $quantity
-  * @param string $deliveredDate
-  * @param string $status
   * @return void
   */
-  function updateOrder(string $orderId, string $quantity, string $deliveredDate, string $status) {
-    $this->orderRepository->update($orderId, $quantity, $deliveredDate, $status);
-  }
+  abstract function updateOrder(): void;
 
 
   /**
@@ -40,8 +43,8 @@ class UpdateDashboardOrderHelper {
    * @param string $orderId
    * @return stdClass
    */
-  function findUpdatedOrder(string $orderId): stdClass {
-    $findOrder =  $this->orderRepository->findOne($orderId);
+  function findUpdatedOrder(): stdClass {
+    $findOrder =  $this->orderRepository->findOne($this->orderId);
 
     if(count($findOrder) === 0) {
       throw new \Exception('Updated command not find', 500);
@@ -57,7 +60,7 @@ class UpdateDashboardOrderHelper {
    * @param string $wipId - id du statut
    * @return string
    */
-  function findClassNameOrderColor(string $wipId): string {
+  public function findClassNameOrderColor($wipId): string {
     $orderClassName = findColorOrderDisplay($wipId);
     return $orderClassName;
   }
@@ -76,4 +79,5 @@ class UpdateDashboardOrderHelper {
 
     return $colorClassToRemove;
   }
+
 }
