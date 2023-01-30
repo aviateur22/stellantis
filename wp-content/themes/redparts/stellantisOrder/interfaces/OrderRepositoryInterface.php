@@ -35,9 +35,10 @@ interface OrderRepositoryInterface {
    *
    * @param string $partNumber - Le partNumber de la commande a vérifier
    * @param string $deliveredDate - Date de livraison
+   * @param string $orderBuyer - Usine de commande
    * @return array - Commandes dupliquées
    */
-  function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array;
+  function findOneDuplicatedOrder(string $partNumber, string $deliveredDate, string $orderBuyer): array;
 
   /**
    * Renvoie les commandes en erreur

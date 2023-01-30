@@ -44,7 +44,7 @@ require_once('./stellantisOrder/model/updateOrder/StellantisFactoryUpdateOrder.p
 
     // Model pour mettre à jour une commande
     $updateOrderModel = isUserRoleFindInArrayOfRoles($user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES) ?
-      // Instance pour les usine de stellantis
+      // Instance pour les usine de stellantis (WipId absent des données)
       new StellantisFactoryUpdateOrder($orderRepository, $orderId, $deliveredDate, $quantity) :
 
       // Autres

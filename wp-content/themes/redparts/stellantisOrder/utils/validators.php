@@ -63,6 +63,11 @@ function isDateValid(string $date): bool {
  */
 function findColorOrderDisplay(string $wipId): string {
   switch($wipId) {
+    // Before Preflight
+    case in_array($wipId, StaticData::BEFORE_PREFLIGHT_ID):
+      return StaticData::CLASS_NAME_ORDERS_COLORS['BEFORE_PREFLIGHT_CLASS_NAME'];
+    break;
+
     // Preflight
     case in_array($wipId, StaticData::PREFLIGHT_ID):
       return StaticData::CLASS_NAME_ORDERS_COLORS['PREFLIGHT_CLASS_NAME'];

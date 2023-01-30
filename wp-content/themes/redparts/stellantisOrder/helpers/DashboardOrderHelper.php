@@ -226,12 +226,13 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
         throw new \Exception('Error Instanceof model - DashboardOrdersHelper', 500);
       }
 
-      if(!$this->isParNumberInDashboardArray($order->getPartNumber())) {
+      // si commande non presente
+      if(!$this->isParNumberInDashboardArray($order->getPartNumber(), $order->getOrderBuyer())) {
         
         // 
         $quantityByDateArray = $this->createQuantityByDateArray();        
 
-        $this->iterateThroughOrders($order->getPartNumber(), $quantityByDateArray);       
+        $this->iterateThroughOrders($order->getPartNumber(), $quantityByDateArray, $order->getOrderBuyer());       
        
         $dashboardOrderModel = $this->createDashboardOrderModel($order, $quantityByDateArray);
         $this->dashboardOrders[] = $dashboardOrderModel;

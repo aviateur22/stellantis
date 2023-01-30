@@ -109,9 +109,6 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     // Récupération page Active des commandes
     $this->getActiveSheet();
 
-    // Vérification du format du fichier
-    $this->isOrderWorksheetReadable();
-
     // Vérification de validité du fichier
     if(!$this->isOrderFileValid()) {
       throw new InvalidFormatException('Provided file is not valid for Orders', 400);

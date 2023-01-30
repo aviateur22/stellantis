@@ -116,14 +116,15 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    *
    * @param string $partNumber - Le partNumber de la commande a vérifier
    * @param string $deliveredDate - Date de livraison
+   * @param string $orderBuyer - Usine Stellantis qui a fait la commande
    * @return array - Commandes dupliquées
    */
-  function findOneDuplicatedOrder(string $partNumber, string $deliveredDate): array {
+  function findOneDuplicatedOrder(string $partNumber, string $deliveredDate, string $orderBuyer): array {
     global $wpdb;
     $findOrder = $wpdb->get_results(
       $wpdb->prepare(
-        "SELECT partNumber FROM orders WHERE partNumber = %s AND deliveredDate = %s AND wipId <> %s",
-        $partNumber, $deliveredDate, StaticData::ORDER_STATUS['PREPARATION']
+        "SELECT partNumber FROM orders WHERE partNumber = %s AND deliveredDate = %s AND orderBuyer = %s AND wipId <> %s",
+        $partNumber, $deliveredDate, $orderBuyer, StaticData::ORDER_STATUS['PREPARATION']
       ), ARRAY_A);
     return $findOrder;
   }
@@ -212,11 +213,12 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     }
 
     // Commande
-    $existingOrder = $order[0];    
+    $existingOrder = $order[0];
+
     // Vérification si pas de conflit avec d'autre commande deja existante
     if(date('Y-m-d', strtotime($existingOrder->deliveredDate)) !== date('Y-m-d', strtotime($deliveredDate))) {
       
-      $findDuplicatedOrder = $this->findOneDuplicatedOrder($existingOrder->partNumber, $deliveredDate);      
+      $findDuplicatedOrder = $this->findOneDuplicatedOrder($existingOrder->partNumber, $deliveredDate, $existingOrder->orderBuyer);      
       if(!empty($findDuplicatedOrder)) {
         throw new \Exception('Update impossible, Order already exist on ' . date('d-M-Y', strtotime($deliveredDate)), 400);
       }
@@ -272,7 +274,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     }
 
     // Autre personne de connectée
-    $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s",
+    $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
     StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd), ARRAY_A);
     return $findOrders;
   }
