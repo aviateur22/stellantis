@@ -326,4 +326,17 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     return implode(',', $queryStringPlaceHolder);
   }
 
+
+  /**
+   * Recherche de la première commande qui suit un date donnée
+   *
+   * @param string $specifiedDay
+   * @return array
+   */
+  function findFirstOrderAfteSpecifiedDay(string $specifiedDay): array
+  {
+    global $wpdb;
+    return $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
+      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay), ARRAY_A);
+  }
 }

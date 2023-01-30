@@ -52,6 +52,26 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
   }
 
   /**
+   * Recherche de la 1ere commande qui suit une date donnée
+   *
+   * @param  string $afterDate - Date a partir de laquelle on cherche une commande
+   * @return string
+   */
+  public function findFirstDayWithOrder(string $afterDate = null, $endDay = null): string {
+    // Formate les dates de début et de fin
+    $this->formatDayInterval($afterDate, $endDay);
+
+    // Recherche de la 1ere commande
+    $findOrder = $this->orderRepository->findFirstOrderAfteSpecifiedDay($afterDate);
+
+    if(!count($findOrder) > 0) {
+      return '';
+    }
+    
+    return $findOrder['deliveredDate'];
+  }
+
+  /**
    * Renvoie les commandes a afficher
    *
    * @return array

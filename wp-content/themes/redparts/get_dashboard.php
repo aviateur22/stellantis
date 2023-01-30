@@ -32,7 +32,19 @@ try {
   $setDashboard = $dashboardHelper->setDashboardOrders($date, '2023-02-25');
   
   // Récupération des données
-  $dashboardOrders = $dashboardHelper->getDashboardOrders();
+  $dashboardOrders = $dashboardHelper->getDashboardOrders();  
+
+  // Si pas de données; alors recherche du 1er jour ayant une commande
+  if(count($dashboardOrders) === 0) {    
+    // Récupération du 1er jour ayant 
+    $firstDayWithOrder = $dashboardHelper->findFirstDayWithOrder($date, '2023-02-25');
+
+    // Initilasation de la date de début d'affichage
+    $setDashboard = $dashboardHelper->setDashboardOrders($firstDayWithOrder, '2023-02-25');
+
+    // Récupération des données
+    $dashboardOrders = $dashboardHelper->getDashboardOrders();
+  }
   
   $intervalDays = $dashboardHelper->getIntervalDays();
   

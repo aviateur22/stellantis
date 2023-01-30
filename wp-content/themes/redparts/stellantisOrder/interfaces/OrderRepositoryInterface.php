@@ -113,4 +113,12 @@ interface OrderRepositoryInterface {
    * @return array
    */
   function findOrdersWithFilterPartNumber(string $dayStart, string $dayEnd, array $partNumberArray): array;
+
+  /**
+   * Recherche de la première commande qui suit un date donnée
+   *
+   * @param string $specifiedDay
+   * @return array
+   */
+  function findFirstOrderAfteSpecifiedDay(string $specifiedDay): array;
 }
