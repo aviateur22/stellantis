@@ -1,5 +1,6 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 /**
  * Undocumented class
@@ -56,12 +57,11 @@ class OrderHelper {
   protected ForecastPrintHelper $forecastPrintHelper;
 
   function __construct(
-    OrderRepositoryInterface $orderRepository,
-    ModelRepositoryInterface $modelRepository,
+    RepositoriesModel $repositories,
     ForecastPrintHelper $forecastPrintHelper    
     ) {    
-    $this->modelRepository = $modelRepository;
-    $this->orderRepository = $orderRepository;
+    $this->modelRepository = $repositories->getModelRepository();
+    $this->orderRepository = $repositories->getOrderRepository();
     $this->forecastPrintHelper = $forecastPrintHelper;
   }
 

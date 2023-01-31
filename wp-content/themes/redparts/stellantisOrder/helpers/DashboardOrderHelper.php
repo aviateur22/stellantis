@@ -1,12 +1,11 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlForecastRepository.php');
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/Order.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/DashboardOrderModel.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/OrderEntity.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/CreateDashboardOrdersHelper.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 
 
@@ -19,9 +18,9 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
    */
   protected OrderRepositoryInterface $orderRepository;
 
-  function __construct($orderRepository)
+  function __construct(RepositoriesModel $repositories)
   {
-    $this->orderRepository = $orderRepository;
+    $this->orderRepository = $repositories->getOrderRepository();
   }
 
   /**

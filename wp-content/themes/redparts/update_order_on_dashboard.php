@@ -1,11 +1,12 @@
 <?php
-require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/utils/StaticData.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
 require_once('./stellantisOrder/model/User.php');
 require_once('./stellantisOrder/model/updateOrder/UpdateOrderModel.php');
 require_once('./stellantisOrder/model/updateOrder/MFAndOtherUpdateOrder.php');
 require_once('./stellantisOrder/model/updateOrder/StellantisFactoryUpdateOrder.php');
+require_once('./stellantisOrder/model/RepositoriesModel.php');
+require_once('./stellantisOrder/utils/RepositorySelection.php');
 
 
 /**
@@ -38,17 +39,22 @@ require_once('./stellantisOrder/model/updateOrder/StellantisFactoryUpdateOrder.p
       if(empty($status)) {
         throw new \Exception('Update impossible: Missing required order informations', 400);
       }
-    }
+    }   
     
-    $orderRepository = new MySqlOrderRepository();
+    // TODO a enlever
+    // $orderRepository = new MySqlOrderRepository();
+
+    // Repositories
+    $repositorySelection = new RepositorySelection(StaticData::REPOSITORY_TYPE_MYSQL);
+    $repositories = $repositorySelection->selectRepositories($user);
 
     // Model pour mettre à jour une commande
     $updateOrderModel = isUserRoleFindInArrayOfRoles($user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES) ?
       // Instance pour les usine de stellantis (WipId absent des données)
-      new StellantisFactoryUpdateOrder($orderRepository, $orderId, $deliveredDate, $quantity) :
+      new StellantisFactoryUpdateOrder($repositories, $orderId, $deliveredDate, $quantity) :
 
       // Autres
-      new MFAndOtherUpdateOrder($orderRepository, $orderId, $deliveredDate, $quantity, $status);
+      new MFAndOtherUpdateOrder($repositories, $orderId, $deliveredDate, $quantity, $status);
    
     // Mise a jour de la commande
     $updateOrderModel->updateOrder();

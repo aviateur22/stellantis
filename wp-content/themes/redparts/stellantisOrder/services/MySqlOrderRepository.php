@@ -34,7 +34,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @return void
    */
   function save(array $orders): void {  
-    global $wpdb;  
+    global $wpdb;
     foreach($orders as $order) {
       // Verification instance Orer 
       if($order instanceof Order) {

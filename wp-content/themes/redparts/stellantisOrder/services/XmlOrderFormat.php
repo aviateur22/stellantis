@@ -5,6 +5,7 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/se
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/exceptions/FolderNotFindException.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/FormatedOrder.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/ForecastPrintHelper.php';
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 /**
  * Format les Commandes pour transfert vers le client
@@ -37,9 +38,9 @@ class XmlOrderFormat implements OrderFormatInterface {
    */
   protected ForecastPrintHelper $forecastPrintHelper;
 
-  function __construct($orderId, $orderRepository, ForecastPrintHelper $forecastPrintHelper) {
+  function __construct(string $orderId, RepositoriesModel $repositories, ForecastPrintHelper $forecastPrintHelper) {
     $this->orderId = $orderId;
-    $this->orderRepository = $orderRepository;
+    $this->orderRepository = $repositories->getOrderRepository();
     $this->forecastPrintHelper = $forecastPrintHelper;
   }
 

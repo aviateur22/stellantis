@@ -1,9 +1,9 @@
 <?php
-require_once('./stellantisOrder/services/MySqlOrderRepository.php');
-require_once('./stellantisOrder/services/MySqlForecastRepository.php');
 require_once('./stellantisOrder/services/XmlOrderFormat.php');
 require_once('./stellantisOrder/services/FtpTransfert.php');
 require_once('./stellantisOrder/helpers/ForecastPrintHelper.php');
+require_once('./stellantisOrder/model/RepositoriesModel.php');
+require_once('./stellantisOrder/utils/RepositorySelection.php');
 
 setlocale(LC_TIME, "fr_FR");
 
@@ -18,15 +18,17 @@ try {
     throw new \Exception('Error : order ID is not valid', 400);
   }
 
-  // Activation des services
-  $orderRepository = new MySqlOrderRepository();
-  $forecastRepository = new MySqlForecastRepository();
-  $forecastPrintHelper = new ForecastPrintHelper($forecastRepository);
-  $xmlOrderFormat = new XmlOrderFormat($orderId, $orderRepository, $forecastPrintHelper);
-  $ftpTransfert = new FtpTransfert($orderRepository, $orderId);
+  // Repository
+  $repositorySelection = new RepositorySelection(StaticData::REPOSITORY_TYPE_MYSQL);
+  $repositories = $repositorySelection->selectRepositories();
+
+  // Activation des services + Helper
+  $forecastPrintHelper = new ForecastPrintHelper($repositories);
+  $xmlOrderFormat = new XmlOrderFormat($orderId, $repositories, $forecastPrintHelper);
+  $ftpTransfert = new FtpTransfert($repositories, $orderId);
 
   // Vérification que toute les commandes valides
-  $errorOrders = $orderRepository->findErrorOrders($orderId);
+  $errorOrders = $repositories->getOrderRepository()->findErrorOrders($orderId);
   
   if(count($errorOrders) > 0) {
     throw new \Exception('Error order detected, file transfert cancel');

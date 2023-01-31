@@ -1,9 +1,9 @@
 <?php
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/updateOrder/UpdateOrderModel.php');
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 class MFAndOtherUpdateOrder extends UpdateOrderModel {
 
@@ -14,9 +14,8 @@ class MFAndOtherUpdateOrder extends UpdateOrderModel {
    */
   protected int $statusId;
 
-  function __construct(OrderRepositoryInterface $orderRepository, int $orderId, string $orderDeliveredDate, int $orderQuantity, int $statusId)
-  {
-    parent::__construct($orderRepository, $orderId, $orderDeliveredDate, $orderQuantity);
+  function __construct(RepositoriesModel $repositories, int $orderId, string $orderDeliveredDate, int $orderQuantity, int $statusId) {
+    parent::__construct($repositories, $orderId, $orderDeliveredDate, $orderQuantity);
 
     $this->statusId = $statusId;    
   }

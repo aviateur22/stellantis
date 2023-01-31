@@ -2,6 +2,7 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/ExcelFileHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderSourceInterface.php';
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface {
 
@@ -88,13 +89,13 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
    */
   protected OrderRepositoryInterface $orderRepository;
 
-  function  __construct(string $fileName, OrderHelper $orderHelper, User $user, $orderRepository) {
+  function  __construct(string $fileName, OrderHelper $orderHelper, User $user, RepositoriesModel $repositories) {
     // Constructeur parent
     parent::__construct($fileName); 
 
     $this->orderHelper = $orderHelper;
     $this->user = $user;
-    $this->orderRepository = $orderRepository;
+    $this->orderRepository = $repositories->getOrderRepository();
   } 
 
   /**

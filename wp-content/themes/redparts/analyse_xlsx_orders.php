@@ -2,8 +2,6 @@
 /**
  * Fichier lecture gestion order se stallentis
  */
-require_once('./stellantisOrder/services/MySqlOrderRepository.php');
-require_once('./stellantisOrder/services/MySqlForecastRepository.php');
 require_once('./stellantisOrder/exceptions/FileNotFindException.php');
 require_once('./stellantisOrder/helpers/ForecastPrintHelper.php');
 require_once('./stellantisOrder/html/DisplayOrder.php');
@@ -11,9 +9,10 @@ require_once('./stellantisOrder/helpers/DeleteHelper.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
 require_once('./stellantisOrder/helpers/AuthorizeHelper.php');
 require_once('./stellantisOrder/exceptions/ForbiddenException.php');
-require_once('./stellantisOrder/services/MySqlModelRepository.php');
 require_once('./stellantisOrder/helpers/OrderHelper.php');
 require_once('./stellantisOrder/services/OrderFromExcelFile.php');
+require_once('./stellantisOrder/model/RepositoriesModel.php');
+require_once('./stellantisOrder/utils/RepositorySelection.php');
 require('/home/mdwfrkglvc/www/wp-config.php');
 
 error_reporting(E_ALL);
@@ -33,7 +32,7 @@ if(isset($filename)){
 
 		// Utilisateur
 		$userHelper = new UserHelper();
-  	$user = $userHelper->getUser();
+  	$user = $userHelper->getUser();		
 
 		// Authorize
 		$authorize = new AuthorizeHelper($user);
@@ -43,15 +42,16 @@ if(isset($filename)){
 			throw new ForbiddenException();
 		}
 
-		// Implementation des modèles
-		$orderRepository = new MySqlOrderRepository();
-		$modelRepository = new MySqlModelRepository();
-		$forecastOrderRepository = new MySqlForecastRepository();
-		$forecastPrintHelper = new ForecastPrintHelper($forecastOrderRepository);		
+		// Repository
+		$repositorySelection = new RepositorySelection(StaticData::REPOSITORY_TYPE_MYSQL);
+		$repositories = $repositorySelection->selectRepositories();
+
+		// Services + Helpers
 		$displayOrder = new DisplayOrder();
-		$deleteHelper = new DeleteHelper($orderRepository);
-		$orderHelper = new OrderHelper($orderRepository, $modelRepository, $forecastPrintHelper);
-		$orderSource = new OrderFromExcelFile($filename, $orderHelper, $user, $orderRepository);
+		$forecastPrintHelper = new ForecastPrintHelper($repositories);		
+		$deleteHelper = new DeleteHelper($repositories);
+		$orderHelper = new OrderHelper($repositories, $forecastPrintHelper);
+		$orderSource = new OrderFromExcelFile($filename, $orderHelper, $user, $repositories);
 
 		// Initialisation lecture fichier
 		$orderSource->initializeFile();

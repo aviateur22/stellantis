@@ -14,23 +14,23 @@ abstract class StaticData {
 
   #region user role
 
-  // Role MILLAU
-  const MILLAU_FACTORY_ROLE_NAME = 'MILLAU';
-    
-  // Role Manchecourt
-  const MANCHECOURT_FACTORY_ROLE_NAME = 'MANCHECOURT';
+    // Role MILLAU
+    const MILLAU_FACTORY_ROLE_NAME = 'MILLAU';
+      
+    // Role Manchecourt
+    const MANCHECOURT_FACTORY_ROLE_NAME = 'MANCHECOURT';
 
-  // Role Stellantis
-  const STELLANTIS_ROLE_NAME = 'ADMIN_STELLANTIS';
+    // Role Stellantis
+    const STELLANTIS_ROLE_NAME = 'ADMIN_STELLANTIS';
 
-  // Liste des roles usine du groupe Stellantis
-  const FACTORY_STELLANTIS_ROLES_NAMES = [
-    'poissy',
-    'rennes',
-    'sochaux',
-    'mulhouse',
-    'kenitra'
-  ];
+    // Liste des roles usine du groupe Stellantis
+    const FACTORY_STELLANTIS_ROLES_NAMES = [
+      'poissy',
+      'rennes',
+      'sochaux',
+      'mulhouse',
+      'kenitra'
+    ];
 
   #endRegion
 
@@ -149,5 +149,63 @@ abstract class StaticData {
     const MANCHECOURT_FACTORY_NAME = "MANCHECOURT FACTORY";
 
     const STELLANTIS_NAME = "STELLANTIS";
+  #endRegion
+
+  #region Doc PDF
+
+    // Type de documentation
+    const DOC_TYPE = [
+      'FULL_GUIDE' => 'FULL GUIDE',
+      'MAINTENANCE_BOOK' => 'MAINTENANCE BOOK',
+    ];
+
+    // Sous Type de doc
+    const DOC_SUB_TYPE = [
+      'UNDEFINED' => 'UNDEFINED',
+      'CCE' => 'CCE'
+    ];
+
+    // Sous Partie de la doc (Intérieu - Couverture)
+    const DOC_PART = [
+      'INT' => 'INT',
+      'COUV' => 'COUV'
+    ];
+
+    // Documentation a récupérer 
+    const PDFS= [
+      'FULL_GUIDE_INT' => 
+      [
+        'INDEX' => 1,
+        'DOC_TYPE' => self::DOC_TYPE['FULL_GUIDE'],
+        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['UNDEFINED'],
+        'DOC_PART' => self::DOC_PART['INT']
+      ],
+      'FULL_GUIDE_COUV' => 
+      [
+        'INDEX' => 2,
+        'DOC_TYPE' => self::DOC_TYPE['FULL_GUIDE'],
+        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['UNDEFINED'],
+        'DOC_PART' => self::DOC_PART['COUV']
+      ],
+      'MAINTENANCE_BOOK_CCE_INT'=> 
+      [
+        'INDEX' => 3,
+        'DOC_TYPE' => self::DOC_TYPE['MAINTENANCE_BOOK'],
+        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['CCE'],
+        'DOC_PART' => self::DOC_PART['INT']
+      ],
+      'MAINTENANCE_BOOK_CCE_COUV'=>
+      [
+        'INDEX' => 4,
+        'DOC_TYPE' => self::DOC_TYPE['MAINTENANCE_BOOK'],
+        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['CCE'],
+        'DOC_PART' => self::DOC_PART['COUV']
+      ],
+    ];
+  #endRegion
+
+  #region Repository Type
+    // Repository MYSQL
+    const REPOSITORY_TYPE_MYSQL = 'mysql';
   #endRegion
 }

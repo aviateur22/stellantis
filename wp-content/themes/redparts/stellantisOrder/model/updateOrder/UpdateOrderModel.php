@@ -1,8 +1,8 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php';
 
 abstract class UpdateOrderModel {
 
@@ -22,8 +22,8 @@ abstract class UpdateOrderModel {
    */
   protected OrderRepositoryInterface $orderRepository;
 
-  function __construct(OrderRepositoryInterface $orderRepository, int $orderId, string $orderDeliveredDate, int $orderQuantity) {
-    $this->orderRepository = $orderRepository;
+  function __construct(RepositoriesModel $repositories, int $orderId, string $orderDeliveredDate, int $orderQuantity) {
+    $this->orderRepository = $repositories->getOrderRepository();
     $this->orderId = $orderId;
     $this->orderDeliveredDate = $orderDeliveredDate;
     $this->orderQuantity = $orderQuantity;    
