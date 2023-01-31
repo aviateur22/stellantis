@@ -337,6 +337,6 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   {
     global $wpdb;
     return $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
-      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay), ARRAY_A);
+      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay), ARRAY_A)[0];
   }
 }
