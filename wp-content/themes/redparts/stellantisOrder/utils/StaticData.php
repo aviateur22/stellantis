@@ -204,8 +204,13 @@ abstract class StaticData {
     ];
   #endRegion
 
-  #region Repository Type
+  #region Repository Type And Document Type
+
     // Repository MYSQL
     const REPOSITORY_TYPE_MYSQL = 'mysql';
+
+    // Source Document XLS
+    const DOCUEMENT_TYPE_XLS = 'xls';
+
   #endRegion
 }

@@ -111,9 +111,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->getActiveSheet();
 
     // Vérification de validité du fichier
-    if(!$this->isOrderFileValid()) {
-      throw new InvalidFormatException('Provided file is not valid for Orders', 400);
-    }
+    $this->isSheetValid(self::VALIDATE_WORDS, 'Provided XLS file not valid for Orders');
 
     // Récupération des données communes a toutes les commandes
     $this->getInCommonInformations();
@@ -126,28 +124,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
   }
 
   /**
-   * Vérification validité du fichier
-   *
-   * @return boolean
-   */
-  function isOrderFileValid(): bool {    
-    $isFileValid = true;
-
-    // Vérification concordence des mots
-    foreach(self::VALIDATE_WORDS as $word) {
-      $wordOnFile = preg_replace("/\s+/", "", strtolower($this->readCellValue($word['ROW'], $word['COLULMN'])));
-      
-      if($wordOnFile !== $word['WORD']) {
-        $isFileValid = false;
-      }
-    };
-    
-    // Renvoie fichier Valid
-    return $isFileValid;
-  }
-
-  /**
-   * Parcours le conte,u du fichier
+   * Parcours le contenu du fichier
    *
    * @return void
    */
@@ -226,30 +203,6 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $orderStdClass->forecastPrint = 0;
 
     return $orderStdClass;
-  }
-
-  /**
-   * Renvoie les données d'une cellule
-   *
-   * @param integer $row
-   * @param integer $col
-   * @param bool $isDate - Si date a renvoyer
-   * @return string|null
-   */
-  private function readCellValue(int $row, int $col, bool $isDate = false): string {       
-    if(!$isDate) {      
-      return is_null($this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue())  ?
-        '' :
-        $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-    }
-
-    $date = is_null($this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue())  ?
-      '' :
-      $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-    
-   return \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
-
-
   }
 
   /**
