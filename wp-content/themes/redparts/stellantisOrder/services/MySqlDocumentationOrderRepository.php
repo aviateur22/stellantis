@@ -1,28 +1,47 @@
 <?php
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/pdfModel/DocumentationOrderModel.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/DocumentationOrderInterface.php';
+require_once('/home/mdwfrkglvc/www/wp-config.php');
 
 /**
- * Repository Mysql DocumentationOrderRepository 
+ * Repository MySqlPartNumberToPDF 
  */
-class MySqlDocumentationOrderRepository implements DocumentationOrderRepositoryInterface {
+class MySqlDocumentationOrderRepository implements DocumentationOrderInterface {
+  
 
   /**
-   * Undocumented function
+   * Sauvegarde 
    *
-   * @param array $documentationOrders
+   * @param OrderPartNumberToPDFModel $OrderPartNumber
    * @return void
    */
-  function save(array $documentationOrders): void {
-    
+  function save(DocumentationOrderModel $documentationOrder) {
+    global $wpdb;
+    $addDocumentationOrder = $wpdb->insert('documentationOrders', array(
+      'partNumberToPDFId' => $documentationOrder->getPartNumberToPDFId(),
+      'orderId' => $documentationOrder->getOrderId(),
+      'docRef' => $documentationOrder->getDocumentRef(),
+    ));
+
+    return $addDocumentationOrder;
   }
 
   /**
-   * Undocumented function
+   * Recherche de tous les liens d'un PartNumber ver une documentation
    *
    * @param integer $orderId
+   * @param integer $partNumberToPDFId
+   * @param string $docRef
    * @return array
    */
-  function findAllByOrderId(int $orderId): array {
-    return [];
+  function findByOrderId(int $orderId, int $partNumberToPDFId, string $docRef): array {
+    global $wpdb;
+    $query = "SELECT * FROM documentationsOrders 
+              JOIN partNumberToPDF ON documentationsOrders.partNumberToPDFId = partNumberToPDF.id
+              WHERE partNumberToPDFId = '" .$partNumberToPDFId ."' AND orderId ='".$orderId."' AND docRef = '".$docRef."' LIMIT 1";
+    $findPDFLink = $wpdb->get_results($query, ARRAY_A);
+
+    return $findPDFLink;
   }
 
 }

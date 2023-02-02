@@ -4,8 +4,10 @@ require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/m
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlForecastRepository.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlModelRepository.php');
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlDocPDFRepository.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlDocumentationOrderRepository.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderPdfRepository.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlPartNumberToPdfRepository.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlPdfPrintRepository.php');
 
 /**
  * Selection des Repository
@@ -31,11 +33,13 @@ class RepositorySelection {
     switch ($this->repositoryType) {
       case StaticData::REPOSITORY_TYPE_MYSQL:
         return new RepositoriesModel(
-          new MySqlOrderRepository($user),
-          new MySqlDocumentationOrderRepository(),
-          new MySqlDocPDFRepository(),
+          new MySqlOrderRepository($user),          
           new MySqlModelRepository(),
-          new MySqlForecastRepository()
+          new MySqlForecastRepository(),
+          new MySqlOrderPdfRepository(),          
+          new MySqlDocumentationOrderRepository(),
+          new MySqlPartNumberToPdfRepository(),
+          new MySqlPdfPrintRepository()          
         );
         break;
       default: throw new \Exception('Not a valid repository Type '); break;

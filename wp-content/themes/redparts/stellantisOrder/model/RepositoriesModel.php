@@ -1,9 +1,12 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/DocumentationOrderRepositoryInterface.php';
-require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/DocPDFRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ModelRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/DocumentationOrderInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderPDFInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/PartNumberToPDFInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/PdfPrintRepositoryInterface.php';
+
 
 /**
  * Modèle sur les base de données
@@ -16,21 +19,7 @@ class RepositoriesModel  {
    * @var OrderRepositoryInterface
    */
   protected OrderRepositoryInterface $orderRepository;
-
-  /**
-   * DocumentationOrder Repository
-   *
-   * @var DocumentationOrderRepositoryInterface
-   */
-  protected DocumentationOrderRepositoryInterface $documentationOrderRepository;
-
-  /**
-   * DocPDF Repository
-   *
-   * @var DocPDFRepositoryInterface
-   */
-  protected DocPDFRepositoryInterface $docPDFRepository;
-
+  
   /**
    * Model Repository
    *
@@ -45,18 +34,51 @@ class RepositoriesModel  {
    */
   protected ForecastRepositoryInterface $forecastRepository;
 
+  /**
+   * DocumentationOrder Repository
+   *
+   * @var DocumentationOrderInterface
+   */
+  protected DocumentationOrderInterface $documentationOrderRepository;
+
+  /**
+   * OrderPDF Repository
+   *
+   * @var OrderPDFInterface
+   */
+  protected OrderPDFInterface $orderPdfRepository;  
+
+  /**
+   * PartNumberToPDF Repository
+   *
+   * @var PartNumberToPDFInterface
+   */
+  protected PartNumberToPDFInterface $partNumberToPDFRepository;
+
+  /**
+   * PartNumberToPDF Repository
+   *
+   * @var PdfPrintRepositoryInterface
+   */
+  protected PdfPrintRepositoryInterface $pdfPrintRepository;
+
+
   function __construct(
-    OrderRepositoryInterface $orderRepository,
-    DocumentationOrderRepositoryInterface $documentationOrderRepository,
-    DocPDFRepositoryInterface $docPDFRepository,
+    OrderRepositoryInterface $orderRepository,    
     ModelRepositoryInterface $modelRepository,
-    ForecastRepositoryInterface $forecastRepository
+    ForecastRepositoryInterface $forecastRepository,
+    OrderPDFInterface $orderPdfRepository,
+    DocumentationOrderInterface $documentationOrderRepository,
+    PartNumberToPDFInterface $partNumberToPDFRepository,
+    PdfPrintRepositoryInterface $pdfPrintRepository
   ) {
     $this->orderRepository = $orderRepository;
-    $this->modelRepository = $modelRepository;
-    $this->docPDFRepository = $docPDFRepository;
-    $this->documentationOrderRepository = $documentationOrderRepository;
+    $this->modelRepository = $modelRepository;   
     $this->forecastRepository = $forecastRepository;
+    $this->orderPdfRepository = $orderPdfRepository;
+    $this->documentationOrderRepository = $documentationOrderRepository;
+    $this->partNumberToPDFRepository = $partNumberToPDFRepository;
+    $this->pdfPrintRepository = $pdfPrintRepository;
   }
 
   #region getters
@@ -88,23 +110,20 @@ class RepositoriesModel  {
     return $this->modelRepository;
   }
 
-  /**
-   * Get DocPDFRepository
-   *
-   * @return DocPDFRepositoryInterface
-   */
-  function getDocPDFRepository(): DocPDFRepositoryInterface {
-    return $this->docPDFRepository;
+  function getPartNumberToPDFRepository(): PartNumberToPDFInterface {
+    return $this->partNumberToPDFRepository;
   }
 
-  /**
-   * Get DocumentOrder Repository
-   *
-   * @return DocumentationOrderRepositoryInterface
-   */
-  function getDocumentOrderRepository(): DocumentationOrderRepositoryInterface {
+  function getOrderPdfRepository(): OrderPDFInterface {
+    return $this->orderPdfRepository;
+  }
+
+  function getDocumentationOrder(): DocumentationOrderInterface {
     return $this->documentationOrderRepository;
   }
 
+  function getPdfPrintRepository(): PdfPrintRepositoryInterface {
+    return $this->pdfPrintRepository;
+  } 
   #endRegion
 }
