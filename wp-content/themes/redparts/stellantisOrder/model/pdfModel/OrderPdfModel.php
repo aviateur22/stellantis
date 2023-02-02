@@ -8,21 +8,7 @@ class OrderPdfModel {
    *
    * @var integer
    */
-  protected int $PDFPrintId;
-
-  /**
-   * Id partNumberToPD
-   *
-   * @var integer
-   */
-  protected int $documentationOrderId;
-
-  /**
-   * Id order
-   *
-   * @var integer
-   */
-  protected int $oderId;
+  protected int $PDFPrintId; 
  
   /**
    * Documentation trouvé
@@ -31,27 +17,15 @@ class OrderPdfModel {
    */
   protected bool $isDocumentationFind;
   
-  function __construct(
-    int $documentationOrderId,
-    int $PDFPrintId,
-    int $orderId,
+  function __construct(   
+    int $PDFPrintId,   
     bool $isDocumentationFind
-  ) {
-    $this->documentationOrderId = $documentationOrderId;
-    $this->PDFPrintId = $PDFPrintId;    
-    $this->oderId = $orderId;
+  ) {    
+    $this->PDFPrintId = $PDFPrintId;  
     $this->isDocumentationFind = $isDocumentationFind;
   }
 
-  /**
-   * Renvoie PartNumberToPdfId
-   *
-   * @return integer
-   */
-  function getDocumentationOrderId(): int {
-    return $this->documentationOrderId;
-  }
-
+  
   /**
    * Renvoie PDFPrintId
    *
@@ -68,14 +42,5 @@ class OrderPdfModel {
    */
   function getIsDocumentationFind(): bool {
     return $this->isDocumentationFind;
-  }
-
-  /**
-   * OrderId
-   *
-   * @return integer
-   */
-  function getOrderId(): int {
-    return $this->oderId;
-  }
+  } 
 }

@@ -8,10 +8,11 @@ interface DocumentationOrderInterface {
   /**
    * Sauvegarde 
    *
-   * @param OrderPartNumberToPDFModel $OrderPartNumber
+   * @param DocumentationOrderModel $OrderPartNumber
+   * @param int $orderId
    * @return void
    */
-  function save(DocumentationOrderModel $documentationOrder);
+  function save(DocumentationOrderModel $documentationOrder, int $orderId);
 
   /**
    * Recherche de tous les liens d'un PartNumber ver une documentation

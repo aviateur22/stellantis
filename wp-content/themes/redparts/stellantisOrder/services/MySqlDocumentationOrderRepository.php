@@ -9,17 +9,18 @@ require_once('/home/mdwfrkglvc/www/wp-config.php');
 class MySqlDocumentationOrderRepository implements DocumentationOrderInterface {
   
 
-  /**
+   /**
    * Sauvegarde 
    *
-   * @param OrderPartNumberToPDFModel $OrderPartNumber
+   * @param DocumentationOrderModel $OrderPartNumber
+   * @param int $orderId
    * @return void
    */
-  function save(DocumentationOrderModel $documentationOrder) {
+  function save(DocumentationOrderModel $documentationOrder, int $orderId) {
     global $wpdb;
     $addDocumentationOrder = $wpdb->insert('documentationOrders', array(
       'partNumberToPDFId' => $documentationOrder->getPartNumberToPDFId(),
-      'orderId' => $documentationOrder->getOrderId(),
+      'orderId' => $orderId,
       'docRef' => $documentationOrder->getDocumentRef(),
     ));
 

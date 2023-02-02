@@ -9,14 +9,7 @@ class DocumentationOrderModel {
    *
    * @var integer
    */
-  protected int $PartNumberToPDFId;
-
-  /**
-   * Id de la commande
-   *
-   * @var integer
-   */
-  protected int $orderId;  
+  protected int $PartNumberToPDFId; 
 
   /**
    * SB ou QG documentation text
@@ -25,43 +18,48 @@ class DocumentationOrderModel {
    */
   protected string $documentationRef;
 
+  /**
+   * liste de OrderPdf
+   *
+   * @var array
+   */
+  protected array $orderPdfs;
+
 
 
   function __construct(
-    int $orderId,
     int $PartNumberToPDFId,  
-    string $documentationRef
-  ) {   
-    $this->orderId = $orderId;
+    string $documentationRef,
+    array $orderPdfs
+  ) {       
     $this->PartNumberToPDFId = $PartNumberToPDFId;    
     $this->documentationRef = $documentationRef;
+    $this->orderPdfs = $orderPdfs;
   } 
+  
+  #region Getter
 
-  /**
-   * Renvoi Order Id
-   *
-   * @return integer
-   */
-  function getOrderId(): int  {
-    return $this->orderId;
-  }
+    /**
+     * Renvoi partNumberToPDF Id
+     *
+     * @return integer
+     */
+    function getPartNumberToPDFId(): int {
+      return $this->PartNumberToPDFId;
+    }  
 
-  /**
-   * Renvoi partNumberToPDF Id
-   *
-   * @return integer
-   */
-  function getPartNumberToPDFId(): int {
-    return $this->PartNumberToPDFId;
-  }  
+    /**
+     * Documentation Ref
+     *
+     * @return string
+     */
+    function getDocumentRef(): string {
+      return $this->documentationRef;
+    }
 
-  /**
-   * Documentation Ref
-   *
-   * @return string
-   */
-  function getDocumentRef(): string {
-    return $this->documentationRef;
-  }
+    function getOrderPdfs(): array {
+      return $this->orderPdfs;
+    }
+  #endRegion
 
 }

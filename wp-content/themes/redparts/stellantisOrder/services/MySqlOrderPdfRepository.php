@@ -12,13 +12,15 @@ class MySqlOrderPdfRepository implements OrderPDFInterface {
    * Sauvegarde PartNumberPDF
    *
    * @param OrderPdfModel $orderPdfModel
+   * @param int $orderId
+   * @param int $documentationOrderId
    * @return void
    */
-  function save(OrderPdfModel $orderPdfModel) {
+  function save(OrderPdfModel $orderPdfModel, int $orderId, int $documentationOrderId) {
     global $wpdb;
     $addorderPdf = $wpdb->insert('orderPdfs', array(
-      'documentationOrderId' => $orderPdfModel->getDocumentationOrderId(),
-      'PDFPrintId' => $orderPdfModel->getDocumentationOrderId(),
+      'documentationOrderId' => $documentationOrderId,
+      'PDFPrintId' => $orderId,
       'orderId' => $orderPdfModel->getPDFPrintId(),
       'isDocuementationFind' => $orderPdfModel->getIsDocumentationFind(),
     ));

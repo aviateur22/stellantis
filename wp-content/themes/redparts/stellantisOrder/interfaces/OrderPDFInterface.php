@@ -7,10 +7,13 @@ interface OrderPDFInterface {
   /**
    * Sauvegarde PartNumberPDF
    *
-   * @param PartNumberPDFPrintModel $partNumberPDF
+   * @param OrderPdfModel $orderPdfModel
+   * @param int $orderId
+   * @param int $documentationOrderId
+   * @return void
    * @return void
    */
-  function save(OrderPdfModel $orderPdfModel);
+  function save(OrderPdfModel $orderPdfModel, int $orderId, int $documentationOrderId);
 
   /**
    * Recherche de tous les liens PDF en fonction d'un partNumberToPDFId

@@ -55,11 +55,11 @@ class DocumentationOrderEntity {
   protected bool $isPaperWallet;
 
   /**
-   * list of Type PartNumberPDFPrintEntity
+   * list of Type OrderPdfEntity
    *
    * @var array
    */
-  protected array $partNumberPDFPrintEntity;
+  protected array $orderPdfEntities;
 
   function __construct(
     int $id,
@@ -68,7 +68,8 @@ class DocumentationOrderEntity {
     string $documentationType, 
     string $documentationSubType,     
     bool $isWalletBranded,
-    bool $isPaperWallet
+    bool $isPaperWallet,
+    array $orderPdfEntities
   ) {
     $this->id = $id;
     $this->orderId = $orderId;
@@ -77,6 +78,7 @@ class DocumentationOrderEntity {
     $this->isPaperWallet = $isPaperWallet;
     $this->documentationType = $documentationType;
     $this->documentationSubType = $documentationSubType;
+    $this->orderPdfEntities = $orderPdfEntities;
   }
 
   #Region getter
@@ -107,6 +109,10 @@ class DocumentationOrderEntity {
 
     function getDocumentaionSubType(): string {
       return $this->documentationSubType;
+    }
+
+    function getOrderPdfEntities(): array {
+      return $this->orderPdfEntities;
     }
   #endRegion
 }
