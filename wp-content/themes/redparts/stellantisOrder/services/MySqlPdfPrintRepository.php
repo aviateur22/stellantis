@@ -13,7 +13,7 @@ class MySqlPdfPrintRepository implements PdfPrintRepositoryInterface {
    */
   function findByLinkName(string $linkName, string $PDF_INT_COUV): array {
     global $wpdb;
-    $query = "SELECT * FROM pdfPrints WHERE link LIKE '%" .$linkName ."%' ORDER BY date_maj DESC LIMIT 1";
+    $query = "SELECT * FROM pdfPrints WHERE link LIKE '%" .$linkName ."%' AND LOWER(intOrCouv) = '".$PDF_INT_COUV."' ORDER BY date_maj DESC LIMIT 1";
     $findPDFLink = $wpdb->get_results($query, ARRAY_A);
 
     if(count($findPDFLink) === 0) {

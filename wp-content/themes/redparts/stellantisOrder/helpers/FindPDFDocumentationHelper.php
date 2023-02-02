@@ -10,18 +10,21 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/in
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/pdfModel/OrderPdfModel.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/pdfModel/DocumentationOrderModel.php';
 
+/**
+ * Helper Récupérations Liens PDF par PartNumber
+ */
 class FindPDFDocumentationHelper {
 
-  // Docuementation intéreur ou extérieur
-  const PDF_INT_COUV = [
-    'INT' => 'INT',
-    'COUV' => 'COUV'
+  // Documentation intéreur ou extérieur
+  const PDF_INT_COUV_ARRAY = [
+    'int',
+    'couv'
   ];
 
   // Documentation REF
-  const DOCUMENTATION_REFERENCE = [
-    'SB_LANG_FILE' => 'SBLangFile',
-    'QG_LANG_FILE' => 'QGLangFile'
+  const DOCUMENTATION_REFERENCE_ARRAY = [
+    'SBLangFile',
+    'QGLangFile'
   ];
 
   /**
@@ -37,14 +40,7 @@ class FindPDFDocumentationHelper {
    * @var array
    */
   protected array $documentationOrders = [];
-
-  /**
-   * Liste des liasons documentations - lien PDF 
-   *
-   * @var array
-   */
-  protected array $orderPdfs = [];
-
+  
    /**
    * OrderPDFInterface Repository
    *
@@ -85,6 +81,15 @@ class FindPDFDocumentationHelper {
   }
 
   /**
+   * Renvoie la liste DocumentationOrders
+   *
+   * @return array
+   */
+  function getDocumentationOrders(): array {
+    return $this->documentationOrders;
+  }
+
+  /**
    * Recherche des linkPDF associé au partNumber 
    *
    * @return void
@@ -92,7 +97,7 @@ class FindPDFDocumentationHelper {
   function findPartNumberToPdf() {
     $partNumberToPdfs = $this->partNumberToPDFRepository->findByPartNumber($this->partNumber);
 
-    // Si pas de données pour la documentation PDF
+    // TODO Si pas de données pour la documentation PDF
     if(count($partNumberToPdfs) === 0) {
 
     }
@@ -101,13 +106,17 @@ class FindPDFDocumentationHelper {
       
       // Verification que les données QG et SB ne sont vide 
       if(empty($partNumberToPdf['SBLangFile']) || empty($partNumberToPdf['QGLangFile'])) {
-        return new \Exception('QGLangFile ou SBLangFile incomplete', 500);
+        return new \Exception('QGLangFile or SBLangFile incomplete', 500);
       }
 
-      // Parcours de REF de la docuementation
-      foreach(self::DOCUMENTATION_REFERENCE as $REF) {
-        $this->findPdfPrint($partNumberToPdf, $REF);  
-        //$this->addToDocumentationOrderList($partNumberToPdf);
+      // Boucle sur DOCUMENTATION_REFERENCE (SBLangFile ou QGLangFile)
+      foreach(self::DOCUMENTATION_REFERENCE_ARRAY as $DOCUMENTATION_REFERENCE) {
+
+        // Liste des liens PDF  INT et COUV pour une DOCUMENTATION_REFERENCE (SBLangFile ou QGLangFile) 
+        $pdfPrints =  $this->findPdfPrint($partNumberToPdf, $DOCUMENTATION_REFERENCE);
+
+        // Crétion d'un nouveau DocumentationOrderModel et ajout dans la liste
+        $this->addToDocumentationOrderList($partNumberToPdf, $DOCUMENTATION_REFERENCE, $pdfPrints);
       }
     }
   } 
@@ -115,37 +124,52 @@ class FindPDFDocumentationHelper {
   /**
    * Recherche des liens PDF
    * @param array $partNumberToPdf
-   * @return void
+   * @param string $DOCUMENTATION_REFERENCE - SBLangFile ou QGLangFile
+   * @return array
    */
-  function findPdfPrint(array $partNumberToPdf, $REF) {
+  private function findPdfPrint(array $partNumberToPdf, $DOCUMENTATION_REFERENCE): array {
+
+    // Stock les liens PDF 
+    $orderPdfs = [];
+
     // Recherche PDF intérieur et extérieur
-    foreach(self::PDF_INT_COUV as $PDF_INT_COUV) {
-      $this->AddToOrderPdfList($partNumberToPdf, $REF, $PDF_INT_COUV);  
+    foreach(self::PDF_INT_COUV_ARRAY as $PDF_INT_COUV) {
+      $orderPdfs [] = $this->AddToOrderPdfList($partNumberToPdf, $DOCUMENTATION_REFERENCE, $PDF_INT_COUV);  
     }
+
+    return $orderPdfs;
   }
   
   /**
-   * Ajout dans la list des PDF link
+   * Renvoie d'un OrderPdfModel
    * @param array $partNumberToPdf
-   * @param string $REF - SBLangFile ou QGLangFile
+   * @param string $DOCUMENTATION_REFERENCE - SBLangFile ou QGLangFile
    * @param string $PDF_INT_COUV - INT ou COUV
    *
-   * @return void
+   * @return OrderPdfModel
    */
-  function AddToOrderPdfList(array $partNumberToPdf, string $REF, string $PDF_INT_COUV) {
-
-    $isPdfFind = true;
-
+  private function AddToOrderPdfList(array $partNumberToPdf, string $DOCUMENTATION_REFERENCE, string $PDF_INT_COUV): OrderPdfModel {
     // Recherche link pdf
-    $linkPDF = $this->PdfPrintRepository->findByLinkName($partNumberToPdf[$REF], $PDF_INT_COUV);
+    $linkPDF = $this->PdfPrintRepository->findByLinkName($partNumberToPdf[$DOCUMENTATION_REFERENCE], $PDF_INT_COUV);
 
     if(empty($linkPDF)) {
-      $isPdfFind = false;
+      return new OrderPdfModel(-1, false);
     }
 
     // Ajout dans la liste des liens PDF
-    $this->orderPdfs [] = new OrderPdfModel($linkPDF['id'], $isPdfFind);
+    return new OrderPdfModel($linkPDF['id'], true);   
   }
 
-
+  /**
+   * Création d'un nouveau 
+   *
+   * @param array $partNumberToPdf
+   * @param string $DOCUMENTATION_REFERENCE
+   * @param array $pdfPrints
+   * @return void
+   */
+  private function addToDocumentationOrderList(array $partNumberToPdf, string $DOCUMENTATION_REFERENCE, array $pdfPrints) {
+    // Ajout d'un nouveau documentationOrderModel dans  la liste
+    $this->documentationOrders [] = new DocumentationOrderModel($partNumberToPdf['id'], $partNumberToPdf[$DOCUMENTATION_REFERENCE], $pdfPrints);
+  }
 }

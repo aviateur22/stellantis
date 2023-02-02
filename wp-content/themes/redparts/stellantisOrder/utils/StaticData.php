@@ -151,59 +151,6 @@ abstract class StaticData {
     const STELLANTIS_NAME = "STELLANTIS";
   #endRegion
 
-  #region Doc PDF
-
-    // Type de documentation
-    const DOC_TYPE = [
-      'FULL_GUIDE' => 'FULL GUIDE',
-      'MAINTENANCE_BOOK' => 'MAINTENANCE BOOK',
-    ];
-
-    // Sous Type de doc
-    const DOC_SUB_TYPE = [
-      'UNDEFINED' => 'UNDEFINED',
-      'CCE' => 'CCE'
-    ];
-
-    // Sous Partie de la doc (Intérieu - Couverture)
-    const DOC_PART = [
-      'INT' => 'INT',
-      'COUV' => 'COUV'
-    ];
-
-    // Documentation a récupérer 
-    const PDFS= [
-      'FULL_GUIDE_INT' => 
-      [
-        'INDEX' => 1,
-        'DOC_TYPE' => self::DOC_TYPE['FULL_GUIDE'],
-        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['UNDEFINED'],
-        'DOC_PART' => self::DOC_PART['INT']
-      ],
-      'FULL_GUIDE_COUV' => 
-      [
-        'INDEX' => 2,
-        'DOC_TYPE' => self::DOC_TYPE['FULL_GUIDE'],
-        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['UNDEFINED'],
-        'DOC_PART' => self::DOC_PART['COUV']
-      ],
-      'MAINTENANCE_BOOK_CCE_INT'=> 
-      [
-        'INDEX' => 3,
-        'DOC_TYPE' => self::DOC_TYPE['MAINTENANCE_BOOK'],
-        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['CCE'],
-        'DOC_PART' => self::DOC_PART['INT']
-      ],
-      'MAINTENANCE_BOOK_CCE_COUV'=>
-      [
-        'INDEX' => 4,
-        'DOC_TYPE' => self::DOC_TYPE['MAINTENANCE_BOOK'],
-        'DOC_SUB_TYPE' => self::DOC_SUB_TYPE['CCE'],
-        'DOC_PART' => self::DOC_PART['COUV']
-      ],
-    ];
-  #endRegion
-
   #region Repository Type And Document Type
 
     // Repository MYSQL
