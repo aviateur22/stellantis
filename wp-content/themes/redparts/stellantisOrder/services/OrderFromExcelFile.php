@@ -2,7 +2,11 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/ExcelFileHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderSourceInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/DocumentationOrderInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderPDFInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/pdfModel/DocumentationOrderModel.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/pdfModel/OrderPdfModel.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/FindPDFDocumentationHelper.php';
 
 class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface {
@@ -90,6 +94,20 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
    */
   protected OrderRepositoryInterface $orderRepository;
 
+  /**
+   * DocumentationOrder repository
+   *
+   * @var DocumentationOrderInterface
+   */
+  protected DocumentationOrderInterface $documentationOrderRepository;
+
+  /**
+   * OrderPDFs Repository
+   *
+   * @var OrderPDFInterface
+   */
+  protected OrderPDFInterface $orderPDFRepository;
+
   function  __construct(string $fileName, OrderHelper $orderHelper, User $user, RepositoriesModel $repositories) {
     // Constructeur parent
     parent::__construct($fileName); 
@@ -97,6 +115,8 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->orderHelper = $orderHelper;
     $this->user = $user;
     $this->orderRepository = $repositories->getOrderRepository();
+    $this->documentationOrderRepository = $repositories->getDocumentationOrderRepository();
+    $this->orderPDFRepository = $repositories->getOrderPdfRepository();
   } 
 
   /**
@@ -121,7 +141,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->readOrderSourceData();
 
     // Sauvegarde des commandes
-    $this->orderRepository->saveList($this->orders);
+    //$this->orderRepository->saveList($this->orders);
 
     // TODO New Save
     $this->saveOrders();
@@ -181,8 +201,51 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
       }
 
       // Ajout de la commande
-      $orderId = $this->orderRepository->save($order);     
+      $orderId = $this->orderRepository->save($order);       
+      
+      // Ajout Liaison Commande - PartNumberToPDF
+      foreach($order->getPdfDocumentations() as $documentationOrder) {
+
+        if(!$documentationOrder instanceof DocumentationOrderModel) {
+          throw new \Exception('documentationOrder is not instanceOf DocumentationOrderModel');
+        }
+
+        $this->saveDocumentationOrders($documentationOrder, $orderId);
+      }      
     }
+  }
+
+  /**
+   * Sauvegarde des DocuementationOrder
+   *
+   * @return void
+   */
+  function saveDocumentationOrders(DocumentationOrderModel $documentationOrder,int $orderId) {
+    // Ajout Liaison Commande - PartNumberToPDF
+    $documentationOrderId = $this->documentationOrderRepository->save($documentationOrder, $orderId);
+   
+    // Ajout Liaison Docuementation - PDF LINK
+    foreach($documentationOrder->getOrderPdfs() as $orderPdf) {
+
+      if(!$orderPdf instanceof OrderPdfModel) {
+        throw new \Exception('orderPdf is not instanceOf OrderPdfModel');
+      }
+
+      $this->saveOrderPdf($orderPdf, $documentationOrderId, $orderId);
+    }
+  }
+
+  /**
+   * Sauvegarde d'une liaison PDF - DocumentationOrder - OrderId 
+   *
+   * @param OrderPdfModel $orderPdf
+   * @param integer $documentationOrderId
+   * @param integer $orderId
+   * @return void
+   */
+  function saveOrderPdf(OrderPdfModel $orderPdf, int $documentationOrderId, int $orderId) {
+    // Sauvegarde 
+    $this->orderPDFRepository->save($orderPdf, $orderId , $documentationOrderId);
   }
 
   /**

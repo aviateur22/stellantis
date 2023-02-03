@@ -9,7 +9,7 @@ require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/m
 
 
 
-class DashboardHelper extends CreateDashboardOrdersHelper {
+class DashboardOrderHelper extends CreateDashboardOrdersHelper {
 
   /**
    * Order repository
@@ -197,7 +197,8 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
       $order['brand'],
       $order['version'],
       $order['year'],
-      $order['forecastPrint']
+      $order['forecastPrint'],
+      $order['documentationPDFInformations']
     );
   }
   
@@ -257,6 +258,5 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
         $this->dashboardOrders[] = $dashboardOrderModel;
       }      
     }
-    
   }
 }

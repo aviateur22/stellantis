@@ -10,9 +10,9 @@ interface DocumentationOrderInterface {
    *
    * @param DocumentationOrderModel $OrderPartNumber
    * @param int $orderId
-   * @return void
+   * @return int - Id documentationOrder
    */
-  function save(DocumentationOrderModel $documentationOrder, int $orderId);
+  function save(DocumentationOrderModel $documentationOrder, int $orderId): int;
 
   /**
    * Recherche de tous les liens d'un PartNumber ver une documentation

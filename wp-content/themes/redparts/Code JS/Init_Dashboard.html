@@ -175,6 +175,11 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		const coverLinkElement = document.getElementById('coverLink');
 		const statusLabelElement = document.getElementById('statusLabel');
 
+		// PDF
+		const mainDocumentationContainerElement = document.getElementById('mainDocumentationContainer');
+		const documentationContainerElement = document.getElementById('documentationContainer');
+		const documentationPDFElement = document.getElementById('documentation-xx');
+
 		// Mise a jour de la vue
 		if(partNumberElement && quantityElement && deliveredDateElement &&
 			processedWithElement && coverCodeElement && coverLinkElement && brandElement && statusLabelElement) {
@@ -211,6 +216,29 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 			// Ajout nouvelle classe
 			statusLabelElement.classList.add(orderStatusClassNamecolor);
+
+			// Démultiplie Ou masque le docuement PDF
+			if(orderInformation.documentationPDFInformations.length === 0) {
+				documentationContainerElement.style.display = "none"
+			} else {
+				documentationContainerElement.style.display = "flex"
+
+				// Mise a jour id				
+				orderInformation.documentationPDFInformations.forEach(documentation => {
+					let cloneDocumentationElement = documentationPDFElement.cloneNode(true);
+					// Numero Id pour id docuementation
+					let number = documentation.documentationId;		
+					let idClone = "documentation-" + number;
+					console.log(idClone);
+					console.log(number);
+
+					cloneDocumentationElement.id = idClone;
+					documentationPDFElement.after(cloneDocumentationElement);
+				});
+
+				// Supprime le documentHtml de ref
+				documentationPDFElement.remove();
+			}
 		}	
 
 		// Si Select Statut Option 
@@ -614,7 +642,7 @@ for(x=1;x<5000;x++)
 
 		// Résulat d'une recherche de commande
 		if(data['findOrder']) {
-
+			console.log(data['findOrder']);
 			// Mise a jour de l'affichage
 			updateOrderModalElement(data['findOrder']);			
 			

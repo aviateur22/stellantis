@@ -31,7 +31,7 @@ try {
   $repositorySelection = new RepositorySelection(StaticData::REPOSITORY_TYPE_MYSQL);
   $repositories = $repositorySelection->selectRepositories($user);
 
-  $dashboardHelper = new DashboardHelper($repositories);
+  $dashboardHelper = new DashboardOrderHelper($repositories);
   
   // Initilasation de la date de début d'affichage
   $date = !empty($startDate) ? $startDate : null;
@@ -66,9 +66,8 @@ try {
   );
   
   
-  $data['orders'] = $displayDashboardOrder->createHtml();
-  
-  
+  $data['orders'] = $displayDashboardOrder->createHtml(); 
+    
   echo(json_encode($data));
 }
 catch(\Throwable $th) {

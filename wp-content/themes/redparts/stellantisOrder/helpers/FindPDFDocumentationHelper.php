@@ -73,7 +73,7 @@ class FindPDFDocumentationHelper {
     RepositoriesModel $repositories,
     string $partNumber
   ) {
-    $this->documentationOrderRepository = $repositories->getDocumentationOrder();    
+    $this->documentationOrderRepository = $repositories->getDocumentationOrderRepository();    
     $this->orderPdfRepository = $repositories->getOrderPdfRepository();
     $this->partNumberToPDFRepository = $repositories->getPartNumberToPDFRepository();
     $this->PdfPrintRepository = $repositories->getPdfPrintRepository();

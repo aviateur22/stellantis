@@ -39,7 +39,7 @@ $repositories = $repositorySelection->selectRepositories($user);
 
 // Helper + Services
 $displayOrderColorHelper = new DisplayOrderColorHelper($user);
-$dashboardHelper = new DashboardHelper($repositories);
+$dashboardHelper = new DashboardOrderHelper($repositories);
 $setDashboard = $dashboardHelper->setDashboardOrders($startDate, '2023-02-25', $filterEntries);
 
 // Récupération des données

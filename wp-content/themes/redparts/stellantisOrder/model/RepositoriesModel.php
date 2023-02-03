@@ -118,7 +118,7 @@ class RepositoriesModel  {
     return $this->orderPdfRepository;
   }
 
-  function getDocumentationOrder(): DocumentationOrderInterface {
+  function getDocumentationOrderRepository(): DocumentationOrderInterface {
     return $this->documentationOrderRepository;
   }
 

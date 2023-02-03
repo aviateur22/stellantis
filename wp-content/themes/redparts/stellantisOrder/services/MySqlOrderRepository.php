@@ -69,7 +69,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * Sauvegarde de 1 commande
    *
    * @param Order $order
-   * @return array
+   * @return int
    */
   function save(Order $order): int {
     global $wpdb;
@@ -170,12 +170,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function findOne(string $orderId): array {
     global $wpdb;
     $findOrder = $wpdb->get_results(
-      $wpdb->prepare(
-        "SELECT * FROM orders WHERE id = %s",
-          $orderId
-        )
-    );
-    return $findOrder;
+      $wpdb->prepare("SELECT * FROM orders WHERE id = %s", $orderId), ARRAY_A);
+    return $this->addPdfInformationToOrder($findOrder);;
   }
 
   /**
@@ -300,15 +296,22 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
 
     // Filtre les commandes pour les usines Stellantis   
     if(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
-      $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+      $findOrders = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders
+        WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
       StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd, $this->user->getFirstRole()), ARRAY_A);
-      return $findOrders;      
+      
+      // Renvoie les commandes avec l'ajout de liens PDF
+      return $this->addPdfInformationToOrder($findOrders);
     }
 
+    
     // Autre personne de connectée
     $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
     StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd), ARRAY_A);
-    return $findOrders;
+
+    // Renvoie les commandes avec l'ajout de liens PDF
+    return $this->addPdfInformationToOrder($findOrders);
   }
 
   /**
@@ -327,6 +330,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     if($filterEntries['partNumber']) {
       $partNumberQueryPlaceHolder = $this->getPlaceholder($filterEntries['partNumber'], '%s');
       $findOrderInPartNumber = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE partNumber IN ($partNumberQueryPlaceHolder) ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",$filterEntries['partNumber']), ARRAY_A);
+      $findOrderInPartNumber = $this->addPdfInformationToOrder($findOrderInPartNumber);
     }
 
     // Recherche des Orders dans l'interval de temps
@@ -342,7 +346,125 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
         }
       }
     }
+    
+    // Renvoie les commandes avec l'ajout de liens PDF
     return $findOrders;
+  }
+
+  /**
+   * Ajout des données PDF aux commandes
+   *
+   * @param [type] $ordersWithoutPdf
+   * @return array - Commandes avec les données PDF
+   */
+  function addPdfInformationToOrder($ordersWithoutPdf):array {
+    $orders = [];
+    foreach($ordersWithoutPdf as $order) {
+      
+      // Recherche des liaison commande - PartNumberToPDf
+      $documentationOrders = $this->findDocumentationOrders($order);
+
+      // Rechecher des données PDF pour chaque documentationOrders
+      $documentationInformations = $this->iterateThroughdocumentationOrders($order, $documentationOrders);
+      
+      $order['documentationPDFInformations'] =  $documentationInformations;
+
+      $orders[] = $order;
+    }
+
+    return $orders;      
+  }
+  
+  /**
+   * Recherche des DocumentationOrder liées à une commande
+   *
+   * @param array $order
+   * @return array
+   */
+  function iterateThroughdocumentationOrders(array $order, array $documentationOrders): array {
+     
+    $documentations = [];
+
+    foreach($documentationOrders as $documentationOrder) {
+
+      //Recherche des Liens PDF
+      $findOrderPdfs = $this->findOrderPdfs($order, $documentationOrder);
+
+      // Recheche des information en détails (paperWallet, walletBranded, languageCodeSB, comments)
+      $documentationOrderDetail = $this->findDetailOnDocumentationOrder($documentationOrder);
+
+      $documentations[] = [
+        'documentationId' => $documentationOrder['id'],
+        'documentationDetail' => $documentationOrderDetail,
+        'PdfDetail' => $findOrderPdfs
+      ];
+    }
+    return $documentations;
+  }
+
+  /**
+   * Recherche des DocumentationOrder liées à une commande
+   *
+   * @param array $order
+   * @return array
+   */
+  function findDocumentationOrders(array $order): array {
+    global $wpdb;
+
+    $findDocumentationOrders = $wpdb->get_results($wpdb->prepare(          
+      "SELECT * FROM documentationsOrders WHERE orderId = %s", $order['id']
+    ), ARRAY_A);
+
+    return $findDocumentationOrders;
+  }
+
+  /**
+   * Rercherche des données PDF liée a la docuementation
+   *
+   * @param array $order
+   * @param array $documentationOrder
+   * @return array
+   */
+  function findOrderPdfs(array $order, array $documentationOrder): array {
+    global $wpdb;
+
+    //Recherche des Liens PDF avec leur détails
+    $findOrderPdfs = $wpdb->get_results($wpdb->prepare(          
+      "SELECT pdfPrints.link, pdfPrints.type, pdfPrints.intOrCouv, pdfPrints.lang1
+      FROM orderPdfs 
+      LEFT JOIN pdfPrints ON orderPdfs.PDFPrintId = pdfPrints.id
+      WHERE orderId = %s AND documentationOrderId = %s AND isDocumentationFind = 1", $order['id'], $documentationOrder['id']
+    ), ARRAY_A);
+
+    return $findOrderPdfs;
+  }
+
+  /**
+   * Récupération des détails d'une DocumentationOrder (paperWallet, walletBranded, languageCodeSB, comments)
+   *
+   * @return array
+   */
+  function findDetailOnDocumentationOrder(array $documentationOrder): array {
+    global $wpdb;
+
+    $partNumberToPDFId = $documentationOrder['partNumberToPDFId'];
+
+    // Récupérartion des données suivantes:
+    $documentationOrderDetail = $wpdb->get_results($wpdb->prepare(          
+      "SELECT paperWallet, walletBranded, languageCodeSB, comments FROM PartNumberToPDF WHERE id = %s", $partNumberToPDFId
+    ), ARRAY_A);
+
+    if(count($documentationOrderDetail) > 0) {
+      $documentationOrderDetail = $documentationOrderDetail[0];
+    }
+
+    // Transforme type bool walletBranded
+    $documentationOrderDetail['walletBranded'] = strtolower($documentationOrderDetail['walletBranded']) === 'y' ? true : false;
+
+    // Transforme type bool paperWallet
+    $documentationOrderDetail['paperWallet'] = strtolower($documentationOrderDetail['paperWallet']) === 'x' ? true : false;
+
+    return $documentationOrderDetail;
   }
 
   /**

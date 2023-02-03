@@ -14,17 +14,16 @@ class MySqlDocumentationOrderRepository implements DocumentationOrderInterface {
    *
    * @param DocumentationOrderModel $OrderPartNumber
    * @param int $orderId
-   * @return void
+   * @return int - id documentationOrder
    */
-  function save(DocumentationOrderModel $documentationOrder, int $orderId) {
+  function save(DocumentationOrderModel $documentationOrder, int $orderId): int {
     global $wpdb;
-    $addDocumentationOrder = $wpdb->insert('documentationOrders', array(
+    $wpdb->insert('documentationsOrders', array(
       'partNumberToPDFId' => $documentationOrder->getPartNumberToPDFId(),
       'orderId' => $orderId,
       'docRef' => $documentationOrder->getDocumentRef(),
     ));
-
-    return $addDocumentationOrder;
+    return $wpdb->insert_id;
   }
 
   /**

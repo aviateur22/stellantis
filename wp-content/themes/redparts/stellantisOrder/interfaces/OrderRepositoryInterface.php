@@ -18,7 +18,7 @@ interface OrderRepositoryInterface {
    * Sauvegarde de 1 commande
    *
    * @param Order $order
-   * @return array
+   * @return int
    */
   function save(Order $order): int;
 

@@ -24,6 +24,8 @@ class UpdateOrderModalHelper {
    */
   function updateOrderModal(): string {
 
+    $setPDFDocumentation = $this->setPDFDocumentation();
+
     $statusSelectOption = !isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES) ?
       $this->setPopupSelectectOption() :
       '';
@@ -66,6 +68,10 @@ class UpdateOrderModalHelper {
               <p id="coverCode">XXXX</p>
             </div>
             <div class="group__control">
+              <label class="text--strong" for="forecast">Forecast</label>
+              <p id="forecast">XXXX</p>
+            </div>
+            <div class="group__control">
               <label class="text--strong text--right" for="brand">Car Brand</label>
               <p id="brand">XXXX</p>
             </div>
@@ -74,6 +80,7 @@ class UpdateOrderModalHelper {
             <label class="text--strong text--left" for="coverLink">Cover Link</label>
             <p id="coverLink">XXXX</p>
           </div>
+          '.$setPDFDocumentation.'
           <div class="update__information">
             <div class="group__control">
               <label class="text--strong text--left" for="quantity">Quantity</label>
@@ -171,6 +178,37 @@ class UpdateOrderModalHelper {
       </div>';
 
     }
+  }
+
+  private function setPDFDocumentation(): string {
+    return '
+      <div id="mainDocumentationContainer" class="group__control">
+        <label for="status"> Documentation PDF </label>
+        <p class="documentation__text__info"> No PDF documentation available </p>
+        <div id="documentationContainer" class="documentation__container">          
+          <div id="documentation-xx" class="documentation">          
+            <div class="documentation__header">
+              <div class="documentation__wallet">
+                <label class="doc__option">Paper Wallet</label>
+                <span></span>
+              </div>
+              <div class="documentation__wallet"  >
+                <label class="doc__option">Wallet Branded</label>                                
+                <span></span>
+              </div>              
+            </div>
+            <p class="pdf__info"> No PDF documentation available </p>
+            <div class="documentation__doc">
+              <div class="doc__int">
+                <p class="doc__int_link"></p>
+              </div>
+              <div class="doc__couv">
+                <p class="doc__couv_link"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>';
   }
 
 }
