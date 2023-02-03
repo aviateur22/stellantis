@@ -130,11 +130,18 @@ class Order {
   protected string $version;
 
   /**
-   * Undocumented variable
+   * Prévison d'impression
    *
    * @var integer
    */
   protected int $printForecast;
+
+  /**
+   * documentationPDF
+   *
+   * @var array
+   */
+  protected array $PDFdocumentations;
 
 
   function __construct(
@@ -156,7 +163,8 @@ class Order {
     string $brand,
     string $version,
     int $year,
-    int $printForecast
+    int $printForecast,
+    array $PDFdocumentations
   ) {
     $this->coverCode = $coverCode;
     $this->model = $model;
@@ -177,6 +185,7 @@ class Order {
     $this->version = $version;
     $this->year = $year;
     $this->printForecast = $printForecast;
+    $this->PDFdocumentations = $PDFdocumentations;
   }
   #Region Getter
 
@@ -342,5 +351,9 @@ class Order {
       return $this->printForecast;
     }
 
+
+    function getPdfDocumentations(): array {
+      return $this->PDFdocumentations;
+    }
   #endRegion
 }

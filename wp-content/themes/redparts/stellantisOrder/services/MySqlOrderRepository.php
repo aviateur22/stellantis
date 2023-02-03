@@ -33,7 +33,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param array $orders
    * @return void
    */
-  function save(array $orders): void {  
+  function saveList(array $orders): void {  
     global $wpdb;
     foreach($orders as $order) {
       // Verification instance Orer 
@@ -63,6 +63,38 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
         throw new InvalidFormatException();
       }     
     }   
+  }
+
+  /**
+   * Sauvegarde de 1 commande
+   *
+   * @param Order $order
+   * @return array
+   */
+  function save(Order $order): int {
+    global $wpdb;
+    $wpdb->insert('orders', array(
+      'orderId' => $order->getOrderId(),
+      'orderDate' => $order->getOrderDate(),
+      'orderFrom' => $order->getOrderform(),
+      'orderBuyer' => $order->getOrderBuyer(),
+      'family' => $order->getFamily(),
+      'countryName' => $order->getCountryName(),
+      'countryCode' => $order->getCountryCode(),
+      'partNumber' => $order->getPartNumber(),
+      'coverCode' => $order->getCoverCode(),
+      'quantity' => $order->getQuantity(),
+      'deliveredDate' => date('Y-m-d', strtotime($order->getDeliveredDate())),
+      'coverLink'=> $order->getCoverLink(),
+      'model'=>$order->getModel(),
+      'isValid' => $order->getIsValid(),
+      'brand' =>$order->getBrand(),
+      'wipId' => $order->getWipId(),
+      'version' => $order->getVersion(),
+      'year' => $order->getYear(),
+      'forecastPrint' =>$order->getPrintForecast()
+    ));
+    return $wpdb->insert_id;
   }
 
   /**

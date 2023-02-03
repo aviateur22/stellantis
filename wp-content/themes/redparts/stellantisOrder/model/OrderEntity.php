@@ -32,7 +32,7 @@ class OrderEntity extends Order {
     string $brand,
     string $version,
     int $year,
-    int $printForecast
+    int $printForecast,    
     ) {
     parent::__construct (
       $orderId,
@@ -53,7 +53,8 @@ class OrderEntity extends Order {
       $brand,
       $version,
       $year,
-      $printForecast
+      $printForecast,
+      []
     );
     
     $this->id = $id;

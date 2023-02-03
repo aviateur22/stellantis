@@ -7,12 +7,20 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/mo
 interface OrderRepositoryInterface {
 
   /**
-   * Insert plusieurs commande
+   * Sauvegarde de plusieurs commande
    *
    * @param array $orders - Liste des commandes à sauvgarder
    * @return void
    */
-  function save(array $orders): void;
+  function saveList(array $orders): void;
+
+  /**
+   * Sauvegarde de 1 commande
+   *
+   * @param Order $order
+   * @return array
+   */
+  function save(Order $order): int;
 
   /**
    * Recherche d'une commande a partir id de la commande

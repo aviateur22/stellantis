@@ -99,7 +99,7 @@ class FindPDFDocumentationHelper {
 
     // TODO Si pas de données pour la documentation PDF
     if(count($partNumberToPdfs) === 0) {
-
+      
     }
 
     foreach($partNumberToPdfs as $partNumberToPdf) {
@@ -119,6 +119,8 @@ class FindPDFDocumentationHelper {
         $this->addToDocumentationOrderList($partNumberToPdf, $DOCUMENTATION_REFERENCE, $pdfPrints);
       }
     }
+
+    return $this->documentationOrders;
   } 
 
   /**

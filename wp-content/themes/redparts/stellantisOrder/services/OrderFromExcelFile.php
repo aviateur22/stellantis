@@ -2,7 +2,8 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/ExcelFileHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderSourceInterface.php';
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/FindPDFDocumentationHelper.php';
 
 class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface {
 
@@ -120,7 +121,10 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->readOrderSourceData();
 
     // Sauvegarde des commandes
-    $this->orderRepository->save($this->orders);
+    $this->orderRepository->saveList($this->orders);
+
+    // TODO New Save
+    $this->saveOrders();
   }
 
   /**
@@ -162,6 +166,23 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         
       }    
     }    
+  }
+
+  /**
+   * Sauvegarde des commandes
+   *
+   * @return void
+   */
+  function saveOrders() {
+    foreach($this->orders as $order) {
+      // Vérification instance
+      if(!$order instanceof Order) {
+        throw new \Exception('order is not instanceOf Order');
+      }
+
+      // Ajout de la commande
+      $orderId = $this->orderRepository->save($order);     
+    }
   }
 
   /**
