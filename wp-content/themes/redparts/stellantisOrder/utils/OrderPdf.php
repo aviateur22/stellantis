@@ -94,7 +94,7 @@ class OrderPdf {
     $pdfTypes = [];
 
     $documentations = $order['documentationPDFInformations'];
-
+    
     // Pas de données
     if(count($documentations) === 0) {
       $pdfTypes[] = [
