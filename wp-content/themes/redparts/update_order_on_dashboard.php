@@ -63,7 +63,7 @@ require_once('./stellantisOrder/utils/RepositorySelection.php');
     $updatedOrder = $updateOrderModel->findUpdatedOrder();
     
     // Récupération de la nouveau nom de la class color
-    $colorClassName = $updateOrderModel->findClassNameOrderColor($updatedOrder->wipId);
+    $colorClassName = $updateOrderModel->findClassNameOrderColor($updatedOrder['wipId']);
     $colorClassToRemove = $updateOrderModel->findColorClassToRemove();    
     
     $data['updateOrder'] =  [

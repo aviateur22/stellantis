@@ -1,9 +1,11 @@
 <?php
 require_once('./stellantisOrder/services/XmlOrderFormat.php');
 require_once('./stellantisOrder/services/FtpTransfert.php');
+require_once('./stellantisOrder/services/MailService.php');
 require_once('./stellantisOrder/helpers/ForecastPrintHelper.php');
 require_once('./stellantisOrder/model/RepositoriesModel.php');
 require_once('./stellantisOrder/utils/RepositorySelection.php');
+require_once('./stellantisOrder/helpers/OrderMessageConfirmationHelper.php');
 
 setlocale(LC_TIME, "fr_FR");
 
@@ -26,6 +28,9 @@ try {
   $forecastPrintHelper = new ForecastPrintHelper($repositories);
   $xmlOrderFormat = new XmlOrderFormat($orderId, $repositories, $forecastPrintHelper);
   $ftpTransfert = new FtpTransfert($repositories, $orderId);
+  $mailService = new MailService();
+ 
+  $formatMessageHelper = new OrderMessageConfirmationHelper($orderId, $repositories, $mailService);
 
   // Vérification que toute les commandes valides
   $errorOrders = $repositories->getOrderRepository()->findErrorOrders($orderId);
@@ -35,7 +40,14 @@ try {
   }
   
   // Format les commandes a transférer
-  $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();    
+  $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();
+
+  // Préparation des messages pour les mails
+  $formatMessageHelper->prepareMessageForRequetedOrders();
+
+  // Envois des emails
+  $formatMessageHelper->sendMessage();
+  
 
   // Transfert Fichier
   $isTransfertSuccess = $ftpTransfert->transfertOrders($formatedPathOrders);
@@ -43,7 +55,7 @@ try {
   if(!$isTransfertSuccess) {
     throw new \Exception('Error transferring oreder file, process cancel', 500);
   }
-
+  
   // Mise a jour du statut des commandes
   $ftpTransfert->updateOrderStatus();
 

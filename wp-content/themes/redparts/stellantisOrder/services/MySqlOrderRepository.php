@@ -203,7 +203,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     $query = "SELECT * FROM orders WHERE orderId = '" .$orderId."'";
     $findOrders = $wpdb->get_results($query, ARRAY_A);
 
-    return $findOrders;
+    // Renvoie les commandes avec l'ajout de liens PDF
+    return $this->addPdfInformationToOrder($findOrders);
   }
 
   /**
@@ -244,9 +245,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     $existingOrder = $order[0];
 
     // Vérification si pas de conflit avec d'autre commande deja existante
-    if(date('Y-m-d', strtotime($existingOrder->deliveredDate)) !== date('Y-m-d', strtotime($deliveredDate))) {
-      
-      $findDuplicatedOrder = $this->findOneDuplicatedOrder($existingOrder->partNumber, $deliveredDate, $existingOrder->orderBuyer);      
+    if(date('Y-m-d', strtotime($existingOrder['deliveredDate'])) !== date('Y-m-d', strtotime($deliveredDate))) {
+      $findDuplicatedOrder = $this->findOneDuplicatedOrder($existingOrder['partNumber'], $deliveredDate, $existingOrder['orderBuyer']);      
       if(!empty($findDuplicatedOrder)) {
         throw new \Exception('Update impossible, Order already exist on ' . date('d-M-Y', strtotime($deliveredDate)), 400);
       }
@@ -393,6 +393,10 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
       // Recheche des information en détails (paperWallet, walletBranded, languageCodeSB, comments)
       $documentationOrderDetail = $this->findDetailOnDocumentationOrder($documentationOrder);
 
+      // Ajout du type de document dans documentationOrderDetail
+      $documentationOrderDetail['type'] = $this->getDocumentationType($findOrderPdfs);
+
+
       $documentations[] = [
         'documentationId' => $documentationOrder['id'],
         'documentationDetail' => $documentationOrderDetail,
@@ -430,7 +434,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
 
     //Recherche des Liens PDF avec leur détails
     $findOrderPdfs = $wpdb->get_results($wpdb->prepare(          
-      "SELECT pdfPrints.link, pdfPrints.type, pdfPrints.intOrCouv, pdfPrints.lang1
+      "SELECT pdfPrints.link, pdfPrints.type, pdfPrints.intOrCouv, pdfPrints.lang1, pdfPrints.fullLink
       FROM orderPdfs 
       LEFT JOIN pdfPrints ON orderPdfs.PDFPrintId = pdfPrints.id
       WHERE orderId = %s AND documentationOrderId = %s AND isDocumentationFind = 1", $order['id'], $documentationOrder['id']
@@ -464,7 +468,38 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     // Transforme type bool paperWallet
     $documentationOrderDetail['paperWallet'] = strtolower($documentationOrderDetail['paperWallet']) === 'x' ? true : false;
 
+    // Nom fichier provenant de $documentationOrder
+    $documentationOrderDetail['docRef'] = $documentationOrder['docRef'];
+
     return $documentationOrderDetail;
+  }
+
+  /**
+   * Renvoie le type d'une docuementation
+   *
+   * @param array $pdfDetails - Tableau contenant le type a renvoyer
+   * @return string - Le type
+   */
+  function getDocumentationType(array $pdfDetails): string {
+    $documentationType = '';
+
+    // Si pas de contenu
+    if(count($pdfDetails) === 0) {
+      return 'undefined';
+    }
+    
+    for($i =0; $i < count($pdfDetails); $i++) {
+      if($i===0) {
+        $documentationType = trim(strtolower($pdfDetails[$i]['type']));
+      } else {
+
+        // Si les type diffrents
+        if($documentationType !== trim(strtolower($pdfDetails[$i]['type']))) {
+          return 'undefined';
+        }
+      }      
+    }
+    return $documentationType;
   }
 
   /**
@@ -490,7 +525,13 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function findFirstOrderAfteSpecifiedDay(string $specifiedDay): array
   {
     global $wpdb;
-    return $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
-      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay), ARRAY_A)[0];
+    $findFirstDay =  $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
+      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay), ARRAY_A);
+
+    if(count($findFirstDay) > 0) {
+      return $findFirstDay[0];
+    }
+
+    return [];
   }
 }

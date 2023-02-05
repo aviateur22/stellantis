@@ -43,7 +43,7 @@ abstract class UpdateOrderModel {
    * @param string $orderId
    * @return stdClass
    */
-  function findUpdatedOrder(): stdClass {
+  function findUpdatedOrder(): array {
     $findOrder =  $this->orderRepository->findOne($this->orderId);
 
     if(count($findOrder) === 0) {

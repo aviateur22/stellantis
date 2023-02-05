@@ -1,6 +1,7 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderFormatInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/OrderPdf.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/exceptions/FolderNotFindException.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/FormatedOrder.php';
@@ -50,8 +51,7 @@ class XmlOrderFormat implements OrderFormatInterface {
    * @param array $orders - litste des commandes
    * @return array - Array de Object FormatedOrder
    */
-  function createFormatedOrders(): array
-  {
+  function createFormatedOrders(): array {
     // path des fichiers de créer
     $formatedOrders = [];
 
@@ -60,7 +60,7 @@ class XmlOrderFormat implements OrderFormatInterface {
 
     foreach($orders as $order) {
       // Création XML
-      $formatedOrder = $this->createXml($order);
+      $formatedOrder = $this->createXml($order);      
 
       // Sauvegarde du XML
       $formatedOrders[] = $formatedOrder;
@@ -76,6 +76,10 @@ class XmlOrderFormat implements OrderFormatInterface {
    * @return FormatedOrder
    */
   private function createXml(array $order): FormatedOrder {
+
+    // Récupération des type de docuementation PDF
+    $orderPdf = new OrderPdf();
+    
     
     // Parametrage XML
     $xmlFile = new DOMDocument('1.0', 'utf-8');
@@ -96,7 +100,13 @@ class XmlOrderFormat implements OrderFormatInterface {
     $livre->appendChild($xmlFile->createElement('coverLink', $order['coverLink']));
     $livre->appendChild($xmlFile->createElement('family', $order['family']));
     $livre->appendChild($xmlFile->createElement('model', $order['model']));
-    $livre->appendChild($xmlFile->createElement('orderForecastPrevisions', $order['forecastPrint']));    
+    $livre->appendChild($xmlFile->createElement('orderForecastPrevisions', $order['forecastPrint']));
+    
+    // Ajout des liens PDF des manuels
+    $pdfDocumentations = $orderPdf->getPdfLink($order);
+    foreach($pdfDocumentations as $pdfLink) {
+      $livre->appendChild($xmlFile->createElement($pdfLink , $order['quantity']));
+    }
 
     // Format + Sauvegarde
     $xmlFile->formatOutput = true;
@@ -114,14 +124,17 @@ class XmlOrderFormat implements OrderFormatInterface {
     // Path de sauvegarde du fichier
     $savePath = self::SAVE_XML_PATH.$order['id'].'.xml';
 
+
     // Sauvegarde
     $xmlFile->save($savePath);
 
     // FormatedOrder
     $destinationFileName = $order['partNumber'].'-'.$order['deliveredDate'];
-    $formatedOrder = new FormatedOrder($savePath, (int)$order['quantity'], $destinationFileName);
+    $orderQuantityClacultated = (int)$order['quantity'] + (int)$order['forecastPrint'];
+    $formatedOrder = new FormatedOrder($savePath, $orderQuantityClacultated, $destinationFileName);
     return $formatedOrder;
   }
+  
   /**
    * Renvoie les Commandes raataché a un orderId
    *

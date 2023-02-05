@@ -45,11 +45,16 @@ try {
     // Récupération du 1er jour ayant 
     $firstDayWithOrder = $dashboardHelper->findFirstDayWithOrder($date, '2023-02-25');
 
-    // Initilasation de la date de début d'affichage
-    $setDashboard = $dashboardHelper->setDashboardOrders($firstDayWithOrder, '2023-02-25');
+    if(!empty($firstDayWithOrder)) {
+      // Initilasation de la date de début d'affichage
+      $setDashboard = $dashboardHelper->setDashboardOrders($firstDayWithOrder, '2023-02-25');      
 
-    // Récupération des données
-    $dashboardOrders = $dashboardHelper->getDashboardOrders();
+      // Récupération des données
+      $dashboardOrders = $dashboardHelper->getDashboardOrders();
+
+      // Nouvelle date d'affichage       
+      $data['firstDayWithOrder'] = $firstDayWithOrder;
+    }    
   }
   
   $intervalDays = $dashboardHelper->getIntervalDays();

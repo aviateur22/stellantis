@@ -80,9 +80,9 @@ class OrderEntity extends Order {
   /**
    * Renvoie les information sur le docuementation PDF
    *
-   * @return void
+   * @return array
    */
-  function getDocumentationPDFInformations() {
+  function getDocumentationPDFInformations(): array {
     return $this->documentationPDFInformations;
   }
 }

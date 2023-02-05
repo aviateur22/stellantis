@@ -70,7 +70,7 @@ class FtpTransfert implements OrderTransferInterface {
     $ftpConnect = null; 
 
     switch ($formatedOrder->getOrderQuantity()) {
-      case $formatedOrder->getOrderQuantity() < 100:
+      case $formatedOrder->getOrderQuantity() < StaticData::MINIMUM_ORDER_QUANTITY_MANCHECOURT:
         // Connection FTP
         $ftpConnect = ftp_connect(
           self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
@@ -84,7 +84,7 @@ class FtpTransfert implements OrderTransferInterface {
 
       break;
 
-      case $formatedOrder->getOrderQuantity() >= 100:
+      case $formatedOrder->getOrderQuantity() >= StaticData::MINIMUM_ORDER_QUANTITY_MANCHECOURT:
         // Connection FTP
         $ftpConnect = ftp_connect(
           self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");

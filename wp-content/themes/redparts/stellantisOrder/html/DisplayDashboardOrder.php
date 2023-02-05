@@ -87,8 +87,8 @@ class DisplayDashboardOrder {
     $html .= "<thead>";
     $html .= "<tr>";
       $html .= "<th>Family</th>";      
-      $html .= "<th>Country code</th>";
-      $html .= "<th>Country Name</th>";
+      // $html .= "<th>Country code</th>";
+      // $html .= "<th>Country Name</th>";
       $html .= "<th>Cover Code</th>";
       $html .= "<th>Part Number</th>";
         foreach($this->intervalDays as $day) {          
@@ -116,8 +116,8 @@ class DisplayDashboardOrder {
           // Commande
           $html .= "<tr>";
             $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getFamily());
-            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryCode());
-            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryName());
+            // $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryCode());
+            // $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryName());
             $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCoverCode());
             $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getPartNumber());
             foreach($this->dashboardOrders[$i]->getQuantitiesByDate() as $quantity) {
@@ -404,7 +404,7 @@ class DisplayDashboardOrder {
       $this->toogleColor();
 
       $html = "<tr class='".$this->headerBackground."'>";
-        $html .= "<td class='' colspan='5'>";
+        $html .= "<td class='' colspan='3'>";
           $html .= "<p class='header__separator__text'>";
             $html .= $order->getOrderBuyer()."_";
             $html .= $order->getBrand()."_";

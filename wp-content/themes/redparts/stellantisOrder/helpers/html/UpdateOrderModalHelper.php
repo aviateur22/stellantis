@@ -75,11 +75,7 @@ class UpdateOrderModalHelper {
               <label class="text--strong text--right" for="brand">Car Brand</label>
               <p id="brand">XXXX</p>
             </div>
-          </div>          
-          <div class="group__control">
-            <label class="text--strong text--left" for="coverLink">Cover Link</label>
-            <p id="coverLink">XXXX</p>
-          </div>
+          </div>                    
           '.$setPDFDocumentation.'
           <div class="update__information">
             <div class="group__control">
@@ -183,27 +179,37 @@ class UpdateOrderModalHelper {
   private function setPDFDocumentation(): string {
     return '
       <div id="mainDocumentationContainer" class="group__control">
-        <label for="status"> Documentation PDF </label>
-        <p class="documentation__text__info"> No PDF documentation available </p>
+        <label class="main__documentation__title text--strong"> Documentation PDF </label>
+        <div class="documentation__text__container">
+          <p class="documentation__not__avail error--text strong"> No PDF documentation available </p>
+        </div>        
         <div id="documentationContainer" class="documentation__container">          
-          <div id="documentation-xx" class="documentation">          
+          <div id="documentation-xx" class="documentation">
             <div class="documentation__header">
-              <div class="documentation__wallet">
-                <label class="doc__option">Paper Wallet</label>
-                <span></span>
-              </div>
-              <div class="documentation__wallet"  >
-                <label class="doc__option">Wallet Branded</label>                                
-                <span></span>
+              <div class="documentation__type">
+                <label> Doc Type </label>
+                <p class="documentation__type__text"> XXXX </p>
               </div>              
-            </div>
-            <p class="pdf__info"> No PDF documentation available </p>
-            <div class="documentation__doc">
-              <div class="doc__int">
-                <p class="doc__int_link"></p>
+              <div class="documentation__info">
+                <div class="documentation__wallet">
+                  <label class="doc__option documentation__paper__wallet">Paper Wallet</label>
+                </div>
+                <div class="documentation__wallet"  >
+                  <label class="doc__option documentation__wallet__branded">Wallet Branded</label>                                
+                </div>              
               </div>
-              <div class="doc__couv">
-                <p class="doc__couv_link"></p>
+            </div>        
+            <div class="documentation__text__container">
+              <p class="documentation__pdf__not__avail error--text strong"> No PDF documentation available </p>
+            </div>
+            <div class="documentation__doc">
+              <div class="documentation__detail">
+                <p class="documentation__int__couv "> INT </p>
+                <p class="documentation__link documentation__int"></p>  
+              </div>
+              <div class="documentation__detail">
+                <p class="documentation__int__couv"> COUV </p>
+                <p class="documentation__link documentation__couv"></p>
               </div>
             </div>
           </div>
