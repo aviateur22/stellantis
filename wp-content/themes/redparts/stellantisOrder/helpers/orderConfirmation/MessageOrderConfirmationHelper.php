@@ -5,6 +5,7 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/in
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/orderConfirmation/OrderFormConfirmationHelper.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/html/EmailTemplateOrderConfirmation.php';
 
 /**
  * Helper Formate message pour envoie Email a MI ou MA
@@ -128,27 +129,19 @@ class MessageOrderConfirmationHelper {
    *
    * @return void
    */
-  function sendMessage() {
-    var_dump('Nombre de message: ');
-    var_dump(count($this->orderMessages));  
+  function sendMessage() {  
 
     foreach($this->orderMessages as $orderMessage) {
       if(!empty($orderMessage['message'])) {
 
         // Composition du message avec introduction + conclusion
-        $message = $this->initMessage(). $orderMessage['message'] .$this->endMessage();
-
-        var_dump($orderMessage['email']);
+        ///$message = $this->initMessage(). $orderMessage['message'] .$this->endMessage();
+        $message = EmailTemplateOrderConfirmation::getTemplate($orderMessage['message']);
 
         // Envoi email
-        wp_mail($orderMessage['email'], 'new order', $message);
-        wp_mail($orderMessage['email'], 'new order', '$message');
+        //wp_mail($orderMessage['email'], 'new order', $message);
+        //wp_mail($orderMessage['email'], 'new order', '$message');
         $this->mailService->sendMessage($orderMessage['email'], 'new order', $message);
-
-
-         // wp_mail('clement.thuaudet@ctdev.fr', 'new order', 'test');
-        // $this->mailService->sendMessage('clement.thuaudet@ctdev.fr', 'new order', $orderMessage['message']);
-        //$this->mailService->sendMessage('aviateur22@gmail.com', 'new order', $orderMessage['message']);
       }      
     }
   }  
@@ -160,15 +153,17 @@ class MessageOrderConfirmationHelper {
    * @return string
    */
   function formatMessage(array $order, int $index): string {
+    
+    $orderMessage  = '<p style="line-height:110%">'.'Record N°: ' . $index .'</p>';
+    $orderMessage .= '<p style="line-height:110%">'.'PartNumber: ' . $order['partNumber'] .'</p>';
+    $orderMessage .= '<p style="line-height:110%">'.'Brand: ' . $order['brand'] .'/'. $order['model'] .'/'. $order['year'] .'/'. $order['verion'] .'</p>';
+    $orderMessage .= '<p style="line-height:110%">'.'Quantity: ' .$order['quantity'].'</p>';
+    $orderMessage .= '<p style="line-height:110%">'.'Forecast quantity: ' .$order['forecastPrint'].'</p>';
+    $orderMessage .= '<p style="line-height:110%">'.'Delivered date: ' .$order['deliveredDate'].'</p>';
+    $orderMessage .= '<p style="line-height:110%">'.$this->formatPdfLinkMessage($order) .'</p>';
 
-    $orderMessage = '';
-    $orderMessage .= 'Record N°: ' . $index .'\r\n';
-    $orderMessage .= 'PartNumber: ' . $order['partNumber'] .'\r\n';
-    $orderMessage .= 'Brand: ' . $order['brand'] .'/'. $order['model'] .'/'. $order['year'] .'/'. $order['verion'] .'\r\n';
-    $orderMessage .= 'Quantity: ' .$order['quantity'].'\r\n';
-    $orderMessage .= 'Forecast quantity: ' .$order['forecastPrint'].'\r\n';
-    $orderMessage .= 'Delivered date: ' .$order['deliveredDate'].'\r\n';
-    $orderMessage .= $this->formatPdfLinkMessage($order) .'\r\n' .'\r\n';
+    $orderMessage .= '<br>';
+
     return $orderMessage;
     
   }
@@ -181,7 +176,7 @@ class MessageOrderConfirmationHelper {
   function initMessage() {
     return 'Bonjour, 
 
-    Une nouvelle commande vient d\’être déposée sur la plateforme STELLANTIS'.'\r\n'.'\r\n';
+    Une nouvelle commande vient d\’être déposée sur la plateforme STELLANTIS'.'</p>';
   }
 
   /**
@@ -209,7 +204,7 @@ class MessageOrderConfirmationHelper {
     // Boucle sur les données des PDF
     $pdfDocumentations = $orderPdf->getPdfLinkForMail($order);
     foreach($pdfDocumentations as $pdfLink) {
-      $pdfTextMessage .= $pdfLink . ':  Quantity ='.$order['quantity']. '\r\n';
+      $pdfTextMessage .= '<p style="line-height:110%">'.$pdfLink . ':  Quantity ='.$order['quantity']. '</p>';
     }
 
     return $pdfTextMessage;

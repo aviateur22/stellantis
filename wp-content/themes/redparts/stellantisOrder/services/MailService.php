@@ -24,7 +24,7 @@ class MailService implements MailServiceInterface {
    * @return void
    */
   function sendMessage(string $to, string $subject, string $message): void {
-    wp_mail($to, $subject, $message);
+    wp_mail($to, $subject, $message, $this->headers());
     var_dump('ok send');
     var_dump($message);
   }

@@ -56,7 +56,7 @@ try {
     throw new \Exception('Error transferring XML orders files, process cancel', 500);
   } 
  
-  // die();
+  //die();
   // Mise a jour du statut des commandes
   $ftpTransfert->updateOrderStatus();
 
