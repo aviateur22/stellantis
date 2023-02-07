@@ -105,7 +105,7 @@ class XmlOrderFormat implements OrderFormatInterface {
     // Ajout des liens PDF des manuels
     $pdfDocumentations = $orderPdf->getPdfLink($order);
     foreach($pdfDocumentations as $pdfLink) {
-      $livre->appendChild($xmlFile->createElement($pdfLink , $order['quantity']));
+      $livre->appendChild($xmlFile->createElement("documentation" ,$pdfLink .' - ' . $order['quantity']));
     }
 
     // Format + Sauvegarde

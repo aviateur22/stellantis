@@ -46,6 +46,10 @@ class UserHelper {
     $userId = $currentUser->ID;
     $roles = get_userdata($userId)->roles;
 
+    if(empty($roles)) {
+      throw new \Exception('Session Expired', 401);
+    }
+
     // Utilisateur
     $user = new User($userId, $firstName, $lastName, $roles);
 

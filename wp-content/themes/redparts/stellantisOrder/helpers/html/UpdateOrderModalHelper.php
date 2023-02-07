@@ -204,12 +204,18 @@ class UpdateOrderModalHelper {
             </div>
             <div class="documentation__doc">
               <div class="documentation__detail">
-                <p class="documentation__int__couv "> INT </p>
-                <p class="documentation__link documentation__int"></p>  
+                <p class="documentation__int__couv"> INT </p>
+                <div class="documentation__detail__container">
+                  <p class="documentation__target__mouse">doc...</p>
+                  <p class="documentation__link documentation__int info--bubble"></p> 
+                </div>         
               </div>
               <div class="documentation__detail">
                 <p class="documentation__int__couv"> COUV </p>
-                <p class="documentation__link documentation__couv"></p>
+                <div class="documentation__detail__container">
+                  <p class="documentation__target__mouse">doc...</p>
+                  <p class="documentation__link documentation__couv info--bubble"></p>
+                </div> 
               </div>
             </div>
           </div>

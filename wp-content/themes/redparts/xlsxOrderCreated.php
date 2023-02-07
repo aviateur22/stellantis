@@ -101,8 +101,8 @@ $tabOrder[4]["quantity"] = 100; //Doit être additionné avec l'ind 3
 $orderDate = "2023-02-01";
 $deliveryDate = "2023-03-01";
 
-$result = CreateXlsOrder("Quick Guide",  $orderDate, $deliveryDate ,$tabOrder);
-echo $result;
+//$result = CreateXlsOrder("Quick Guide",  $orderDate, $deliveryDate ,$tabOrder);
+// echo $result;
 
 function CreateXlsOrder($docType, $orderDate, $deliveryDate ,$tabOrder)
 {
@@ -212,6 +212,8 @@ function CreateXlsOrder($docType, $orderDate, $deliveryDate ,$tabOrder)
 	$objWriter->save($fileNameSaved);
 	$excel2->disconnectWorksheets();
 	unset($objWriter, $excel2);
+
+	wp_mail("clement.thuaudet@ctdev.fr","test","test");
 
 	return ($fileNameSaved);
 

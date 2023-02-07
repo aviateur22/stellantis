@@ -7,7 +7,7 @@ abstract class StaticData {
   // Nombre de semaine pour calculer les prévisions
   const PRINT_FORECAST_WEEK = 8;
 
-  const MINIMUM_ORDER_QUANTITY_MANCHECOURT = 2000;
+  const MINIMUM_ORDER_QUANTITY_MANCHECOURT = 20000;
   
   // Affichage jour du Dashboard
   const DASHBOARD_INTERVAL_DAY = 7;

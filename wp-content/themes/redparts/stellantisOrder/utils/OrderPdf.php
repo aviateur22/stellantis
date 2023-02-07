@@ -60,7 +60,7 @@ class OrderPdf {
   /**
    * Renvoie les liens PDF pour les mail
    *
-   * @param [type] $order
+   * @param array $order
    * @return array
    */
   function getPdfLinkForMail(array $order): array {
@@ -89,7 +89,7 @@ class OrderPdf {
    *
    * @return array
    */
-  function getPdfLinkForXls(array $order): array {
+  static function getPdfLinkForXls(array $order): array {
     // Type de manuel à imprimer
     $pdfTypes = [];
 
@@ -98,8 +98,8 @@ class OrderPdf {
     // Pas de données
     if(count($documentations) === 0) {
       $pdfTypes[] = [
-        'fileName' => 'Documentation Undefined',
-        'fileType' => 'Type Undefined'
+        'docRef' => 'Documentation Undefined',
+        'type' => 'Type Undefined'
       ];
       ;
       return $pdfTypes;
@@ -108,12 +108,40 @@ class OrderPdf {
     // Parcours des documentations
     foreach($documentations as $documentation) {
       $pdfTypes[] = [
-        'fileName' =>$documentation['documentationDetail']['docRef'],
-        'fileType' =>$documentation['documentationDetail']['type']
+        'docRef' =>$documentation['documentationDetail']['docRef'],
+        'type' =>$documentation['documentationDetail']['type']
       ];
     }
 
     return $pdfTypes;
+  }
+
+  /**
+   * Renvoie la liste des types de documentation pour une commande
+   *
+   * @param array $order - commande
+   * @return array - Liste des type de documentation disponible pour la commande
+   */
+  static function returnAllDocTypeOfOneOrder(array $order): array {
+    
+    // Récupération des documentations d'une commande
+    $documentations = $order['documentationPDFInformations'];
+
+    // Liste des docTypes disponibles
+    $docTypes = [];
+    
+    // Pas de données
+    if(count($documentations) === 0) {
+      return [];      
+    }
+
+    // Parcours des documentations
+    foreach($documentations as $documentation) {
+      $docTypeName = $documentation['documentationDetail']['type'];
+      $docTypes[] =  $docTypeName;      
+    }
+
+    return $docTypes;
   }
 
   function formatText() {

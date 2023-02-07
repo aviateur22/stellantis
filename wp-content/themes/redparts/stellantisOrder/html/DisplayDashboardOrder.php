@@ -86,7 +86,7 @@ class DisplayDashboardOrder {
     // Header
     $html .= "<thead>";
     $html .= "<tr>";
-      $html .= "<th>Family</th>";      
+      // $html .= "<th>Family</th>";      
       // $html .= "<th>Country code</th>";
       // $html .= "<th>Country Name</th>";
       $html .= "<th>Cover Code</th>";
@@ -115,7 +115,7 @@ class DisplayDashboardOrder {
 
           // Commande
           $html .= "<tr>";
-            $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getFamily());
+            // $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getFamily());
             // $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryCode());
             // $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCountryName());
             $html .= $this->createHtmlForOrderProperty($this->dashboardOrders[$i]->getCoverCode());
@@ -404,7 +404,7 @@ class DisplayDashboardOrder {
       $this->toogleColor();
 
       $html = "<tr class='".$this->headerBackground."'>";
-        $html .= "<td class='' colspan='3'>";
+        $html .= "<td class='' colspan='2'>";
           $html .= "<p class='header__separator__text'>";
             $html .= $order->getOrderBuyer()."_";
             $html .= $order->getBrand()."_";

@@ -30,15 +30,10 @@
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
  filtreText += "<h2>Filters</h2>";
- filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>"; 
+ filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>";
 filtreText += "<form id='filterOrderForm'>";
 	filtreText += '<input style="margin-left:10px;" type="date" id="startDate" name="startDate" min="2022-01-01" max="2050-12-31"></p>';
-	filtreText += "<table><tr><td><label for='family'>Family</label>";
-	filtreText += '<select style="display:block" id="family" name="family" multiple disabled></td>';
-filtreText += "<td><label for='countryCode'>Country Code</label>";
-filtreText += '<select style="display:block" id="countryCode" name="countryCode" multiple></td>';
-filtreText += "<td><label for='countryName'>Country Name</label>";
-filtreText += '<select style="display:block" id="countryName" name="countryName" multiple></td>';
+	filtreText += "<table><tr>";
 filtreText += "<td><label for='codePochette'>Code Pochette</label>";
 filtreText += '<select style="display:block" id="codePochette" name="codePochette" multiple></td>';
 	filtreText += "<td><label for='partNumber'>Part Number</label>";
@@ -46,7 +41,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	filtreText += '</tr></table>';
 	filtreText += '<div class="button__container">'
 	filtreText += '<input style="width:120px; height: 50px; border-radius:5px; padding: 10px; margin: 10px;" type="submit" value="Refresh"/>'
-	filtreText += '<input style="width:120px; height: 50px; background: white; border-radius:5px; color: red; border: 0.5px solid red; padding: 10px; margin: 10px;" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'	
+	filtreText += '<input style="width:120px; height: 50px; background: white; border-radius:5px; color: red; border: 0.5px solid red; padding: 10px; margin: 10px;" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'
 	filtreText += '</div>'
 	filtreText += "</form>";
 
@@ -57,7 +52,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	function hideUpdateOrder() {
 		if(updateOrderElement) {
 			updateOrderElement.hidden = true;
-		}		
+		}
 	}
 
 	/**
@@ -69,7 +64,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 		// Affichage modal
 		if(updateOrderElement) {
-			updateOrderElement.hidden = false;			
+			updateOrderElement.hidden = false;
 		}
 
 		// Affichage spinner chargement
@@ -112,7 +107,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 				spinnerLoaderElement.hidden = false;
 		}
 
-		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));		
+		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
 		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/update_order_on_dashboard.php";
 		AppelScriptPHP(_lien_scriptPHP, formData);
 	}
@@ -123,11 +118,11 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	 * @params {bool} clearFilter
 	 */
 	function filterOrder(event, clearFilter = false) {
-		mode === 2;		
+		mode === 2;
 		event.preventDefault();
 
 		// Reset du filtre
-		if(clearFilter) {			
+		if(clearFilter) {
 			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
 			AppelScriptPHP(_lien_scriptPHP, null);
 
@@ -142,20 +137,20 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 				// date du jour
 				selectDayFilterElement.valueAsDate = new Date()
 			}
-		} else {		
-			const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));			
+		} else {
+			const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
 			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
 			AppelScriptPHP(_lien_scriptPHP, formData);
-		}		
+		}
 	}
 
 	/**
 	 * Mise a jour de la modal updateOrder avec les données de la base de données
-	 * 
+	 *
 	 * @params {object} findOrder
 	 */
 	function updateOrderModalElement(findOrder) {
-		
+
 		// Données commandes
 		const orderInformation = findOrder.order;
 		const processedWith = findOrder.processedWith;
@@ -194,14 +189,14 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		// Mise a jour de la vue
 		if(partNumberElement && quantityElement && deliveredDateElement &&
 			processedWithElement && coverCodeElement && brandElement && statusLabelElement && forecastElement) {
-			
+
 			// Societé traitant la commande
 			processedWithElement.innerText = processedWith;
 
 			// code couverture
 			coverCodeElement.innerText = orderInformation.coverCode;
 
-			// Marque 
+			// Marque
 			brandElement.innerText = orderInformation.brand;
 
 			// Id commande
@@ -214,7 +209,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			quantityElement.value = orderInformation.quantity;
 
 			// Date de livraiosn
-			deliveredDateElement.value = orderInformation.deliveredDate;			
+			deliveredDateElement.value = orderInformation.deliveredDate;
 
 			// Statut actuelle de la commande
 			statusLabelElement.innerText = orderStatusLabel;
@@ -227,8 +222,8 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 			// Ajout nouvelle classe
 			statusLabelElement.classList.add(orderStatusClassNamecolor);
-			
-			// Masque le documentHtml de ref				
+
+			// Masque le documentHtml de ref
 			documentationPDFElement.style.display = "none"
 
 			// GESTION DOCUEMENTATION PDF
@@ -238,10 +233,10 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 				documentationPDFElements.forEach(documentationElement => {
 					if(documentationElement.id !== 'documentation-xx') {
 						documentationElement.remove();
-					}					
+					}
 				});
 
-			// Pas de données 
+			// Pas de données
 			if(orderInformation.documentationPDFInformations.length === 0) {
 				documentationContainerElement.style.display = "none";
 				documentationTextErrorElement.style.display = "block";
@@ -254,14 +249,14 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 				orderInformation.documentationPDFInformations.forEach(documentation => {
 					let cloneDocumentationElement = documentationPDFElement.cloneNode(true);
 					// Numero Id pour id docuementation
-					let number = documentation.documentationId;		
+					let number = documentation.documentationId;
 					let idClone = "documentation-" + number;
 					let pdfDetails = documentation.PdfDetail;
 					let docType = documentation.documentationDetail.type;
 					let isWalletBranded = documentation.documentationDetail.walletBranded;
 					let isPaperWallet = documentation.documentationDetail.paperWallet;
-					
-					// Récupératrion des élémént HTML				
+
+					// Récupératrion des élémént HTML
 
 					// type de document (full guide...)
 					const documentationTypeTextElement = cloneDocumentationElement.querySelector('.documentation__type__text');
@@ -310,13 +305,13 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 					}
 
 					// Si pas de donnée sur les PDF
-					if(pdfDetails.length === 0) {						
+					if(pdfDetails.length === 0) {
 						pdfLinkContainerElement.style.display = 'none';
 						pdfTextErrorElement.style.display = 'block';
-						
 
-					} else {						
-						
+
+					} else {
+
 						// Masque le message d'erreur
 						pdfTextErrorElement.style.display = 'none';
 
@@ -327,16 +322,16 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 							const pdfLink = pdf.link;
 
 							// Doc INT ou COUV
-							const intOrCouv =  pdf.intOrCouv.toLowerCase();						
+							const intOrCouv =  pdf.intOrCouv.toLowerCase();
 
 							switch(intOrCouv) {
 								case 'int':
 									pdfLinkIntElement.innerText = pdfLink;
 									break;
-								case 'couv': 
+								case 'couv':
 									pdfLinkCouvElement.innerText = pdfLink
 								break;
-							}							
+							}
 						});
 						// Affichage des documents
 						documentationContainerElement.style.display = 'flex';
@@ -346,11 +341,11 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 					cloneDocumentationElement.id = idClone;
 					cloneDocumentationElement.style.display = "flex";
 					documentationPDFElement.after(cloneDocumentationElement);
-				});				
+				});
 			}
 		}
 
-		// Si Select Statut Option 
+		// Si Select Statut Option
 		if(statusElement) {
 			// Select Option
 			statusElement.value = orderInformation.wipId.toLowerCase();
@@ -374,7 +369,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 	/**
 	 * Affichage flashMessage
-	 * 
+	 *
 	 * @params {text} message - message a afficher
 	 * @params {bool} error - Flash error
 	 */
@@ -397,7 +392,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 	/**
 	 * Mise a jour de l'affichage des commandes apres modification
-	 * 
+	 *
 	 * @params {object} updatedOrder - contient les données de couelur
 	 */
 	function updateDisplayOrder(updatedOrder) {
@@ -415,14 +410,14 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 		// Masque la modal update Order
 		if(updateOrderElement) {
-			updateOrderElement.hidden = true;			
+			updateOrderElement.hidden = true;
 		}
 
 		// Rechargement
 		setTimeout(()=> {
 			reloadDashboard();
 		}, 3000);
-		
+
 	}
 
 	/**
@@ -435,19 +430,19 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		// Lien script PHP
 		let _lien_scriptPHP = '';
 
-		// Retour requete 
+		// Retour requete
 		mode = 2;
 
 		if(filterPartNumberElement.value.length === 0) {
-			
+
 			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
 			const startDate = document.getElementById('startDate').value;
-			var _variables = '&startDate=' + encodeURIComponent(startDate);			
+			var _variables = '&startDate=' + encodeURIComponent(startDate);
 			AppelScriptPHP(_lien_scriptPHP, _variables);
 		} else {
 			filterForm = document.getElementById('filterOrderForm');
-			const formData = urlEncoded(Object.fromEntries(new FormData(filterForm)));			
-			
+			const formData = urlEncoded(Object.fromEntries(new FormData(filterForm)));
+
 			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
 			AppelScriptPHP(_lien_scriptPHP, formData);
 		}
@@ -479,7 +474,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	var mode = 1;
 	var type;
 
-	window.onload=function(){	
+	window.onload=function(){
 
 		/////////////////////////// EVENT /////////////////////////////////////////////
 		document.getElementById("message").addEventListener('input', resetMessage);
@@ -712,7 +707,7 @@ for(x=1;x<5000;x++)
 						spinnerLoaderElement.hidden = true;
 				}
 
-				// Récupération du message d'erreur 
+				// Récupération du message d'erreur
 				data = httpRequest.responseText;
 
 				if(!data) {
@@ -720,7 +715,7 @@ for(x=1;x<5000;x++)
 				}
 
 				alert(data);
-				
+
 			}
 		}
 	}
@@ -738,19 +733,19 @@ for(x=1;x<5000;x++)
 	{
 		//MAJ Titre et WIP
 		if(data['orders']) {
-			// Récupérationd de la date 
+			// Récupérationd de la date
 			selectDayFilterElement = document.getElementById('startDate');
 
 			// Si modification de la data a afficher
-			if(data['firstDayWithOrder']) {				
+			if(data['firstDayWithOrder']) {
 				selectDayFilterElement.valueAsDate = new Date(data['firstDayWithOrder']);
 			}
 
 			document.getElementById('resultat-div').innerHTML = data['orders'];
 
 			// Modal update commande
-			updateOrderElement = document.getElementById('updateOrder');			
-			
+			updateOrderElement = document.getElementById('updateOrder');
+
 			// Masque la modal de modification d'une commande
 			if(updateOrderElement) {
 				updateOrderElement.hidden = true;
@@ -761,19 +756,19 @@ for(x=1;x<5000;x++)
 		if(data['findOrder']) {
 			console.log(data['findOrder']);
 			// Mise a jour de l'affichage
-			updateOrderModalElement(data['findOrder']);			
-			
+			updateOrderModalElement(data['findOrder']);
+
 		}
 
 		// Resultat d'un update d'une commande
 		if(data['updateOrder']) {
-			const result = data['updateOrder'];	
+			const result = data['updateOrder'];
 
 			// Modification affichage des commandes
 			if(result) {
-				updateDisplayOrder(result);				
-			}			
-		}		
+				updateDisplayOrder(result);
+			}
+		}
 
 		// Loader de chargement
 		spinnerLoaderElement = document.getElementById('loader');

@@ -42,21 +42,21 @@ try {
   
   // Format les commandes a transférer
   $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();
-
+  
   // Préparation des messages pour les mails
   $messageOrderConfirmationHelper->prepareMessageForRequetedOrders();
 
   // Envois des emails
   $messageOrderConfirmationHelper->sendMessage();
-  
 
   // Transfert Fichier
   $isTransfertSuccess = $ftpTransfert->transfertOrders($formatedPathOrders);
 
   if(!$isTransfertSuccess) {
-    throw new \Exception('Error transferring oreder file, process cancel', 500);
-  }  
+    throw new \Exception('Error transferring XML orders files, process cancel', 500);
+  } 
  
+  // die();
   // Mise a jour du statut des commandes
   $ftpTransfert->updateOrderStatus();
 

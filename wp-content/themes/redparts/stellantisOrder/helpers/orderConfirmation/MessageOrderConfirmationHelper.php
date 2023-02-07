@@ -112,11 +112,13 @@ class MessageOrderConfirmationHelper {
     $this->orderMessages = [
       [
         'to' => StaticData::MANCHECOURT_FACTORY_NAME,
-        'message'=> $this->initMessage(). $messageForManchecourt . $this->endMessage()
+        'message'=> $messageForManchecourt,
+        'email' => 'aviateur22@gmail.com'
       ],
       [
         'to' => StaticData::MILLAU_FACTORY_NAME,
-        'message' => $this->initMessage(). $messageForMillau . $this->endMessage()
+        'message' => $messageForMillau,
+        'email' => 'aviateur22@gmail.com'
       ]
     ];
   }
@@ -127,8 +129,27 @@ class MessageOrderConfirmationHelper {
    * @return void
    */
   function sendMessage() {
+    var_dump('Nombre de message: ');
+    var_dump(count($this->orderMessages));  
+
     foreach($this->orderMessages as $orderMessage) {
-      $this->mailService->sendMessage('aviateur22@hotmail.fr', 'new order', $orderMessage['message']);
+      if(!empty($orderMessage['message'])) {
+
+        // Composition du message avec introduction + conclusion
+        $message = $this->initMessage(). $orderMessage['message'] .$this->endMessage();
+
+        var_dump($orderMessage['email']);
+
+        // Envoi email
+        wp_mail($orderMessage['email'], 'new order', $message);
+        wp_mail($orderMessage['email'], 'new order', '$message');
+        $this->mailService->sendMessage($orderMessage['email'], 'new order', $message);
+
+
+         // wp_mail('clement.thuaudet@ctdev.fr', 'new order', 'test');
+        // $this->mailService->sendMessage('clement.thuaudet@ctdev.fr', 'new order', $orderMessage['message']);
+        //$this->mailService->sendMessage('aviateur22@gmail.com', 'new order', $orderMessage['message']);
+      }      
     }
   }  
  

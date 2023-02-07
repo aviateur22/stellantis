@@ -23,8 +23,10 @@ class MailService implements MailServiceInterface {
    * @param string $message
    * @return void
    */
-  function sendMessage(string $to, string $subject , string $message): void {    
-    wp_mail($to, $subject, $message, $this->headers());
+  function sendMessage(string $to, string $subject, string $message): void {
+    wp_mail($to, $subject, $message);
+    var_dump('ok send');
+    var_dump($message);
   }
 
   /**
@@ -33,7 +35,8 @@ class MailService implements MailServiceInterface {
    * @return array
    */
   private function headers(): array {
-    $headers [] = 'From: Plateforme t-dm admin@t-dm.fr';
+    // $headers [] = 'From: Plateforme t-dm admin@t-dm.fr';
+    $headers [] = 'Content-Type: text/html; charset=UTF-8';
     return $headers;
   }
 }
