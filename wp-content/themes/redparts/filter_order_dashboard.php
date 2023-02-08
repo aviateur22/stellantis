@@ -9,8 +9,15 @@ require_once('./stellantisOrder/model/RepositoriesModel.php');
 require_once('./stellantisOrder/utils/RepositorySelection.php');
 error_reporting(E_ALL);
 
+// Filtre avec les partNumber
 $partNumber = $_POST['partNumber'];
+
+// Filtre avec les code Pochettes
+$coverCode = $_POST['coverCode'];
+
+// Date début affichage dashboard
 $startDate = $_POST['startDate'];
+
 try {
 
 if(empty($startDate)) {
@@ -28,6 +35,11 @@ $filterEntries = [];
 // Ajout des PartNumber dans le tableau des filtres
 if(!empty($partNumber)) {
   $filterEntries['partNumber'] = $partNumber;
+}
+
+// Ajout des codePochettes dans le tableau des filtes
+if(!empty($coverCode)) {
+  $filterEntries['coverCode'] = $coverCode;
 }
 
 $userHelper = new UserHelper();

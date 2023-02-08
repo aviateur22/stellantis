@@ -143,6 +143,20 @@ class Order {
    */
   protected array $PDFdocumentations;
 
+  /**
+   * LanguageCode
+   *
+   * @var string
+   */
+  protected string $languageCode;
+
+  /**
+   * Nom du vehicule
+   *
+   * @var string
+   */
+  protected string $carName;
+
 
   function __construct(
     string $orderId,
@@ -164,7 +178,9 @@ class Order {
     string $version,
     int $year,
     int $printForecast,
-    array $PDFdocumentations
+    array $PDFdocumentations,
+    string $languageCode,
+    string $carName
   ) {
     $this->coverCode = $coverCode;
     $this->model = $model;
@@ -186,6 +202,8 @@ class Order {
     $this->year = $year;
     $this->printForecast = $printForecast;
     $this->PDFdocumentations = $PDFdocumentations;
+    $this->languageCode = $languageCode;
+    $this->carName = $carName;
   }
   #Region Getter
 
@@ -351,9 +369,32 @@ class Order {
       return $this->printForecast;
     }
 
-
+    /**
+     * infoDocPdf
+     *
+     * @return array
+     */
     function getPdfDocumentations(): array {
       return $this->PDFdocumentations;
     }
+
+    /**
+     * Renvoie le language code
+     *
+     * @return string
+     */
+    function getLanguageCode(): string {
+      return $this->languageCode;
+    }
+ 
+    /**
+     * Renvoie le nom de la voiture
+     *
+     * @return string
+     */
+    function getCarName(): string {
+      return $this->carName;
+    }
+
   #endRegion
 }

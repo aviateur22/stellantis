@@ -29,15 +29,15 @@
 
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
- filtreText += "<h2>Filters</h2>";
- filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>";
-filtreText += "<form id='filterOrderForm'>";
+ 	filtreText += "<h2>Filters</h2>";
+ 	filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>";
+	filtreText += "<form id='filterOrderForm'>";
 	filtreText += '<input style="margin-left:10px;" type="date" id="startDate" name="startDate" min="2022-01-01" max="2050-12-31"></p>';
 	filtreText += "<table><tr>";
-filtreText += "<td><label for='codePochette'>Code Pochette</label>";
-filtreText += '<select style="display:block" id="codePochette" name="codePochette" multiple></td>';
+	filtreText += "<td><label for='coverCode'>Code Pochette</label>";
+	filtreText += '<input type="text" style="display:block" id="coverCode" name="coverCode" placeHolder="32Q3,32D3..."></td>';
 	filtreText += "<td><label for='partNumber'>Part Number</label>";
-	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" placeHolder="23AMOKKDEXX32D3,23AMOKKDEXX32A5"></td>';
+	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" placeHolder="23AMOKKDEXX32D3,23AMOKKDEXX32A5..."></td>';
 	filtreText += '</tr></table>';
 	filtreText += '<div class="button__container">'
 	filtreText += '<input style="width:120px; height: 50px; border-radius:5px; padding: 10px; margin: 10px;" type="submit" value="Refresh"/>'
@@ -133,6 +133,10 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			const filterPartNumberElement = document.getElementById('partNumber');
 			filterPartNumberElement.value = '';
 
+			// Reset du code Pochette
+			const filterCoverCodeElement = document.getElementById('coverCode');
+			filterCoverCodeElement.value = '';
+
 			if(selectDayFilterElement) {
 				// date du jour
 				selectDayFilterElement.valueAsDate = new Date()
@@ -164,11 +168,15 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		const statusElement = document.getElementById('displayStatus');
 		const idElement = document.getElementById('id');
 		const processedWithElement = document.getElementById('processedWith');
-		const coverCodeElement = document.getElementById('coverCode');
+		const coverCodeElement = document.getElementById('coverCodeDatabase');
 		const brandElement = document.getElementById('brand');
 		const coverLinkElement = document.getElementById('coverLink');
 		const statusLabelElement = document.getElementById('statusLabel');
 		const forecastElement = document.getElementById('forecast');
+		const modelYearElement = document.getElementById('modelYear');
+		const modelCarElement = document.getElementById('modelCode');
+		const carLineElement = document.getElementById('carLine');
+		const languageCodeElement = document.getElementById('languageCode');
 
 
 		/************************/
@@ -223,8 +231,20 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			// Ajout nouvelle classe
 			statusLabelElement.classList.add(orderStatusClassNamecolor);
 
+			// Année
+			modelYearElement.innerText = orderInformation.year;
+
+			// carLine
+			carLineElement.innerText = orderInformation.carName;	
+
+			// Model
+			modelCarElement.innerText = orderInformation.model;
+
+			// Language manuel de la commande
+			languageCodeElement.innerText = orderInformation.languageCode;
+
 			// Masque le documentHtml de ref
-			documentationPDFElement.style.display = "none"
+			documentationPDFElement.style.display = "none";
 
 			// GESTION DOCUEMENTATION PDF
 
@@ -255,8 +275,12 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 					let docType = documentation.documentationDetail.type;
 					let isWalletBranded = documentation.documentationDetail.walletBranded;
 					let isPaperWallet = documentation.documentationDetail.paperWallet;
+					let documentationLanguage = documentation.documentationDetail.languageCodeSB;
 
 					// Récupératrion des élémént HTML
+
+					// Langue documentation
+					const documentationLanguageElement = cloneDocumentationElement.querySelector('.documentation__type__language');
 
 					// type de document (full guide...)
 					const documentationTypeTextElement = cloneDocumentationElement.querySelector('.documentation__type__text');
@@ -282,8 +306,19 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 					// Lien de PDF COUV
 					const pdfLinkCouvElement = cloneDocumentationElement.querySelector('.documentation__couv');
 
+					// Pagination PDF INT
+					const paginationIntElement = cloneDocumentationElement.querySelector('.pagination__int');
+
+					// Pagination PDF COUV
+					const paginationCouvElement = cloneDocumentationElement.querySelector('.pagination__couv');
+
+
+
 					//  Affichage Type de document
 					documentationTypeTextElement.innerText = docType;
+					
+					// Language de la documentation
+					documentationLanguageElement.innerText = documentationLanguage;
 
 					//Ajout des class success or failed
 					walletBrandedElement.classList.remove('success--text');
@@ -321,15 +356,20 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 							// Lien PDF
 							const pdfLink = pdf.link;
 
+							// Pagination
+							const pagination = pdf.pagination;
+
 							// Doc INT ou COUV
 							const intOrCouv =  pdf.intOrCouv.toLowerCase();
 
 							switch(intOrCouv) {
 								case 'int':
 									pdfLinkIntElement.innerText = pdfLink;
+									paginationIntElement.innerText = pagination;
 									break;
 								case 'couv':
-									pdfLinkCouvElement.innerText = pdfLink
+									pdfLinkCouvElement.innerText = pdfLink;
+									paginationCouvElement.innerText = pagination;
 								break;
 							}
 						});

@@ -47,11 +47,13 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'countryName' => $order->getCountryName(),
           'countryCode' => $order->getCountryCode(),
           'partNumber' => $order->getPartNumber(),
+          'languageCode' => $order->getLanguageCode(),
           'coverCode' => $order->getCoverCode(),
           'quantity' => $order->getQuantity(),
           'deliveredDate' => date('Y-m-d', strtotime($order->getDeliveredDate())),
           'coverLink'=> $order->getCoverLink(),
           'model'=>$order->getModel(),
+          'carName'=>$order->getCarName(),
           'isValid' => $order->getIsValid(),
           'brand' =>$order->getBrand(),
           'wipId' => $order->getWipId(),
@@ -82,11 +84,13 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
       'countryName' => $order->getCountryName(),
       'countryCode' => $order->getCountryCode(),
       'partNumber' => $order->getPartNumber(),
+      'languageCode' => $order->getLanguageCode(),
       'coverCode' => $order->getCoverCode(),
       'quantity' => $order->getQuantity(),
       'deliveredDate' => date('Y-m-d', strtotime($order->getDeliveredDate())),
       'coverLink'=> $order->getCoverLink(),
       'model'=>$order->getModel(),
+      'carName'=>$order->getCarName(),
       'isValid' => $order->getIsValid(),
       'brand' =>$order->getBrand(),
       'wipId' => $order->getWipId(),
@@ -325,24 +329,76 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function findOrdersWithFilterPartNumber(string $dayStart, string $dayEnd, array $filterEntries): array {
     global $wpdb;
 
-    // Recherche des PartNumbers
-    $findOrderInPartNumber = [];
-    if($filterEntries['partNumber']) {
+    // Recherche des commandes correspondant au Filtre
+    $findOrdersWithFilter = [];
+    if(!empty($filterEntries['partNumber']) && !empty($filterEntries['coverCode'])) {
       $partNumberQueryPlaceHolder = $this->getPlaceholder($filterEntries['partNumber'], '%s');
-      $findOrderInPartNumber = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE partNumber IN ($partNumberQueryPlaceHolder) ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",$filterEntries['partNumber']), ARRAY_A);
-      $findOrderInPartNumber = $this->addPdfInformationToOrder($findOrderInPartNumber);
+      $coverCodeQueryPlaceHolder = $this->getPlaceholder($filterEntries['coverCode'], '%s');
+
+      // Recherche des PartNumber
+      $findOrdersWithFilterPartNumber = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE partNumber IN ($partNumberQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['partNumber']), 
+        ARRAY_A);
+
+      // Recherche des code pochettes
+      $findOrdersWithFilterCoverCode = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE coverCode IN ($coverCodeQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['coverCode']), 
+        ARRAY_A);
+
+        // Ajout des commandes partNumber
+        foreach($findOrdersWithFilterPartNumber as $orderPartNumber) {          
+          if(!in_array($orderPartNumber, $findOrdersWithFilter)) {
+            $findOrdersWithFilter[] = $orderPartNumber;
+          }          
+        }
+
+        // Ajout des commandes partNumber
+        foreach($findOrdersWithFilterCoverCode as $orderCoverCoder) {          
+          if(!in_array($orderCoverCoder, $findOrdersWithFilter)) {
+            $findOrdersWithFilter[] = $orderCoverCoder;
+          }          
+        }
+
+      $findOrdersWithFilter = $this->addPdfInformationToOrder($findOrdersWithFilter);
+
+
+    } elseif(!empty($filterEntries['partNumber'])) {
+      $partNumberQueryPlaceHolder = $this->getPlaceholder($filterEntries['partNumber'], '%s');
+      $findOrdersWithFilter = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE partNumber IN ($partNumberQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['partNumber']), 
+        ARRAY_A);
+      $findOrdersWithFilter = $this->addPdfInformationToOrder($findOrdersWithFilter);
+    } elseif(!empty($filterEntries['coverCode'])) {
+      $coverCodeQueryPlaceHolder = $this->getPlaceholder($filterEntries['coverCode'], '%s');
+      $findOrdersWithFilter = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE coverCode IN ($coverCodeQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['coverCode']), 
+        ARRAY_A);
+      $findOrdersWithFilter = $this->addPdfInformationToOrder($findOrdersWithFilter);
     }
 
+    
     // Recherche des Orders dans l'interval de temps
     $findOrderInIntervallDay = $this->findOrdersOnIntervalDay($dayStart, $dayEnd);
 
-    // Commandes validant les différents filtres
+    // Commandes validant l'interval de temps + les filtres
     $findOrders = [];
 
-    foreach($findOrderInPartNumber as $orderInPartNumber) {
+    foreach($findOrdersWithFilter as $orderWithFilter) {
       foreach($findOrderInIntervallDay as $orderInIntervalDay) {
-        if($orderInPartNumber === $orderInIntervalDay) {
-          $findOrders[] = $orderInPartNumber;
+        if($orderWithFilter === $orderInIntervalDay) {
+          $findOrders[] = $orderWithFilter;
         }
       }
     }
@@ -375,6 +431,19 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     return $orders;      
   }
   
+  function addCarlineName($ordersWithoutCarName): array {
+    $orders = [];
+    foreach($ordersWithoutCarName as $order) {     
+      
+      
+      $order['carLineName'] =  '';
+
+      $orders[] = $order;
+    }
+
+    return $orders;      
+  }
+
   /**
    * Recherche des DocumentationOrder liées à une commande
    *
@@ -434,7 +503,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
 
     //Recherche des Liens PDF avec leur détails
     $findOrderPdfs = $wpdb->get_results($wpdb->prepare(          
-      "SELECT pdfPrints.link, pdfPrints.type, pdfPrints.intOrCouv, pdfPrints.lang1, pdfPrints.fullLink
+      "SELECT pdfPrints.link, pdfPrints.type, pdfPrints.intOrCouv, pdfPrints.lang1, pdfPrints.fullLink, pdfPrints.pagination
       FROM orderPdfs 
       LEFT JOIN pdfPrints ON orderPdfs.PDFPrintId = pdfPrints.id
       WHERE orderId = %s AND documentationOrderId = %s AND isDocumentationFind = 1", $order['id'], $documentationOrder['id']
@@ -455,7 +524,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
 
     // Récupérartion des données suivantes:
     $documentationOrderDetail = $wpdb->get_results($wpdb->prepare(          
-      "SELECT paperWallet, walletBranded, languageCodeSB, comments FROM PartNumberToPDF WHERE id = %s", $partNumberToPDFId
+      "SELECT paperWallet, walletBranded, languageCodeSB, comments, languageCodePackage FROM PartNumberToPDF WHERE id = %s", $partNumberToPDFId
     ), ARRAY_A);
 
     if(count($documentationOrderDetail) > 0) {

@@ -278,6 +278,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $orderStdClass->version = $this->inCommonInformations['version'];
     $orderStdClass->year = $this->inCommonInformations['year'];
     $orderStdClass->sorpDate = $this->inCommonInformations['sorpDate'];
+    $orderStdClass->carName = $this->inCommonInformations['carName'];
     $orderStdClass->coverCode = '';
     $orderStdClass->deliveredDate = '';
     $orderStdClass->quantity = ''; 
@@ -305,11 +306,19 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     // Id du fichier de commandes
     $this->inCommonInformations['orderId'] = uniqid();
 
-    // Marque 
-    $this->inCommonInformations['brand'] = $this->activeSheet->getCell('A2')->getValue();
+    // Marque
+    $brand = str_contains(strtolower($this->activeSheet->getCell('A2')->getValue()), 'opel') ? 
+      'opel' :
+      $this->activeSheet->getCell('A2')->getValue();
+
+    $this->inCommonInformations['brand'] = $brand;
 
     // Model
     $this->inCommonInformations['model'] = $this->activeSheet->getCell('D2')->getValue();
+
+    // carName
+    $this->inCommonInformations['carName'] = $this->activeSheet->getCell('C2')->getValue();
+
 
     // Famille de la voiture
     $this->inCommonInformations['family'] = 'UNDEFINED';

@@ -100,6 +100,8 @@ class OrderHelper {
     $this->orderStdClass->countryName = $CountryInfo['country'];
     $this->orderStdClass->countryCode = $CountryInfo['countryCode'];
     $this->orderStdClass->forecastPrint = $this->getForecastPrint();
+    $this->orderStdClass->languageCodePackage = $this->getLanguageCodePackage();
+    
     $this->formatDeliveredDate();
 
     // Récupération des liens PDF
@@ -134,7 +136,9 @@ class OrderHelper {
       $this->orderStdClass->version,
       $this->orderStdClass->year,
       $this->orderStdClass->forecastPrint,
-      $this->orderStdClass->PDFdocumentations
+      $this->orderStdClass->PDFdocumentations,
+      $this->orderStdClass->languageCodePackage,
+      $this->orderStdClass->carName
     );   
     return $order;
   }
@@ -374,6 +378,21 @@ class OrderHelper {
    */
   private function getCoverLink(): string {
     return 'www-link/'. $this->orderStdClass->partNumber .'/impression/document/'. $this->orderStdClass->partNumber;
+  }
+
+  /**
+   * Récupération des langue liées à la commandes
+   *
+   * @return string
+   */
+  private function getLanguageCodePackage(): string {
+    if(strlen($this->orderStdClass->partNumber) !== 15) {      
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return '';    
+    }
+
+    return substr($this->orderStdClass->partNumber, 7, 4);
   }
 
   /**

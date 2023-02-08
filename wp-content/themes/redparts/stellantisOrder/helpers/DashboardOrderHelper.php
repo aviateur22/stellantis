@@ -117,12 +117,19 @@ class DashboardOrderHelper extends CreateDashboardOrdersHelper {
    * @return void
    */
   private function getfilterOrders(string $startDay = null, string $endDay, array $filterEntries) {    
-    // 
-    $partNumberInArray = $this->stringToArray($filterEntries['partNumber'], ',');
+    
+    $partNumberInArray = empty($filterEntries['partNumber']) ?
+      [] :
+      $this->stringToArray($filterEntries['partNumber'], ',');
+
+    $coverCodeInArray = empty($filterEntries['coverCode']) ?
+      [] :
+      $this->stringToArray($filterEntries['coverCode'], ',');
     
     // Données du filtre pour la requete en Base de données
     $prepareFilterEntries = [
       'partNumber' => $partNumberInArray,
+      'coverCode' => $coverCodeInArray
     ];
 
     $orders = $this->orderRepository->findOrdersWithFilterPartNumber($startDay, $endDay, $prepareFilterEntries);
@@ -198,7 +205,9 @@ class DashboardOrderHelper extends CreateDashboardOrdersHelper {
       $order['version'],
       $order['year'],
       $order['forecastPrint'],
-      $order['documentationPDFInformations']
+      $order['documentationPDFInformations'],
+      $order['languageCode'],
+      $order['carName']
     );
   }
   

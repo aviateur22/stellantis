@@ -19,6 +19,13 @@ class OrderEntity extends Order {
    */
   protected array $documentationPDFInformations;
 
+  /**
+   * Nom de la voiture
+   *
+   * @var string
+   */
+  protected string $carLineName;
+
   function __construct(
     int $id,
     string $orderId,
@@ -40,7 +47,9 @@ class OrderEntity extends Order {
     string $version,
     int $year,
     int $printForecast,
-    array $documentationPDFInformations
+    array $documentationPDFInformations,
+    string $languageCode,
+    string $carName
     ) {
     parent::__construct (
       $orderId,
@@ -62,7 +71,9 @@ class OrderEntity extends Order {
       $version,
       $year,
       $printForecast,
-      $documentationPDFInformations
+      $documentationPDFInformations,
+      $languageCode,
+      $carName
     );
     
     $this->id = $id;
@@ -84,5 +95,14 @@ class OrderEntity extends Order {
    */
   function getDocumentationPDFInformations(): array {
     return $this->documentationPDFInformations;
+  }
+
+  /**
+   * Renvoie le nom de la voiture
+   *
+   * @return string
+   */
+  function getCarLineName(): string {
+    return $this->carLineName;
   }
 }
