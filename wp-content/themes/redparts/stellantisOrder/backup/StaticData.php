@@ -7,8 +7,8 @@ abstract class StaticData {
   // Nombre de semaine pour calculer les prévisions
   const PRINT_FORECAST_WEEK = 8;
 
-  const MINIMUM_ORDER_QUANTITY_MANCHECOURT = 2000;
-
+  const MINIMUM_ORDER_QUANTITY_MANCHECOURT = 20000;
+  
   // Affichage jour du Dashboard
   const DASHBOARD_INTERVAL_DAY = 7;
 
@@ -16,7 +16,7 @@ abstract class StaticData {
 
     // Role MILLAU
     const MILLAU_FACTORY_ROLE_NAME = 'MILLAU';
-
+      
     // Role Manchecourt
     const MANCHECOURT_FACTORY_ROLE_NAME = 'MANCHECOURT';
 
@@ -36,7 +36,7 @@ abstract class StaticData {
 
   #region regroupement des WipId
 
-    // Constante des Status de commande
+    // Constante des Status de commande 
     const ORDER_STATUS = [
       'BEFORE_PREFLIGHT_MI' => '1',
       'PREFLIGHT_MI' => '2',
@@ -59,7 +59,7 @@ abstract class StaticData {
       'PREPARATION' => '19'
     ];
 
-    // BEFORE PRFLIGHT pour les WIPID suivant:
+    // BEFORE PRFLIGHT pour les WIPID suivant: 
     const BEFORE_PREFLIGHT_ID = [1, 6, 11];
 
     // PREFLFIGHT pour les WipId suivant
@@ -100,7 +100,7 @@ abstract class StaticData {
       'ON_PROGRESS' => 'ON PROGRESS',
       'READY' => 'READY',
       'DELIVERED' => 'DELIVERED',
-      'BLOCKED' => 'BLOCKED',
+      'BLOCKED' => 'BLOCKED',    
     ];
 
     // Affichage des statuts pour un admin ou autre roles
@@ -140,7 +140,7 @@ abstract class StaticData {
       'HEADER_COLOR_1' => 'header--color--one',
       'HEADER_COLOR_2' => 'header--color--two'
     ];
-
+    
   #endRegion
 
   #region Maury + Stellantis name

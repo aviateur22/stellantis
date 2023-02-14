@@ -50,17 +50,18 @@ require_once('./stellantisOrder/utils/RepositorySelection.php');
 
     // Model pour mettre à jour une commande
     $updateOrderModel = isUserRoleFindInArrayOfRoles($user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES) ?
-      // Instance pour les usine de stellantis (WipId absent des données)
-      new StellantisFactoryUpdateOrder($repositories, $orderId, $deliveredDate, $quantity) :
+    
+    // Instance pour les usine de stellantis (WipId absent des données)
+    new StellantisFactoryUpdateOrder($repositories, $orderId, $deliveredDate, $quantity) :
 
-      // Autres
-      new MFAndOtherUpdateOrder($repositories, $orderId, $deliveredDate, $quantity, $status);
+    // Autres
+    new MFAndOtherUpdateOrder($repositories, $orderId, $deliveredDate, $quantity, $status);
    
     // Mise a jour de la commande
     $updateOrderModel->updateOrder();
     
     // Récupérationd de la commande mise a jour 
-    $updatedOrder = $updateOrderModel->findUpdatedOrder();
+    $updatedOrder = $updateOrderModel->findUpdatedOrder();   
     
     // Récupération de la nouveau nom de la class color
     $colorClassName = $updateOrderModel->findClassNameOrderColor($updatedOrder['wipId']);
@@ -69,10 +70,10 @@ require_once('./stellantisOrder/utils/RepositorySelection.php');
     $data['updateOrder'] =  [
       'colorClassName' => $colorClassName,
       'colorClassToRemove' => $colorClassToRemove,
-      'deliveredDate' =>date('d-M-Y', strtotime($updatedOrder->deliveredDate)),
-      'quantity' => $updatedOrder->quantity
+      'deliveredDate' => date('d-M-Y', strtotime($updatedOrder['deliveredDate'])),
+      'quantity' => $updatedOrder['quantity']
     ];
-
+   
     echo(json_encode($data));
  } catch (\Throwable $th) {
     // Récupération code HTTP

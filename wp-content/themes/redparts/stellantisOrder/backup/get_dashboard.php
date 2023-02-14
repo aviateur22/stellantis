@@ -7,7 +7,6 @@ require_once('./stellantisOrder/utils/validators.php');
 require_once('./stellantisOrder/helpers/html/UpdateOrderModalHelper.php');
 require_once('./stellantisOrder/model/RepositoriesModel.php');
 require_once('./stellantisOrder/utils/RepositorySelection.php');
-require_once('./stellantisOrder/pod/get_pod_dashboard.php');
 
 error_reporting(E_ALL);
 
@@ -19,13 +18,13 @@ try {
   if(!empty($startDate)) {
     if(!isDateValid($startDate)){
       throw new \Exception('Unvalid date and time', 400);
-    }
+    }    
   }
 
   // User
   $userHelper = new UserHelper();
   $user = $userHelper->getUser();
-
+  
   $displayOrderColorHelper = new DisplayOrderColorHelper($user);
 
   // Repositories
@@ -33,51 +32,47 @@ try {
   $repositories = $repositorySelection->selectRepositories($user);
 
   $dashboardHelper = new DashboardOrderHelper($repositories);
-
+  
   // Initilasation de la date de début d'affichage
   $date = !empty($startDate) ? $startDate : null;
   $setDashboard = $dashboardHelper->setDashboardOrders($date, '2023-02-25');
-
+  
   // Récupération des données
-  $dashboardOrders = $dashboardHelper->getDashboardOrders();
+  $dashboardOrders = $dashboardHelper->getDashboardOrders();  
 
   // Si pas de données; alors recherche du 1er jour ayant une commande
-  if(count($dashboardOrders) === 0) {
-    // Récupération du 1er jour ayant
+  if(count($dashboardOrders) === 0) {    
+    // Récupération du 1er jour ayant 
     $firstDayWithOrder = $dashboardHelper->findFirstDayWithOrder($date, '2023-02-25');
 
     if(!empty($firstDayWithOrder)) {
       // Initilasation de la date de début d'affichage
-      $setDashboard = $dashboardHelper->setDashboardOrders($firstDayWithOrder, '2023-02-25');
+      $setDashboard = $dashboardHelper->setDashboardOrders($firstDayWithOrder, '2023-02-25');      
 
       // Récupération des données
       $dashboardOrders = $dashboardHelper->getDashboardOrders();
 
-      // Nouvelle date d'affichage
-      // var_dump($firstDayWithOrder);
+      // Nouvelle date d'affichage       
       $data['firstDayWithOrder'] = $firstDayWithOrder;
-    }
+    }    
   }
-
+  
   $intervalDays = $dashboardHelper->getIntervalDays();
-
-
+  
+  
   // Creation html
   $updateOrderModalHelper = new UpdateOrderModalHelper($user);
   $displayDashboardOrder = new DisplayDashboardOrder(
-    $dashboardOrders,
-    $intervalDays,
-    $user,
-    $displayOrderColorHelper,
+    $dashboardOrders, 
+    $intervalDays, 
+    $user, 
+    $displayOrderColorHelper, 
     $updateOrderModalHelper
   );
-
-
-  $data['orders'] = get_pod_order_dashboard();
-  $data['orders'] .= "<h3 style='margin-top:10px;color:black;text-align:center;'>Fulfillment part number</h3>";
-
-  $data['orders'] .= $displayDashboardOrder->createHtml();
-
+  
+  
+  $data['orders'] = $displayDashboardOrder->createHtml(); 
+    
   echo(json_encode($data));
 }
 catch(\Throwable $th) {
@@ -86,7 +81,7 @@ catch(\Throwable $th) {
 
  //Renvoie HTTP Response code
  http_response_code($statusCode);
-
+ 
  echo('Error ' . $th->getMessage());
 }
 

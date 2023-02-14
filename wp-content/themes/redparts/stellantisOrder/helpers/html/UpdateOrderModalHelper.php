@@ -54,9 +54,32 @@ class UpdateOrderModalHelper {
                 <p id="processedWith">XXXX</p>
               </div>
               <div class="group__control">
-                <label class="text--strong text--left" for="statusLabel"> Actual status </label>
+                <label class="text--strong text--right" for="statusLabel"> Actual status </label>
                 <p id="statusLabel">XXXX</p>
               </div>
+            </div>
+          </div>
+
+          <!--info voiture -->
+          <div class="update__information">
+            <div class="group__control">
+              <label class="text--strong text--left" for="brand">Car Brand</label>
+              <p id="brand">XXXX</p>
+            </div>
+
+            <div class="group__control">
+              <label class="text--strong text--center" for="modelCode">Model Code</label>
+              <p id="modelCode">XXXX</p>
+            </div>
+
+            <div class="group__control">
+              <label class="text--strong text--right" for="carLine">Carline</label>
+              <p id="carLine">XXXX</p>
+            </div>
+
+            <div class="group__control">
+              <label class="text--strong text--right" for="modelYear">Model Year</label>
+              <p class="text--right" id="modelYear">XXXX</p>
             </div>
           </div>
           
@@ -87,30 +110,7 @@ class UpdateOrderModalHelper {
               <label class="text--strong text--right" for="languageCode">Language Code Pack.</label>
               <p class="text--right" id="languageCode">XXXX</p>
             </div>    
-          </div>
-
-          <!--info voiture -->
-          <div class="update__information">
-            <div class="group__control">
-              <label class="text--strong text--left" for="brand">Car Brand</label>
-              <p id="brand">XXXX</p>
-            </div>
-
-            <div class="group__control">
-              <label class="text--strong text--center" for="modelCode">Model Code</label>
-              <p id="modelCode">XXXX</p>
-            </div>
-
-            <div class="group__control">
-              <label class="text--strong text--right" for="carLine">Carline</label>
-              <p id="carLine">XXXX</p>
-            </div>
-
-            <div class="group__control">
-              <label class="text--strong text--right" for="modelYear">Model Year</label>
-              <p class="text--right" id="modelYear">XXXX</p>
-            </div>
-          </div>
+          </div>          
 
           '.$setPDFDocumentation.'
           <div class="update__information">

@@ -302,7 +302,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     if(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
       $findOrders = $wpdb->get_results($wpdb->prepare(
         "SELECT * FROM orders
-        WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        WHERE wipId <> %d AND isPOD <> 1 AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
       StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd, $this->user->getFirstRole()), ARRAY_A);
       
       // Renvoie les commandes avec l'ajout de liens PDF
@@ -311,7 +311,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
 
     
     // Autre personne de connectée
-    $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+    $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND isPOD <> 1 AND deliveredDate >= %s AND deliveredDate <= %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
     StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd), ARRAY_A);
 
     // Renvoie les commandes avec l'ajout de liens PDF
@@ -509,6 +509,16 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
       WHERE orderId = %s AND documentationOrderId = %s AND isDocumentationFind = 1", $order['id'], $documentationOrder['id']
     ), ARRAY_A);
 
+    //var_dump($findOrderPdfs);
+
+    // Vérification des données de jointure
+    for($i = 0; $i < count($findOrderPdfs); $i++) {
+      if(empty($findOrderPdfs[$i]['link']) || empty($findOrderPdfs[$i]['type']) || empty($findOrderPdfs[$i]['intOrCouv']) || empty($findOrderPdfs[$i]['fullLink']) || empty($findOrderPdfs[$i]['pagination'])) {
+        $findOrderPdfs[$i] = [];
+      }
+    }
+
+    //var_dump($findOrderPdfs);
     return $findOrderPdfs;
   }
 
@@ -544,7 +554,7 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   }
 
   /**
-   * Renvoie le type d'une docuementation
+   * Renvoie le type d'une documentation
    *
    * @param array $pdfDetails - Tableau contenant le type a renvoyer
    * @return string - Le type
@@ -594,9 +604,35 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function findFirstOrderAfteSpecifiedDay(string $specifiedDay): array
   {
     global $wpdb;
-    $findFirstDay =  $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
-      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay), ARRAY_A);
 
+    // Filtre les commandes pour les usines Stellantis   
+    if(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
+
+      $findFirstDay =  $wpdb->get_results($wpdb->prepare(
+        "SELECT * 
+        FROM `orders` 
+        WHERE wipId <> %s AND isPOD <> 1 AND deliveredDate > %s AND orderBuyer = %s
+        ORDER BY deliveredDate 
+        ASC LIMIT 1",
+        StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay, $this->user->getFirstRole()),
+      ARRAY_A
+    );
+
+    // Si commande
+    if(count($findFirstDay) > 0) {
+      return $findFirstDay[0];
+    }
+
+    return [];     
+    }
+
+    // Role autre que usine de stellantis
+    $findFirstDay =  $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND isPOD <> 1 AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
+      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay),
+      ARRAY_A
+    );
+
+   
     if(count($findFirstDay) > 0) {
       return $findFirstDay[0];
     }

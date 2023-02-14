@@ -157,7 +157,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     // Derniere ligne
     $LAST_ROW = $this->activeSheet->getHighestRow();
 
-    for($row = self::FILE_STRUCTURE['ROW_START']; $row < $LAST_ROW; $row++) {     
+    for($row = self::FILE_STRUCTURE['ROW_START']; $row <= $LAST_ROW; $row++) {     
       
       if($this->readCellValue($row, 0) !== '') {
         // Nouveau OrderStdClass

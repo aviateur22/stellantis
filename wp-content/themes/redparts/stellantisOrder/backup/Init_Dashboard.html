@@ -262,7 +262,7 @@
 				documentationTextErrorElement.style.display = "block";
 			} else {
 
-				// Masque le message d'absence de documentation
+				// Maque le message d'absence de docuementation
 				documentationTextErrorElement.style.display = "none";
 
 				// Clone le document source
@@ -350,51 +350,29 @@
 						// Masque le message d'erreur
 						pdfTextErrorElement.style.display = 'none';
 
-						// PDF int ou Couv
-						doc = {
-							isPdfIntDetected: false,
-							isPdfCouvDetected: false
-						}
-
 						// Parcours des doc HTML pour recupérer Le liens + INT oiu COUV
 						pdfDetails.forEach(pdf => {
-							if(pdf.link !== undefined || pdf.pagination !== undefined || pdf.intOrCouv !== undefined) {								
-								// Lien PDF
-								const pdfLink = pdf.link;
 
-								// Pagination
-								const pagination = pdf.pagination;
+							// Lien PDF
+							const pdfLink = pdf.link;
 
-								console.log(pdf.intOrCouv);
+							// Pagination
+							const pagination = pdf.pagination;
 
-								// Doc INT ou COUV
-								const intOrCouv =  pdf.intOrCouv.toLowerCase();
+							// Doc INT ou COUV
+							const intOrCouv =  pdf.intOrCouv.toLowerCase();
 
-								switch(intOrCouv) {
-									case 'int':
-										doc.isPdfIntDetected = true;
-										pdfLinkIntElement.innerText = pdfLink;
-										paginationIntElement.innerText = pagination;
-										break;
-									case 'couv':
-										doc.isPdfCouvDetected = true;
-										pdfLinkCouvElement.innerText = pdfLink;
-										paginationCouvElement.innerText = pagination;
+							switch(intOrCouv) {
+								case 'int':
+									pdfLinkIntElement.innerText = pdfLink;
+									paginationIntElement.innerText = pagination;
 									break;
-								}								
+								case 'couv':
+									pdfLinkCouvElement.innerText = pdfLink;
+									paginationCouvElement.innerText = pagination;
+								break;
 							}
 						});
-
-						// Vérification des données PDF
-						if(!doc.isPdfCouvDetected) {
-							pdfLinkCouvElement.innerText = "No Data";
-							paginationCouvElement.innerText = "No Data";
-						}
-
-						if(!doc.isPdfIntDetected) {
-							pdfLinkIntElement.innerText = "No Data";
-							paginationIntElement.innerText = "No Data";				
-						}
 						// Affichage des documents
 						documentationContainerElement.style.display = 'flex';
 					}

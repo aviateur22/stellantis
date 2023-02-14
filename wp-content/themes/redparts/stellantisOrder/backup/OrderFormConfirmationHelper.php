@@ -30,7 +30,7 @@ class OrderFormConfirmationHelper {
    *
    * @return void
    */
-  function dispacthOrderBetweenMiAndMA(array $orders) {
+  function dispacthOrderBetweenMiAndMA(array $orders) {    
 
     // Liste des commanndes pour Millau et Manchecourt
     $ordersForMillau = [];
@@ -40,14 +40,14 @@ class OrderFormConfirmationHelper {
     foreach($orders as $order) {
 
       $this->isOrderMessageForMillau($order) ?
-        $ordersForMillau[] = $order :
+        $ordersForMillau[] = $order : 
         $ordersForManchecourt[] = $order;
     }
 
-
+   
     // Classement des commandes par deliveredDate
     usort($ordersForMillau, fn ($a, $b) => strcmp(date('Y-m-d', strtotime($a['deliveredDate'])), date('Y-m-d', strtotime($b['deliveredDate']))));
-    usort($ordersForManchecourt, fn ($a, $b) => strcmp(date('Y-m-d', strtotime($a['deliveredDate'])), date('Y-m-d', strtotime($b['deliveredDate']))));
+    usort($ordersForManchecourt, fn ($a, $b) => strcmp(date('Y-m-d', strtotime($a['deliveredDate'])), date('Y-m-d', strtotime($b['deliveredDate']))));    
 
     // Boucle sur les commandes de Millau et Macnchecourt
     $this->iterateThroughtOrders($ordersForMillau, StaticData::MILLAU_FACTORY_NAME);
@@ -58,8 +58,6 @@ class OrderFormConfirmationHelper {
 
     var_dump('xlsFileForMillau');
     var_dump($this->xlsFileForMillau);
-
-    return array_merge($this->xlsFileForMillau,$this->xlsFileForManchecourt);
   }
 
   /**
@@ -77,7 +75,7 @@ class OrderFormConfirmationHelper {
 
         //Filtre les commandes par date et type de commande et génération d'un fichier XLS
         $this->filterOrderByDateAndTypeAndGenerateXlsFile($orders, $orders[$i]['deliveredDate'], $mauryFactoryName);
-      }
+      }      
     }
   }
 
@@ -97,7 +95,7 @@ class OrderFormConfirmationHelper {
     // Liste des differents docTypes présent dans la liste des commandes
     $doctTypeInDeliveredDateOrders = [];
 
-
+    
     // Recherche des commandes avec une même deliveredDate
     foreach($orders as $order) {
       if(date('Y-m-d', strtotime($order['deliveredDate'])) === date('Y-m-d', strtotime($deliveredDate))) {
@@ -122,20 +120,19 @@ class OrderFormConfirmationHelper {
             $xlsOrderArray[$key]['quantity'] = $sameDeliveredDateOrder['quantity'];
             $xlsOrderArray[$key]['fileName'] = $fileName['docRef'];
           }
-        }
+        }        
       }
 
       // Génration XLS
       $orderFormFileName = $this->createXls($docType, date('Y-m-d'), $deliveredDate, $xlsOrderArray);
 
       // Ajout du nom du fichier dans la liste
-      $mauryFactoryName === StaticData::MILLAU_FACTORY_NAME ?
+      $mauryFactoryName === StaticData::MILLAU_FACTORY_NAME ? 
           $this->xlsFileForMillau[] = $orderFormFileName :
           $this->xlsFileForManchecourt[] = $orderFormFileName;
-
-        //  var_dump($xlsOrderArray);
-          //var_dump($orderFormFileName);
-          //var_dump('Fin xlsArray Nom du DocType: ' .  $docType . ' et deliveredDate : ' . $deliveredDate);
+      
+          var_dump($xlsOrderArray);
+          var_dump('Fin xlsArray Nom du DocType: ' .  $docType . ' et deliveredDate : ' . $deliveredDate);
       // Reset
       $xlsOrderArray = [];
     }
@@ -150,7 +147,7 @@ class OrderFormConfirmationHelper {
    * @param string $orderDate
    * @return string - Nom du fichier XLS
    */
-  function createXls($docType, $orderDate, $deliveredDate, $xlsOrderArray): string {
+  function createXls($docType, $orderDate, $deliveredDate, $xlsOrderArray): string {   
     if(count($xlsOrderArray) === 0) {
       return '';
     }
@@ -188,19 +185,19 @@ class OrderFormConfirmationHelper {
   }
 
   /**
-   * Vérification si un ou plusieurs docTyp sont présent dans la liste
+   * Vérification si un ou plusieurs docTyp sont présent dans la liste 
    *
    * @param array $newDocTypes
    * @param array $availableDocTypes
    * @return void
    */
   protected function addDocTypeIfNoteInArray(array $newDocTypes, array &$availableDocTypes): void {
-
+    
     foreach($newDocTypes as $docType) {
       if(!in_array( $docType, $availableDocTypes)) {
         $availableDocTypes[] =  $docType;
       }
     }
-  }
+  } 
 
 }

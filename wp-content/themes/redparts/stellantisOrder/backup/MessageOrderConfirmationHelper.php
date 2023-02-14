@@ -40,14 +40,6 @@ class MessageOrderConfirmationHelper {
    */
   protected array $orders;
 
-
-    /**
-     * Liste des fichiers Xlsx généré
-     *
-     * @var array
-     */
-    protected array $tabPieceJointe;
-
   /**
    * Liste des messages à envoyer
    *
@@ -63,8 +55,8 @@ class MessageOrderConfirmationHelper {
   protected OrderFormConfirmationHelper $orderFormConfirmationHelper;
 
   function __construct(
-    string $orderId,
-    RepositoriesModel $repositories,
+    string $orderId, 
+    RepositoriesModel $repositories, 
     MailServiceInterface $mailService,
     OrderFormConfirmationHelper $orderFormConfirmationHelper
     ) {
@@ -72,7 +64,7 @@ class MessageOrderConfirmationHelper {
     $this->orderFormConfirmationHelper = $orderFormConfirmationHelper;
     $this->mailService = $mailService;
     $this->orderId = $orderId;
-
+  
     // Récupération des commandes
     $this->initialize();
   }
@@ -81,8 +73,8 @@ class MessageOrderConfirmationHelper {
     // Récupération des commandes
     $this->getOrders();
 
-    // Génération des bons de commandes au Format XLS et récupération des liens
-    $this->tabPieceJointe = $this->orderFormConfirmationHelper->dispacthOrderBetweenMiAndMA($this->orders);
+    // Génération des bons de commandes au Format XLS
+    $this->orderFormConfirmationHelper->dispacthOrderBetweenMiAndMA($this->orders);
   }
 
   /**
@@ -122,12 +114,12 @@ class MessageOrderConfirmationHelper {
       [
         'to' => StaticData::MANCHECOURT_FACTORY_NAME,
         'message'=> $messageForManchecourt,
-        'email' => 'cthuaudet@keygraphic.fr'
+        'email' => 'aviateur22@gmail.com'
       ],
       [
         'to' => StaticData::MILLAU_FACTORY_NAME,
         'message' => $messageForMillau,
-        'email' => 'cthuaudet@keygraphic.fr'
+        'email' => 'aviateur22@gmail.com'
       ]
     ];
   }
@@ -137,24 +129,23 @@ class MessageOrderConfirmationHelper {
    *
    * @return void
    */
-  function sendMessage() {
-    $headers [] = 'From: Plateforme STELLANTIS <admin@mdw-05.fr>';
-   $headers [] = 'Content-Type: text/html; charset=utf-8';
+  function sendMessage() {  
+
     foreach($this->orderMessages as $orderMessage) {
       if(!empty($orderMessage['message'])) {
 
         // Composition du message avec introduction + conclusion
-      //  $message = $this->initMessage(). $orderMessage['message'] .$this->endMessage();
+        ///$message = $this->initMessage(). $orderMessage['message'] .$this->endMessage();
         $message = EmailTemplateOrderConfirmation::getTemplate($orderMessage['message']);
 
         // Envoi email
         //wp_mail($orderMessage['email'], 'new order', $message);
-        wp_mail($orderMessage['email'], 'Stellantis new order', $message,$headers,$this->tabPieceJointe);
-      //  $this->mailService->sendMessage($orderMessage['email'], 'new order', $message);
-      }
+        //wp_mail($orderMessage['email'], 'new order', '$message');
+        $this->mailService->sendMessage($orderMessage['email'], 'new order', $message);
+      }      
     }
-  }
-
+  }  
+ 
   /**
    * Message résumé d'une commande
    *
@@ -162,7 +153,7 @@ class MessageOrderConfirmationHelper {
    * @return string
    */
   function formatMessage(array $order, int $index): string {
-
+    
     $orderMessage  = '<p style="line-height:110%">'.'Record N°: ' . $index .'</p>';
     $orderMessage .= '<p style="line-height:110%">'.'PartNumber: ' . $order['partNumber'] .'</p>';
     $orderMessage .= '<p style="line-height:110%">'.'Brand: ' . $order['brand'] .'/'. $order['model'] .'/'. $order['year'] .'/'. $order['verion'] .'</p>';
@@ -174,7 +165,7 @@ class MessageOrderConfirmationHelper {
     $orderMessage .= '<br>';
 
     return $orderMessage;
-
+    
   }
 
   /**
@@ -183,9 +174,9 @@ class MessageOrderConfirmationHelper {
    * @return void
    */
   function initMessage() {
-    return 'Bonjour,
+    return 'Bonjour, 
 
-    Une nouvelle commande vient d’être déposée sur la plateforme STELLANTIS'.'</p>';
+    Une nouvelle commande vient d\’être déposée sur la plateforme STELLANTIS'.'</p>';
   }
 
   /**
@@ -207,7 +198,7 @@ class MessageOrderConfirmationHelper {
     // Récupération des types de documentation PDF
     $orderPdf = new OrderPdf();
 
-    // Initialisation
+    // Initialisation 
     $pdfTextMessage = '';
 
     // Boucle sur les données des PDF
@@ -218,7 +209,7 @@ class MessageOrderConfirmationHelper {
 
     return $pdfTextMessage;
   }
-
+  
   /**
    * Renvoie les Commandes rattaché a un orderId
    *
