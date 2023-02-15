@@ -4,14 +4,6 @@
  * Interface récupération données 
  */
 interface OrderSourceInterface {
-
-  /**
-   * Vérification du fichier commande
-   *
-   * @return boolean
-   */
-  function isOrderFileValid(): bool;
-
   /**
    * Lecture des données
    *

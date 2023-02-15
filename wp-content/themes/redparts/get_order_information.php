@@ -29,7 +29,7 @@ try {
   $findOrderInformationHelper = new FindOrderInformationHelper($orderRepository, $displayOrderColorHelper);
 
   // Recherche Commande
-  $order = $findOrderInformationHelper->findOrder($orderId);
+  $order = $findOrderInformationHelper->findOrder($orderId);  
 
   // Recherche de l'usine ayant la commande
   $processedWith = $findOrderInformationHelper->findProcessedWith((int)$order['wipId']);

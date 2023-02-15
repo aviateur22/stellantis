@@ -1,15 +1,23 @@
 <?php
-require_once('./stellantisOrder/services/MySqlOrderRepository.php');
 require_once('./stellantisOrder/helpers/DashboardOrderHelper.php');
 require_once('./stellantisOrder/html/DisplayDashboardOrder.php');
 require_once('./stellantisOrder/helpers/DisplayOrderColorHelper.php');
 require_once('./stellantisOrder/helpers/UserHelper.php');
 require_once('./stellantisOrder/utils/validators.php');
 require_once('./stellantisOrder/helpers/html/UpdateOrderModalHelper.php');
+require_once('./stellantisOrder/model/RepositoriesModel.php');
+require_once('./stellantisOrder/utils/RepositorySelection.php');
 error_reporting(E_ALL);
 
+// Filtre avec les partNumber
 $partNumber = $_POST['partNumber'];
+
+// Filtre avec les code Pochettes
+$coverCode = $_POST['coverCode'];
+
+// Date début affichage dashboard
 $startDate = $_POST['startDate'];
+
 try {
 
 if(empty($startDate)) {
@@ -29,13 +37,21 @@ if(!empty($partNumber)) {
   $filterEntries['partNumber'] = $partNumber;
 }
 
+// Ajout des codePochettes dans le tableau des filtes
+if(!empty($coverCode)) {
+  $filterEntries['coverCode'] = $coverCode;
+}
+
 $userHelper = new UserHelper();
 $user = $userHelper->getUser();
 
-$displayOrderColorHelper = new DisplayOrderColorHelper($user);
-$orderRepository = new MySqlOrderRepository($user);
-$dashboardHelper = new DashboardHelper($orderRepository);
+// Repositories
+$repositorySelection = new RepositorySelection(StaticData::REPOSITORY_TYPE_MYSQL);
+$repositories = $repositorySelection->selectRepositories($user);
 
+// Helper + Services
+$displayOrderColorHelper = new DisplayOrderColorHelper($user);
+$dashboardHelper = new DashboardOrderHelper($repositories);
 $setDashboard = $dashboardHelper->setDashboardOrders($startDate, '2023-02-25', $filterEntries);
 
 // Récupération des données

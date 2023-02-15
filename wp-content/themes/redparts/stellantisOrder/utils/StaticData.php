@@ -8,35 +8,35 @@ abstract class StaticData {
   const PRINT_FORECAST_WEEK = 8;
 
   const MINIMUM_ORDER_QUANTITY_MANCHECOURT = 2000;
-  
+
   // Affichage jour du Dashboard
   const DASHBOARD_INTERVAL_DAY = 7;
 
   #region user role
 
-  // Role MILLAU
-  const MILLAU_FACTORY_ROLE_NAME = 'MILLAU';
-    
-  // Role Manchecourt
-  const MANCHECOURT_FACTORY_ROLE_NAME = 'MANCHECOURT';
+    // Role MILLAU
+    const MILLAU_FACTORY_ROLE_NAME = 'MILLAU';
 
-  // Role Stellantis
-  const STELLANTIS_ROLE_NAME = 'ADMIN_STELLANTIS';
+    // Role Manchecourt
+    const MANCHECOURT_FACTORY_ROLE_NAME = 'MANCHECOURT';
 
-  // Liste des roles usine du groupe Stellantis
-  const FACTORY_STELLANTIS_ROLES_NAMES = [
-    'poissy',
-    'rennes',
-    'sochaux',
-    'mulhouse',
-    'kenitra'
-  ];
+    // Role Stellantis
+    const STELLANTIS_ROLE_NAME = 'ADMIN_STELLANTIS';
+
+    // Liste des roles usine du groupe Stellantis
+    const FACTORY_STELLANTIS_ROLES_NAMES = [
+      'poissy',
+      'rennes',
+      'sochaux',
+      'mulhouse',
+      'kenitra'
+    ];
 
   #endRegion
 
   #region regroupement des WipId
 
-    // Constante des Status de commande 
+    // Constante des Status de commande
     const ORDER_STATUS = [
       'BEFORE_PREFLIGHT_MI' => '1',
       'PREFLIGHT_MI' => '2',
@@ -59,7 +59,7 @@ abstract class StaticData {
       'PREPARATION' => '19'
     ];
 
-    // BEFORE PRFLIGHT pour les WIPID suivant: 
+    // BEFORE PRFLIGHT pour les WIPID suivant:
     const BEFORE_PREFLIGHT_ID = [1, 6, 11];
 
     // PREFLFIGHT pour les WipId suivant
@@ -100,7 +100,7 @@ abstract class StaticData {
       'ON_PROGRESS' => 'ON PROGRESS',
       'READY' => 'READY',
       'DELIVERED' => 'DELIVERED',
-      'BLOCKED' => 'BLOCKED',    
+      'BLOCKED' => 'BLOCKED',
     ];
 
     // Affichage des statuts pour un admin ou autre roles
@@ -140,7 +140,7 @@ abstract class StaticData {
       'HEADER_COLOR_1' => 'header--color--one',
       'HEADER_COLOR_2' => 'header--color--two'
     ];
-    
+
   #endRegion
 
   #region Maury + Stellantis name
@@ -149,5 +149,15 @@ abstract class StaticData {
     const MANCHECOURT_FACTORY_NAME = "MANCHECOURT FACTORY";
 
     const STELLANTIS_NAME = "STELLANTIS";
+  #endRegion
+
+  #region Repository Type And Document Type
+
+    // Repository MYSQL
+    const REPOSITORY_TYPE_MYSQL = 'mysql';
+
+    // Source Document XLS
+    const DOCUEMENT_TYPE_XLS = 'xls';
+
   #endRegion
 }

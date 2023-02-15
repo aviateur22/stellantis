@@ -24,6 +24,8 @@ class UpdateOrderModalHelper {
    */
   function updateOrderModal(): string {
 
+    $setPDFDocumentation = $this->setPDFDocumentation();
+
     $statusSelectOption = !isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES) ?
       $this->setPopupSelectectOption() :
       '';
@@ -40,9 +42,11 @@ class UpdateOrderModalHelper {
         </div>
       </div>          
       <form id="updateOrderForm" class="update__form" method="post">
-        <h4 class="update__title">Order information</h4>
+        
         <div class="update__content">          
           <input id="id" name="id" type="hidden">
+
+          <!--info status -->
           <div class="update__information">
             <div class="status__information">
               <div class="group__control">
@@ -50,30 +54,65 @@ class UpdateOrderModalHelper {
                 <p id="processedWith">XXXX</p>
               </div>
               <div class="group__control">
-                <label class="text--strong text--left" for="statusLabel"> Actual status </label>
+                <label class="text--strong text--right" for="statusLabel"> Actual status </label>
                 <p id="statusLabel">XXXX</p>
               </div>
             </div>
-            
-            <div class="group__control">
-              <label class="text--strong text--right" for="quantity">PartNumber</label>
-              <p id="displayPartNumber">XXXX</p>
-            </div>
           </div>
-          <div class="update__car__information">
+
+          <!--info voiture -->
+          <div class="update__information">
             <div class="group__control">
-              <label class="text--strong text--left" for="coverCode">Cover Code</label>
-              <p id="coverCode">XXXX</p>
-            </div>
-            <div class="group__control">
-              <label class="text--strong text--right" for="brand">Car Brand</label>
+              <label class="text--strong text--left" for="brand">Car Brand</label>
               <p id="brand">XXXX</p>
             </div>
-          </div>          
-          <div class="group__control">
-            <label class="text--strong text--left" for="coverLink">Cover Link</label>
-            <p id="coverLink">XXXX</p>
+
+            <div class="group__control">
+              <label class="text--strong text--center" for="modelCode">Model Code</label>
+              <p id="modelCode">XXXX</p>
+            </div>
+
+            <div class="group__control">
+              <label class="text--strong text--right" for="carLine">Carline</label>
+              <p id="carLine">XXXX</p>
+            </div>
+
+            <div class="group__control">
+              <label class="text--strong text--right" for="modelYear">Model Year</label>
+              <p class="text--right" id="modelYear">XXXX</p>
+            </div>
           </div>
+          
+          <!-- info commande -->
+          <div class="update__information">
+            <div class="group__control">
+              <label class="text--strong text--left" for="partNumber">PartNumber</label>
+              <p id="displayPartNumber">XXXX</p>
+            </div>
+
+            <div class="forecast__stock__information">
+              <div class="group__control">
+                <label class="text--strong" for="forecast">Forecast 8W</label>
+                <p class="text--center" id="forecast">XXXX</p>
+              </div>
+              <div class="group__control">
+                <label class="text--strong" for="stock">Stock</label>
+                <p id="stock">155</p>
+              </div>
+            </div>  
+
+            <div class="group__control">
+              <label class="text--strong text--center" for="coverCode">Code Poch.</label>
+              <p class="text--center" id="coverCodeDatabase">XXXX</p>
+            </div>
+            
+            <div class="group__control">
+              <label class="text--strong text--right" for="languageCode">Language Code Pack.</label>
+              <p class="text--right" id="languageCode">XXXX</p>
+            </div>    
+          </div>          
+
+          '.$setPDFDocumentation.'
           <div class="update__information">
             <div class="group__control">
               <label class="text--strong text--left" for="quantity">Quantity</label>
@@ -89,7 +128,7 @@ class UpdateOrderModalHelper {
         <div class="modal__button__container">
           <div>          
             <button type="submit" class="modal__button" value> Update Order </button>
-            <button onclick="hideUpdateOrder();" type="button" class="modal__button cancel--button" value> Non </button>
+            <button onclick="hideUpdateOrder();" type="button" class="modal__button cancel--button" value> No </button>
           </div>
         </div>
       </form>
@@ -171,6 +210,66 @@ class UpdateOrderModalHelper {
       </div>';
 
     }
+  }
+
+  private function setPDFDocumentation(): string {
+    return '
+      <div id="mainDocumentationContainer" class="group__control">
+        <label class="main__documentation__title text--strong"> Documentation PDF </label>
+        <div class="documentation__text__container">
+          <p class="documentation__not__avail error--text strong"> No PDF documentation available </p>
+        </div>        
+        <div id="documentationContainer" class="documentation__container">          
+          <div id="documentation-xx" class="documentation">
+            <div class="documentation__header">
+              <div class="documentation__type">
+                <label> 
+                  Doc Type - 
+                  <span class="documentation__type__language">
+                    XX
+                  </span>
+                </label>
+                <p class="documentation__type__text"> XXXX </p>
+              </div>              
+              <div class="documentation__info">
+                <div class="documentation__wallet">
+                  <label class="doc__option documentation__paper__wallet">Paper Wallet</label>
+                </div>
+                <div class="documentation__wallet"  >
+                  <label class="doc__option documentation__wallet__branded">Wallet Branded</label>                                
+                </div>              
+              </div>
+            </div>        
+            <div class="documentation__text__container">
+              <p class="documentation__pdf__not__avail error--text strong"> No PDF documentation available </p>
+            </div>
+            <div class="documentation__doc">
+              <div class="documentation__detail">
+                <p class="documentation__int__couv"> INT </p>
+                <div class="documentation__detail__container">
+                  <p class="documentation__target__mouse">doc...</p>
+                  <p class="documentation__link documentation__int info--bubble"></p> 
+                </div>
+                <div class="documentation__detail__pagination">
+                  <p>Pagination</p>
+                  <p class="text--center pagination__int">XX</p>
+                </div>       
+              </div>
+              <div class="documentation__detail">
+                <p class="documentation__int__couv"> COUV </p>
+                <div class="documentation__detail__container">
+                  <p class="documentation__target__mouse">doc...</p>
+                  <p class="documentation__link documentation__couv info--bubble"></p>
+                </div>
+                <div class="documentation__detail__pagination">
+                  <p> Pagination </p>
+                  <p class="text--center pagination__couv">XX</p>
+                </div>       
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>';
   }
 
 }

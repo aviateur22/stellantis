@@ -35,11 +35,20 @@ class UserHelper {
    */
   private function setUserInformation(): void {
     // Récupération UserWordPress    
-    $currentUser = wp_get_current_user();    
+    $currentUser = wp_get_current_user();  
+    
+    if(empty($currentUser)) {
+      throw new \Exception('Session Expired', 401);
+    }
+
     $firstName = $currentUser->first_name;
     $lastName = $currentUser->last_name;    
     $userId = $currentUser->ID;
     $roles = get_userdata($userId)->roles;
+
+    if(empty($roles)) {
+      throw new \Exception('Session Expired', 401);
+    }
 
     // Utilisateur
     $user = new User($userId, $firstName, $lastName, $roles);

@@ -1,9 +1,12 @@
 <?php
-require_once('./stellantisOrder/services/MySqlOrderRepository.php');
-require_once('./stellantisOrder/services/MySqlForecastRepository.php');
 require_once('./stellantisOrder/services/XmlOrderFormat.php');
 require_once('./stellantisOrder/services/FtpTransfert.php');
+require_once('./stellantisOrder/services/MailService.php');
 require_once('./stellantisOrder/helpers/ForecastPrintHelper.php');
+require_once('./stellantisOrder/model/RepositoriesModel.php');
+require_once('./stellantisOrder/utils/RepositorySelection.php');
+require_once('./stellantisOrder/helpers/orderConfirmation/OrderFormConfirmationHelper.php');
+require_once('./stellantisOrder/helpers/orderConfirmation/MessageOrderConfirmationHelper.php');
 
 setlocale(LC_TIME, "fr_FR");
 
@@ -18,30 +21,42 @@ try {
     throw new \Exception('Error : order ID is not valid', 400);
   }
 
-  // Activation des services
-  $orderRepository = new MySqlOrderRepository();
-  $forecastRepository = new MySqlForecastRepository();
-  $forecastPrintHelper = new ForecastPrintHelper($forecastRepository);
-  $xmlOrderFormat = new XmlOrderFormat($orderId, $orderRepository, $forecastPrintHelper);
-  $ftpTransfert = new FtpTransfert($orderRepository, $orderId);
+  // Repository
+  $repositorySelection = new RepositorySelection(StaticData::REPOSITORY_TYPE_MYSQL);
+  $repositories = $repositorySelection->selectRepositories();
+
+  // Activation des services + Helper
+  $forecastPrintHelper = new ForecastPrintHelper($repositories);
+  $xmlOrderFormat = new XmlOrderFormat($orderId, $repositories, $forecastPrintHelper);
+  $ftpTransfert = new FtpTransfert($repositories, $orderId);
+  $mailService = new MailService();
+  $orderFormConfirmationHelper = new OrderFormConfirmationHelper(); 
+  $messageOrderConfirmationHelper = new MessageOrderConfirmationHelper($orderId, $repositories, $mailService, $orderFormConfirmationHelper);
 
   // Vérification que toute les commandes valides
-  $errorOrders = $orderRepository->findErrorOrders($orderId);
+  $errorOrders = $repositories->getOrderRepository()->findErrorOrders($orderId);
   
   if(count($errorOrders) > 0) {
     throw new \Exception('Error order detected, file transfert cancel');
   }
   
   // Format les commandes a transférer
-  $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();    
+  $formatedPathOrders = $xmlOrderFormat->createFormatedOrders();
+  
+  // Préparation des messages pour les mails
+  $messageOrderConfirmationHelper->prepareMessageForRequetedOrders();
+
+  // Envois des emails
+  $messageOrderConfirmationHelper->sendMessage();
 
   // Transfert Fichier
   $isTransfertSuccess = $ftpTransfert->transfertOrders($formatedPathOrders);
 
   if(!$isTransfertSuccess) {
-    throw new \Exception('Error transferring oreder file, process cancel', 500);
-  }
-
+    throw new \Exception('Error transferring XML orders files, process cancel', 500);
+  } 
+ 
+  //die();
   // Mise a jour du statut des commandes
   $ftpTransfert->updateOrderStatus();
 

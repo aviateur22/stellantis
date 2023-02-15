@@ -12,6 +12,20 @@ class OrderEntity extends Order {
    */
   protected int $id;
 
+  /**
+   * Données sur les PDF de la commande
+   *
+   * @var array
+   */
+  protected array $documentationPDFInformations;
+
+  /**
+   * Nom de la voiture
+   *
+   * @var string
+   */
+  protected string $carLineName;
+
   function __construct(
     int $id,
     string $orderId,
@@ -32,7 +46,10 @@ class OrderEntity extends Order {
     string $brand,
     string $version,
     int $year,
-    int $printForecast
+    int $printForecast,
+    array $documentationPDFInformations,
+    string $languageCode,
+    string $carName
     ) {
     parent::__construct (
       $orderId,
@@ -53,7 +70,10 @@ class OrderEntity extends Order {
       $brand,
       $version,
       $year,
-      $printForecast
+      $printForecast,
+      $documentationPDFInformations,
+      $languageCode,
+      $carName
     );
     
     $this->id = $id;
@@ -66,5 +86,23 @@ class OrderEntity extends Order {
    */
   function getId(): int {
     return $this->id;
+  }
+
+  /**
+   * Renvoie les information sur le docuementation PDF
+   *
+   * @return array
+   */
+  function getDocumentationPDFInformations(): array {
+    return $this->documentationPDFInformations;
+  }
+
+  /**
+   * Renvoie le nom de la voiture
+   *
+   * @return string
+   */
+  function getCarLineName(): string {
+    return $this->carLineName;
   }
 }

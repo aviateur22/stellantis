@@ -1,5 +1,7 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/FindPDFDocumentationHelper.php';
 
 /**
  * Undocumented class
@@ -26,6 +28,13 @@ class OrderHelper {
    * @var OrderRepositoryInterface
    */
   protected OrderRepositoryInterface $orderRepository;
+
+  /**
+   * Repositories
+   *
+   * @var RepositoriesModel
+   */
+  protected RepositoriesModel $repositories;
 
   /**
    * Liste commandes en echec
@@ -56,12 +65,12 @@ class OrderHelper {
   protected ForecastPrintHelper $forecastPrintHelper;
 
   function __construct(
-    OrderRepositoryInterface $orderRepository,
-    ModelRepositoryInterface $modelRepository,
+    RepositoriesModel $repositories,
     ForecastPrintHelper $forecastPrintHelper    
     ) {    
-    $this->modelRepository = $modelRepository;
-    $this->orderRepository = $orderRepository;
+    $this->modelRepository = $repositories->getModelRepository();
+    $this->orderRepository = $repositories->getOrderRepository();
+    $this->repositories = $repositories;
     $this->forecastPrintHelper = $forecastPrintHelper;
   }
 
@@ -91,7 +100,13 @@ class OrderHelper {
     $this->orderStdClass->countryName = $CountryInfo['country'];
     $this->orderStdClass->countryCode = $CountryInfo['countryCode'];
     $this->orderStdClass->forecastPrint = $this->getForecastPrint();
+    $this->orderStdClass->languageCodePackage = $this->getLanguageCodePackage();
+    
     $this->formatDeliveredDate();
+
+    // Récupération des liens PDF
+    $findPdfDocumentationHelper = new FindPDFDocumentationHelper($this->repositories, $this->orderStdClass->partNumber);
+    $this->orderStdClass->PDFdocumentations = $findPdfDocumentationHelper->findPartNumberToPdf();       
   }  
 
   /**
@@ -120,7 +135,10 @@ class OrderHelper {
       $this->orderStdClass->brand,
       $this->orderStdClass->version,
       $this->orderStdClass->year,
-      $this->orderStdClass->forecastPrint
+      $this->orderStdClass->forecastPrint,
+      $this->orderStdClass->PDFdocumentations,
+      $this->orderStdClass->languageCodePackage,
+      $this->orderStdClass->carName
     );   
     return $order;
   }
@@ -360,6 +378,21 @@ class OrderHelper {
    */
   private function getCoverLink(): string {
     return 'www-link/'. $this->orderStdClass->partNumber .'/impression/document/'. $this->orderStdClass->partNumber;
+  }
+
+  /**
+   * Récupération des langue liées à la commandes
+   *
+   * @return string
+   */
+  private function getLanguageCodePackage(): string {
+    if(strlen($this->orderStdClass->partNumber) !== 15) {      
+      $this->otherErrorOnOrders[] = $this->orderStdClass->partNumber;
+      $this->orderStdClass->isValid = false;
+      return '';    
+    }
+
+    return substr($this->orderStdClass->partNumber, 7, 4);
   }
 
   /**

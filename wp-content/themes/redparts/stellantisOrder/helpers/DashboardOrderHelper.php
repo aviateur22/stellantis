@@ -1,16 +1,15 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/validators.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlForecastRepository.php');
-require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/Order.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/DashboardOrderModel.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/OrderEntity.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/CreateDashboardOrdersHelper.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 
 
-class DashboardHelper extends CreateDashboardOrdersHelper {
+class DashboardOrderHelper extends CreateDashboardOrdersHelper {
 
   /**
    * Order repository
@@ -19,9 +18,9 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
    */
   protected OrderRepositoryInterface $orderRepository;
 
-  function __construct($orderRepository)
+  function __construct(RepositoriesModel $repositories)
   {
-    $this->orderRepository = $orderRepository;
+    $this->orderRepository = $repositories->getOrderRepository();
   }
 
   /**
@@ -118,12 +117,19 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
    * @return void
    */
   private function getfilterOrders(string $startDay = null, string $endDay, array $filterEntries) {    
-    // 
-    $partNumberInArray = $this->stringToArray($filterEntries['partNumber'], ',');
+    
+    $partNumberInArray = empty($filterEntries['partNumber']) ?
+      [] :
+      $this->stringToArray($filterEntries['partNumber'], ',');
+
+    $coverCodeInArray = empty($filterEntries['coverCode']) ?
+      [] :
+      $this->stringToArray($filterEntries['coverCode'], ',');
     
     // Données du filtre pour la requete en Base de données
     $prepareFilterEntries = [
       'partNumber' => $partNumberInArray,
+      'coverCode' => $coverCodeInArray
     ];
 
     $orders = $this->orderRepository->findOrdersWithFilterPartNumber($startDay, $endDay, $prepareFilterEntries);
@@ -198,7 +204,10 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
       $order['brand'],
       $order['version'],
       $order['year'],
-      $order['forecastPrint']
+      $order['forecastPrint'],
+      $order['documentationPDFInformations'],
+      $order['languageCode'],
+      $order['carName']
     );
   }
   
@@ -246,18 +255,20 @@ class DashboardHelper extends CreateDashboardOrdersHelper {
         throw new \Exception('Error Instanceof model - DashboardOrdersHelper', 500);
       }
 
-      // si commande non presente
+      // si commande non présente
       if(!$this->isParNumberInDashboardArray($order->getPartNumber(), $order->getOrderBuyer())) {
         
-        // 
+        // Creation d'un tableau pour stocker toutes les commandes d'un meme PartNumber
         $quantityByDateArray = $this->createQuantityByDateArray();        
 
+        // Recherche des commandes ayant le meme partnumber
         $this->iterateThroughOrders($order->getPartNumber(), $quantityByDateArray, $order->getOrderBuyer());       
        
+        // Création d'un model avec les données
         $dashboardOrderModel = $this->createDashboardOrderModel($order, $quantityByDateArray);
+
         $this->dashboardOrders[] = $dashboardOrderModel;
       }      
     }
-    
   }
 }

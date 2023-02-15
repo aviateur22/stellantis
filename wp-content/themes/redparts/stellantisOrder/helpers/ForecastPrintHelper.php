@@ -1,5 +1,6 @@
 <?php
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlForecastRepository.php');
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/ForecastRepositoryInterface.php');
 require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php');
 
@@ -15,8 +16,9 @@ class ForecastPrintHelper {
    */
   protected ForecastRepositoryInterface $forecastRepository;
   
-  function __construct(ForecastRepositoryInterface $forecastRepository) {   
-    $this->forecastRepository = $forecastRepository;
+  
+  function __construct(RepositoriesModel $repositories) {   
+    $this->forecastRepository = $repositories->getForecastRepository();
   }
   
   /**

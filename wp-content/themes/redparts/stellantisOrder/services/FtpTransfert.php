@@ -6,6 +6,7 @@ require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/se
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/FormatedOrder.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/exceptions/FtpException.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/utils/StaticData.php';
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 /**
  * Transfert des fichier via FTP
@@ -33,8 +34,8 @@ class FtpTransfert implements OrderTransferInterface {
    */
   protected string $orderId;
 
-  function __construct(OrderRepositoryInterface $orderRepository, string $orderId) {
-    $this->orderRepository = $orderRepository;
+  function __construct(RepositoriesModel $repositories, string $orderId) {
+    $this->orderRepository = $repositories->getOrderRepository();
     $this->orderId = $orderId;
   }
 
@@ -69,7 +70,7 @@ class FtpTransfert implements OrderTransferInterface {
     $ftpConnect = null; 
 
     switch ($formatedOrder->getOrderQuantity()) {
-      case $formatedOrder->getOrderQuantity() < 100:
+      case $formatedOrder->getOrderQuantity() < StaticData::MINIMUM_ORDER_QUANTITY_MANCHECOURT:
         // Connection FTP
         $ftpConnect = ftp_connect(
           self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");
@@ -83,7 +84,7 @@ class FtpTransfert implements OrderTransferInterface {
 
       break;
 
-      case $formatedOrder->getOrderQuantity() >= 100:
+      case $formatedOrder->getOrderQuantity() >= StaticData::MINIMUM_ORDER_QUANTITY_MANCHECOURT:
         // Connection FTP
         $ftpConnect = ftp_connect(
           self::RECEPIENT_INFORMATION['HOST'], 21) or die("Error connecting to ftp $ftpConnect");

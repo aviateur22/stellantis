@@ -33,7 +33,10 @@ class DashboardOrderModel extends Order {
         $order->getBrand(),
         $order->getVersion(),
         $order->getYear(),
-        $order->getPrintForecast()
+        $order->getPrintForecast(),
+        [],
+        $order->getLanguageCode(),
+        $order->getCarName()
       );
       $this->quantitiesByDate = $quantitiesByDate;
   }

@@ -2,6 +2,12 @@
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/OrderHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/ExcelFileHelper.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderSourceInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/DocumentationOrderInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderPDFInterface.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/pdfModel/DocumentationOrderModel.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/pdfModel/OrderPdfModel.php';
+require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/helpers/FindPDFDocumentationHelper.php';
 
 class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface {
 
@@ -88,13 +94,29 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
    */
   protected OrderRepositoryInterface $orderRepository;
 
-  function  __construct(string $fileName, OrderHelper $orderHelper, User $user, $orderRepository) {
+  /**
+   * DocumentationOrder repository
+   *
+   * @var DocumentationOrderInterface
+   */
+  protected DocumentationOrderInterface $documentationOrderRepository;
+
+  /**
+   * OrderPDFs Repository
+   *
+   * @var OrderPDFInterface
+   */
+  protected OrderPDFInterface $orderPDFRepository;
+
+  function  __construct(string $fileName, OrderHelper $orderHelper, User $user, RepositoriesModel $repositories) {
     // Constructeur parent
     parent::__construct($fileName); 
 
     $this->orderHelper = $orderHelper;
     $this->user = $user;
-    $this->orderRepository = $orderRepository;
+    $this->orderRepository = $repositories->getOrderRepository();
+    $this->documentationOrderRepository = $repositories->getDocumentationOrderRepository();
+    $this->orderPDFRepository = $repositories->getOrderPdfRepository();
   } 
 
   /**
@@ -110,9 +132,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->getActiveSheet();
 
     // Vérification de validité du fichier
-    if(!$this->isOrderFileValid()) {
-      throw new InvalidFormatException('Provided file is not valid for Orders', 400);
-    }
+    $this->isSheetValid(self::VALIDATE_WORDS, 'Provided XLS file not valid for Orders');
 
     // Récupération des données communes a toutes les commandes
     $this->getInCommonInformations();
@@ -121,32 +141,14 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $this->readOrderSourceData();
 
     // Sauvegarde des commandes
-    $this->orderRepository->save($this->orders);
+    //$this->orderRepository->saveList($this->orders);
+
+    // TODO New Save
+    $this->saveOrders();
   }
 
   /**
-   * Vérification validité du fichier
-   *
-   * @return boolean
-   */
-  function isOrderFileValid(): bool {    
-    $isFileValid = true;
-
-    // Vérification concordence des mots
-    foreach(self::VALIDATE_WORDS as $word) {
-      $wordOnFile = preg_replace("/\s+/", "", strtolower($this->readCellValue($word['ROW'], $word['COLULMN'])));
-      
-      if($wordOnFile !== $word['WORD']) {
-        $isFileValid = false;
-      }
-    };
-    
-    // Renvoie fichier Valid
-    return $isFileValid;
-  }
-
-  /**
-   * Parcours le conte,u du fichier
+   * Parcours le contenu du fichier
    *
    * @return void
    */
@@ -155,7 +157,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     // Derniere ligne
     $LAST_ROW = $this->activeSheet->getHighestRow();
 
-    for($row = self::FILE_STRUCTURE['ROW_START']; $row < $LAST_ROW; $row++) {     
+    for($row = self::FILE_STRUCTURE['ROW_START']; $row <= $LAST_ROW; $row++) {     
       
       if($this->readCellValue($row, 0) !== '') {
         // Nouveau OrderStdClass
@@ -184,6 +186,66 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
         
       }    
     }    
+  }
+
+  /**
+   * Sauvegarde des commandes
+   *
+   * @return void
+   */
+  function saveOrders() {
+    foreach($this->orders as $order) {
+      // Vérification instance
+      if(!$order instanceof Order) {
+        throw new \Exception('order is not instanceOf Order');
+      }
+
+      // Ajout de la commande
+      $orderId = $this->orderRepository->save($order);       
+      
+      // Ajout Liaison Commande - PartNumberToPDF
+      foreach($order->getPdfDocumentations() as $documentationOrder) {
+
+        if(!$documentationOrder instanceof DocumentationOrderModel) {
+          throw new \Exception('documentationOrder is not instanceOf DocumentationOrderModel');
+        }
+
+        $this->saveDocumentationOrders($documentationOrder, $orderId);
+      }      
+    }
+  }
+
+  /**
+   * Sauvegarde des DocuementationOrder
+   *
+   * @return void
+   */
+  function saveDocumentationOrders(DocumentationOrderModel $documentationOrder,int $orderId) {
+    // Ajout Liaison Commande - PartNumberToPDF
+    $documentationOrderId = $this->documentationOrderRepository->save($documentationOrder, $orderId);
+   
+    // Ajout Liaison Docuementation - PDF LINK
+    foreach($documentationOrder->getOrderPdfs() as $orderPdf) {
+
+      if(!$orderPdf instanceof OrderPdfModel) {
+        throw new \Exception('orderPdf is not instanceOf OrderPdfModel');
+      }
+
+      $this->saveOrderPdf($orderPdf, $documentationOrderId, $orderId);
+    }
+  }
+
+  /**
+   * Sauvegarde d'une liaison PDF - DocumentationOrder - OrderId 
+   *
+   * @param OrderPdfModel $orderPdf
+   * @param integer $documentationOrderId
+   * @param integer $orderId
+   * @return void
+   */
+  function saveOrderPdf(OrderPdfModel $orderPdf, int $documentationOrderId, int $orderId) {
+    // Sauvegarde 
+    $this->orderPDFRepository->save($orderPdf, $orderId , $documentationOrderId);
   }
 
   /**
@@ -216,6 +278,7 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $orderStdClass->version = $this->inCommonInformations['version'];
     $orderStdClass->year = $this->inCommonInformations['year'];
     $orderStdClass->sorpDate = $this->inCommonInformations['sorpDate'];
+    $orderStdClass->carName = $this->inCommonInformations['carName'];
     $orderStdClass->coverCode = '';
     $orderStdClass->deliveredDate = '';
     $orderStdClass->quantity = ''; 
@@ -225,30 +288,6 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     $orderStdClass->forecastPrint = 0;
 
     return $orderStdClass;
-  }
-
-  /**
-   * Renvoie les données d'une cellule
-   *
-   * @param integer $row
-   * @param integer $col
-   * @param bool $isDate - Si date a renvoyer
-   * @return string|null
-   */
-  private function readCellValue(int $row, int $col, bool $isDate = false): string {       
-    if(!$isDate) {      
-      return is_null($this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue())  ?
-        '' :
-        $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-    }
-
-    $date = is_null($this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue())  ?
-      '' :
-      $this->activeSheet->getCell(PHPExcel_Cell::stringFromColumnIndex($col).$row)->getValue();
-    
-   return \PHPExcel_Style_NumberFormat::toFormattedString($date, 'YYYY-MM-DD');
-
-
   }
 
   /**
@@ -267,11 +306,19 @@ class OrderFromExcelFile extends ExcelFileHelper implements OrderSourceInterface
     // Id du fichier de commandes
     $this->inCommonInformations['orderId'] = uniqid();
 
-    // Marque 
-    $this->inCommonInformations['brand'] = $this->activeSheet->getCell('A2')->getValue();
+    // Marque
+    $brand = str_contains(strtolower($this->activeSheet->getCell('A2')->getValue()), 'opel') ? 
+      'opel' :
+      $this->activeSheet->getCell('A2')->getValue();
+
+    $this->inCommonInformations['brand'] = $brand;
 
     // Model
     $this->inCommonInformations['model'] = $this->activeSheet->getCell('D2')->getValue();
+
+    // carName
+    $this->inCommonInformations['carName'] = $this->activeSheet->getCell('C2')->getValue();
+
 
     // Famille de la voiture
     $this->inCommonInformations['family'] = 'UNDEFINED';

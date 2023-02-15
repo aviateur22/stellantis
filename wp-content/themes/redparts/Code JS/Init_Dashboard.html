@@ -29,24 +29,19 @@
 
 	var filtreText = "<p style='text-align:right'><a href='https://mdw-05.fr/reseau-psa/upload-orders/'>Upload orders</a></p>";
 
- filtreText += "<h2>Filters</h2>";
- filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>"; 
-filtreText += "<form id='filterOrderForm'>";
+ 	filtreText += "<h2>Filters</h2>";
+ 	filtreText += "<p style='text-align:center'><label for='startDate'>Start date</label>";
+	filtreText += "<form id='filterOrderForm'>";
 	filtreText += '<input style="margin-left:10px;" type="date" id="startDate" name="startDate" min="2022-01-01" max="2050-12-31"></p>';
-	filtreText += "<table><tr><td><label for='family'>Family</label>";
-	filtreText += '<select style="display:block" id="family" name="family" multiple disabled></td>';
-filtreText += "<td><label for='countryCode'>Country Code</label>";
-filtreText += '<select style="display:block" id="countryCode" name="countryCode" multiple></td>';
-filtreText += "<td><label for='countryName'>Country Name</label>";
-filtreText += '<select style="display:block" id="countryName" name="countryName" multiple></td>';
-filtreText += "<td><label for='codePochette'>Code Pochette</label>";
-filtreText += '<select style="display:block" id="codePochette" name="codePochette" multiple></td>';
+	filtreText += "<table><tr>";
+	filtreText += "<td><label for='coverCode'>Code Pochette</label>";
+	filtreText += '<input type="text" style="display:block" id="coverCode" name="coverCode" placeHolder="32Q3,32D3..."></td>';
 	filtreText += "<td><label for='partNumber'>Part Number</label>";
-	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" placeHolder="23AMOKKDEXX32D3,23AMOKKDEXX32A5"></td>';
+	filtreText += '<input style="display:block" type="text" id="partNumber" name="partNumber" placeHolder="23AMOKKDEXX32D3,23AMOKKDEXX32A5..."></td>';
 	filtreText += '</tr></table>';
 	filtreText += '<div class="button__container">'
 	filtreText += '<input style="width:120px; height: 50px; border-radius:5px; padding: 10px; margin: 10px;" type="submit" value="Refresh"/>'
-	filtreText += '<input style="width:120px; height: 50px; background: white; border-radius:5px; color: red; border: 0.5px solid red; padding: 10px; margin: 10px;" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'	
+	filtreText += '<input style="width:120px; height: 50px; background: white; border-radius:5px; color: red; border: 0.5px solid red; padding: 10px; margin: 10px;" type="button" onclick="filterOrder(event, true)" value="Clear Filter"/>'
 	filtreText += '</div>'
 	filtreText += "</form>";
 
@@ -57,7 +52,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	function hideUpdateOrder() {
 		if(updateOrderElement) {
 			updateOrderElement.hidden = true;
-		}		
+		}
 	}
 
 	/**
@@ -69,7 +64,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 		// Affichage modal
 		if(updateOrderElement) {
-			updateOrderElement.hidden = false;			
+			updateOrderElement.hidden = false;
 		}
 
 		// Affichage spinner chargement
@@ -112,7 +107,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 				spinnerLoaderElement.hidden = false;
 		}
 
-		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));		
+		const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
 		const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/update_order_on_dashboard.php";
 		AppelScriptPHP(_lien_scriptPHP, formData);
 	}
@@ -123,11 +118,11 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	 * @params {bool} clearFilter
 	 */
 	function filterOrder(event, clearFilter = false) {
-		mode === 2;		
+		mode === 2;
 		event.preventDefault();
 
 		// Reset du filtre
-		if(clearFilter) {			
+		if(clearFilter) {
 			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
 			AppelScriptPHP(_lien_scriptPHP, null);
 
@@ -138,25 +133,28 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			const filterPartNumberElement = document.getElementById('partNumber');
 			filterPartNumberElement.value = '';
 
+			// Reset du code Pochette
+			const filterCoverCodeElement = document.getElementById('coverCode');
+			filterCoverCodeElement.value = '';
+
 			if(selectDayFilterElement) {
 				// date du jour
 				selectDayFilterElement.valueAsDate = new Date()
 			}
-		} else {		
+		} else {
 			const formData = urlEncoded(Object.fromEntries(new FormData(event.target)));
-			console.log(formData);
 			const _lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
 			AppelScriptPHP(_lien_scriptPHP, formData);
-		}		
+		}
 	}
 
 	/**
 	 * Mise a jour de la modal updateOrder avec les données de la base de données
-	 * 
+	 *
 	 * @params {object} findOrder
 	 */
 	function updateOrderModalElement(findOrder) {
-		
+
 		// Données commandes
 		const orderInformation = findOrder.order;
 		const processedWith = findOrder.processedWith;
@@ -170,26 +168,44 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		const statusElement = document.getElementById('displayStatus');
 		const idElement = document.getElementById('id');
 		const processedWithElement = document.getElementById('processedWith');
-		const coverCodeElement = document.getElementById('coverCode');
+		const coverCodeElement = document.getElementById('coverCodeDatabase');
 		const brandElement = document.getElementById('brand');
 		const coverLinkElement = document.getElementById('coverLink');
 		const statusLabelElement = document.getElementById('statusLabel');
+		const forecastElement = document.getElementById('forecast');
+		const modelYearElement = document.getElementById('modelYear');
+		const modelCarElement = document.getElementById('modelCode');
+		const carLineElement = document.getElementById('carLine');
+		const languageCodeElement = document.getElementById('languageCode');
+
+
+		/************************/
+		// Données HTML PDF
+		/*********************/
+		//Principal Conteneur PDF
+		const mainDocumentationContainerElement = document.getElementById('mainDocumentationContainer');
+
+		// Conteneur des docuemention PDF
+		const documentationContainerElement = document.getElementById('documentationContainer');
+
+		// documentation PDF de REF pour Clone
+		const documentationPDFElement = document.getElementById('documentation-xx');
+
+		// Text erreur Docuementation
+		const documentationTextErrorElement = document.querySelector('.documentation__not__avail');
 
 		// Mise a jour de la vue
 		if(partNumberElement && quantityElement && deliveredDateElement &&
-			processedWithElement && coverCodeElement && coverLinkElement && brandElement && statusLabelElement) {
-			
+			processedWithElement && coverCodeElement && brandElement && statusLabelElement && forecastElement) {
+
 			// Societé traitant la commande
 			processedWithElement.innerText = processedWith;
 
 			// code couverture
 			coverCodeElement.innerText = orderInformation.coverCode;
 
-			// Marque 
+			// Marque
 			brandElement.innerText = orderInformation.brand;
-
-			// lien documentation PDF
-			coverLinkElement.innerText = orderInformation.coverLink;
 
 			// Id commande
 			idElement.value = orderInformation.id;
@@ -201,19 +217,197 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 			quantityElement.value = orderInformation.quantity;
 
 			// Date de livraiosn
-			deliveredDateElement.value = orderInformation.deliveredDate;			
+			deliveredDateElement.value = orderInformation.deliveredDate;
 
 			// Statut actuelle de la commande
 			statusLabelElement.innerText = orderStatusLabel;
+
+			// Forecast
+			forecastElement.innerText = orderInformation.forecastPrint;
 
 			// Suppression ancienne class
 			statusLabelElement.className = '';
 
 			// Ajout nouvelle classe
 			statusLabelElement.classList.add(orderStatusClassNamecolor);
-		}	
 
-		// Si Select Statut Option 
+			// Année
+			modelYearElement.innerText = orderInformation.year;
+
+			// carLine
+			carLineElement.innerText = orderInformation.carName;	
+
+			// Model
+			modelCarElement.innerText = orderInformation.model;
+
+			// Language manuel de la commande
+			languageCodeElement.innerText = orderInformation.languageCode;
+
+			// Masque le documentHtml de ref
+			documentationPDFElement.style.display = "none";
+
+			// GESTION DOCUEMENTATION PDF
+
+			// Suppression des anciens document HTML
+			const documentationPDFElements = document.querySelectorAll('.documentation');
+				documentationPDFElements.forEach(documentationElement => {
+					if(documentationElement.id !== 'documentation-xx') {
+						documentationElement.remove();
+					}
+				});
+
+			// Pas de données
+			if(orderInformation.documentationPDFInformations.length === 0) {
+				documentationContainerElement.style.display = "none";
+				documentationTextErrorElement.style.display = "block";
+			} else {
+
+				// Masque le message d'absence de documentation
+				documentationTextErrorElement.style.display = "none";
+
+				// Clone le document source
+				orderInformation.documentationPDFInformations.forEach(documentation => {
+					let cloneDocumentationElement = documentationPDFElement.cloneNode(true);
+					// Numero Id pour id docuementation
+					let number = documentation.documentationId;
+					let idClone = "documentation-" + number;
+					let pdfDetails = documentation.PdfDetail;
+					let docType = documentation.documentationDetail.type;
+					let isWalletBranded = documentation.documentationDetail.walletBranded;
+					let isPaperWallet = documentation.documentationDetail.paperWallet;
+					let documentationLanguage = documentation.documentationDetail.languageCodeSB;
+
+					// Récupératrion des élémént HTML
+
+					// Langue documentation
+					const documentationLanguageElement = cloneDocumentationElement.querySelector('.documentation__type__language');
+
+					// type de document (full guide...)
+					const documentationTypeTextElement = cloneDocumentationElement.querySelector('.documentation__type__text');
+
+					// Wallet branded text
+					const walletBrandedElement = cloneDocumentationElement.querySelector('.documentation__wallet__branded');
+
+					// Paper Wallet text
+					const paperWalletElement = cloneDocumentationElement.querySelector('.documentation__paper__wallet');
+
+					// Text erreur documentation
+					const documentationTextErrorElement = cloneDocumentationElement.querySelector('.documentation__not__avail');
+
+					//Contenu des liens PDF
+					const pdfLinkContainerElement = cloneDocumentationElement.querySelector('.documentation__doc');
+
+					// Text erreur PDF
+					const pdfTextErrorElement = cloneDocumentationElement.querySelector('.documentation__pdf__not__avail');
+
+					// Liens de PDF INT
+					const pdfLinkIntElement = cloneDocumentationElement.querySelector('.documentation__int');
+
+					// Lien de PDF COUV
+					const pdfLinkCouvElement = cloneDocumentationElement.querySelector('.documentation__couv');
+
+					// Pagination PDF INT
+					const paginationIntElement = cloneDocumentationElement.querySelector('.pagination__int');
+
+					// Pagination PDF COUV
+					const paginationCouvElement = cloneDocumentationElement.querySelector('.pagination__couv');
+
+
+
+					//  Affichage Type de document
+					documentationTypeTextElement.innerText = docType;
+					
+					// Language de la documentation
+					documentationLanguageElement.innerText = documentationLanguage;
+
+					//Ajout des class success or failed
+					walletBrandedElement.classList.remove('success--text');
+					walletBrandedElement.classList.remove('error--text');
+					paperWalletElement.classList.remove('success--text');
+					paperWalletElement.classList.remove('error--text');
+
+					// Ajout des class
+					if(isWalletBranded) {
+						walletBrandedElement.classList.add('success--text');
+					} else {
+						walletBrandedElement.classList.add('error--text');
+					}
+
+					if(isPaperWallet) {
+						paperWalletElement.classList.add('success--text');
+					} else {
+						paperWalletElement.classList.add('error--text');
+					}
+
+					// Si pas de donnée sur les PDF
+					if(pdfDetails.length === 0) {
+						pdfLinkContainerElement.style.display = 'none';
+						pdfTextErrorElement.style.display = 'block';
+
+
+					} else {
+
+						// Masque le message d'erreur
+						pdfTextErrorElement.style.display = 'none';
+
+						// PDF int ou Couv
+						doc = {
+							isPdfIntDetected: false,
+							isPdfCouvDetected: false
+						}
+
+						// Parcours des doc HTML pour recupérer Le liens + INT oiu COUV
+						pdfDetails.forEach(pdf => {
+							if(pdf.link !== undefined || pdf.pagination !== undefined || pdf.intOrCouv !== undefined) {								
+								// Lien PDF
+								const pdfLink = pdf.link;
+
+								// Pagination
+								const pagination = pdf.pagination;
+
+								console.log(pdf.intOrCouv);
+
+								// Doc INT ou COUV
+								const intOrCouv =  pdf.intOrCouv.toLowerCase();
+
+								switch(intOrCouv) {
+									case 'int':
+										doc.isPdfIntDetected = true;
+										pdfLinkIntElement.innerText = pdfLink;
+										paginationIntElement.innerText = pagination;
+										break;
+									case 'couv':
+										doc.isPdfCouvDetected = true;
+										pdfLinkCouvElement.innerText = pdfLink;
+										paginationCouvElement.innerText = pagination;
+									break;
+								}								
+							}
+						});
+
+						// Vérification des données PDF
+						if(!doc.isPdfCouvDetected) {
+							pdfLinkCouvElement.innerText = "No Data";
+							paginationCouvElement.innerText = "No Data";
+						}
+
+						if(!doc.isPdfIntDetected) {
+							pdfLinkIntElement.innerText = "No Data";
+							paginationIntElement.innerText = "No Data";				
+						}
+						// Affichage des documents
+						documentationContainerElement.style.display = 'flex';
+					}
+
+					// Ajout du nouvel element HTML
+					cloneDocumentationElement.id = idClone;
+					cloneDocumentationElement.style.display = "flex";
+					documentationPDFElement.after(cloneDocumentationElement);
+				});
+			}
+		}
+
+		// Si Select Statut Option
 		if(statusElement) {
 			// Select Option
 			statusElement.value = orderInformation.wipId.toLowerCase();
@@ -237,7 +431,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 	/**
 	 * Affichage flashMessage
-	 * 
+	 *
 	 * @params {text} message - message a afficher
 	 * @params {bool} error - Flash error
 	 */
@@ -260,7 +454,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 	/**
 	 * Mise a jour de l'affichage des commandes apres modification
-	 * 
+	 *
 	 * @params {object} updatedOrder - contient les données de couelur
 	 */
 	function updateDisplayOrder(updatedOrder) {
@@ -278,14 +472,14 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 
 		// Masque la modal update Order
 		if(updateOrderElement) {
-			updateOrderElement.hidden = true;			
+			updateOrderElement.hidden = true;
 		}
 
 		// Rechargement
 		setTimeout(()=> {
 			reloadDashboard();
 		}, 3000);
-		
+
 	}
 
 	/**
@@ -298,19 +492,19 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 		// Lien script PHP
 		let _lien_scriptPHP = '';
 
-		// Retour requete 
+		// Retour requete
 		mode = 2;
 
 		if(filterPartNumberElement.value.length === 0) {
-			
+
 			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/get_dashboard.php";
 			const startDate = document.getElementById('startDate').value;
-			var _variables = '&startDate=' + encodeURIComponent(startDate);			
+			var _variables = '&startDate=' + encodeURIComponent(startDate);
 			AppelScriptPHP(_lien_scriptPHP, _variables);
 		} else {
 			filterForm = document.getElementById('filterOrderForm');
-			const formData = urlEncoded(Object.fromEntries(new FormData(filterForm)));			
-			console.log(formData);
+			const formData = urlEncoded(Object.fromEntries(new FormData(filterForm)));
+
 			_lien_scriptPHP = "https://mdw-05.fr/wp-content/themes/redparts/filter_order_dashboard.php";
 			AppelScriptPHP(_lien_scriptPHP, formData);
 		}
@@ -342,7 +536,7 @@ filtreText += '<select style="display:block" id="codePochette" name="codePochett
 	var mode = 1;
 	var type;
 
-	window.onload=function(){	
+	window.onload=function(){
 
 		/////////////////////////// EVENT /////////////////////////////////////////////
 		document.getElementById("message").addEventListener('input', resetMessage);
@@ -575,7 +769,7 @@ for(x=1;x<5000;x++)
 						spinnerLoaderElement.hidden = true;
 				}
 
-				// Récupération du message d'erreur 
+				// Récupération du message d'erreur
 				data = httpRequest.responseText;
 
 				if(!data) {
@@ -583,7 +777,7 @@ for(x=1;x<5000;x++)
 				}
 
 				alert(data);
-				
+
 			}
 		}
 	}
@@ -601,11 +795,19 @@ for(x=1;x<5000;x++)
 	{
 		//MAJ Titre et WIP
 		if(data['orders']) {
+			// Récupérationd de la date
+			selectDayFilterElement = document.getElementById('startDate');
+
+			// Si modification de la data a afficher
+			if(data['firstDayWithOrder']) {
+				selectDayFilterElement.valueAsDate = new Date(data['firstDayWithOrder']);
+			}
+
 			document.getElementById('resultat-div').innerHTML = data['orders'];
 
 			// Modal update commande
-			updateOrderElement = document.getElementById('updateOrder');			
-			
+			updateOrderElement = document.getElementById('updateOrder');
+
 			// Masque la modal de modification d'une commande
 			if(updateOrderElement) {
 				updateOrderElement.hidden = true;
@@ -614,21 +816,21 @@ for(x=1;x<5000;x++)
 
 		// Résulat d'une recherche de commande
 		if(data['findOrder']) {
-
+			console.log(data['findOrder']);
 			// Mise a jour de l'affichage
-			updateOrderModalElement(data['findOrder']);			
-			
+			updateOrderModalElement(data['findOrder']);
+
 		}
 
 		// Resultat d'un update d'une commande
 		if(data['updateOrder']) {
-			const result = data['updateOrder'];	
+			const result = data['updateOrder'];
 
 			// Modification affichage des commandes
 			if(result) {
-				updateDisplayOrder(result);				
-			}			
-		}		
+				updateDisplayOrder(result);
+			}
+		}
 
 		// Loader de chargement
 		spinnerLoaderElement = document.getElementById('loader');

@@ -1,6 +1,7 @@
 <?php
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/interfaces/OrderRepositoryInterface.php';
 require_once '/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/services/MySqlOrderRepository.php';
+require_once ('/home/mdwfrkglvc/www/wp-content/themes/redparts/stellantisOrder/model/RepositoriesModel.php');
 
 /**
  * Suppression des ancienne données
@@ -20,9 +21,9 @@ class DeleteHelper {
   protected OrderRepositoryInterface $orderRepository;
 
 
-  function __construct($orderRepository)
+  function __construct(RepositoriesModel $repositories)
   {
-    $this->orderRepository = $orderRepository;  
+    $this->orderRepository = $repositories->getOrderRepository();  
   }
 
   /**

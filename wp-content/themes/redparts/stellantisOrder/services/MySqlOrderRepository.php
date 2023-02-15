@@ -33,8 +33,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
    * @param array $orders
    * @return void
    */
-  function save(array $orders): void {  
-    global $wpdb;  
+  function saveList(array $orders): void {  
+    global $wpdb;
     foreach($orders as $order) {
       // Verification instance Orer 
       if($order instanceof Order) {
@@ -47,11 +47,13 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
           'countryName' => $order->getCountryName(),
           'countryCode' => $order->getCountryCode(),
           'partNumber' => $order->getPartNumber(),
+          'languageCode' => $order->getLanguageCode(),
           'coverCode' => $order->getCoverCode(),
           'quantity' => $order->getQuantity(),
           'deliveredDate' => date('Y-m-d', strtotime($order->getDeliveredDate())),
           'coverLink'=> $order->getCoverLink(),
           'model'=>$order->getModel(),
+          'carName'=>$order->getCarName(),
           'isValid' => $order->getIsValid(),
           'brand' =>$order->getBrand(),
           'wipId' => $order->getWipId(),
@@ -63,6 +65,40 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
         throw new InvalidFormatException();
       }     
     }   
+  }
+
+  /**
+   * Sauvegarde de 1 commande
+   *
+   * @param Order $order
+   * @return int
+   */
+  function save(Order $order): int {
+    global $wpdb;
+    $wpdb->insert('orders', array(
+      'orderId' => $order->getOrderId(),
+      'orderDate' => $order->getOrderDate(),
+      'orderFrom' => $order->getOrderform(),
+      'orderBuyer' => $order->getOrderBuyer(),
+      'family' => $order->getFamily(),
+      'countryName' => $order->getCountryName(),
+      'countryCode' => $order->getCountryCode(),
+      'partNumber' => $order->getPartNumber(),
+      'languageCode' => $order->getLanguageCode(),
+      'coverCode' => $order->getCoverCode(),
+      'quantity' => $order->getQuantity(),
+      'deliveredDate' => date('Y-m-d', strtotime($order->getDeliveredDate())),
+      'coverLink'=> $order->getCoverLink(),
+      'model'=>$order->getModel(),
+      'carName'=>$order->getCarName(),
+      'isValid' => $order->getIsValid(),
+      'brand' =>$order->getBrand(),
+      'wipId' => $order->getWipId(),
+      'version' => $order->getVersion(),
+      'year' => $order->getYear(),
+      'forecastPrint' =>$order->getPrintForecast()
+    ));
+    return $wpdb->insert_id;
   }
 
   /**
@@ -138,12 +174,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function findOne(string $orderId): array {
     global $wpdb;
     $findOrder = $wpdb->get_results(
-      $wpdb->prepare(
-        "SELECT * FROM orders WHERE id = %s",
-          $orderId
-        )
-    );
-    return $findOrder;
+      $wpdb->prepare("SELECT * FROM orders WHERE id = %s", $orderId), ARRAY_A);
+    return $this->addPdfInformationToOrder($findOrder);;
   }
 
   /**
@@ -175,7 +207,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     $query = "SELECT * FROM orders WHERE orderId = '" .$orderId."'";
     $findOrders = $wpdb->get_results($query, ARRAY_A);
 
-    return $findOrders;
+    // Renvoie les commandes avec l'ajout de liens PDF
+    return $this->addPdfInformationToOrder($findOrders);
   }
 
   /**
@@ -216,9 +249,8 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
     $existingOrder = $order[0];
 
     // Vérification si pas de conflit avec d'autre commande deja existante
-    if(date('Y-m-d', strtotime($existingOrder->deliveredDate)) !== date('Y-m-d', strtotime($deliveredDate))) {
-      
-      $findDuplicatedOrder = $this->findOneDuplicatedOrder($existingOrder->partNumber, $deliveredDate, $existingOrder->orderBuyer);      
+    if(date('Y-m-d', strtotime($existingOrder['deliveredDate'])) !== date('Y-m-d', strtotime($deliveredDate))) {
+      $findDuplicatedOrder = $this->findOneDuplicatedOrder($existingOrder['partNumber'], $deliveredDate, $existingOrder['orderBuyer']);      
       if(!empty($findDuplicatedOrder)) {
         throw new \Exception('Update impossible, Order already exist on ' . date('d-M-Y', strtotime($deliveredDate)), 400);
       }
@@ -268,15 +300,22 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
 
     // Filtre les commandes pour les usines Stellantis   
     if(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
-      $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+      $findOrders = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders
+        WHERE wipId <> %d AND isPOD <> 1 AND deliveredDate >= %s AND deliveredDate <= %s AND orderBuyer = %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
       StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd, $this->user->getFirstRole()), ARRAY_A);
-      return $findOrders;      
+      
+      // Renvoie les commandes avec l'ajout de liens PDF
+      return $this->addPdfInformationToOrder($findOrders);
     }
 
+    
     // Autre personne de connectée
-    $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND deliveredDate >= %s AND deliveredDate <= %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+    $findOrders = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE wipId <> %d AND isPOD <> 1 AND deliveredDate >= %s AND deliveredDate <= %s ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
     StaticData::ORDER_STATUS['PREPARATION'], $dayStart, $dayEnd), ARRAY_A);
-    return $findOrders;
+
+    // Renvoie les commandes avec l'ajout de liens PDF
+    return $this->addPdfInformationToOrder($findOrders);
   }
 
   /**
@@ -290,27 +329,256 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function findOrdersWithFilterPartNumber(string $dayStart, string $dayEnd, array $filterEntries): array {
     global $wpdb;
 
-    // Recherche des PartNumbers
-    $findOrderInPartNumber = [];
-    if($filterEntries['partNumber']) {
+    // Recherche des commandes correspondant au Filtre
+    $findOrdersWithFilter = [];
+    if(!empty($filterEntries['partNumber']) && !empty($filterEntries['coverCode'])) {
       $partNumberQueryPlaceHolder = $this->getPlaceholder($filterEntries['partNumber'], '%s');
-      $findOrderInPartNumber = $wpdb->get_results($wpdb->prepare("SELECT * FROM orders WHERE partNumber IN ($partNumberQueryPlaceHolder) ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",$filterEntries['partNumber']), ARRAY_A);
+      $coverCodeQueryPlaceHolder = $this->getPlaceholder($filterEntries['coverCode'], '%s');
+
+      // Recherche des PartNumber
+      $findOrdersWithFilterPartNumber = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE partNumber IN ($partNumberQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['partNumber']), 
+        ARRAY_A);
+
+      // Recherche des code pochettes
+      $findOrdersWithFilterCoverCode = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE coverCode IN ($coverCodeQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['coverCode']), 
+        ARRAY_A);
+
+        // Ajout des commandes partNumber
+        foreach($findOrdersWithFilterPartNumber as $orderPartNumber) {          
+          if(!in_array($orderPartNumber, $findOrdersWithFilter)) {
+            $findOrdersWithFilter[] = $orderPartNumber;
+          }          
+        }
+
+        // Ajout des commandes partNumber
+        foreach($findOrdersWithFilterCoverCode as $orderCoverCoder) {          
+          if(!in_array($orderCoverCoder, $findOrdersWithFilter)) {
+            $findOrdersWithFilter[] = $orderCoverCoder;
+          }          
+        }
+
+      $findOrdersWithFilter = $this->addPdfInformationToOrder($findOrdersWithFilter);
+
+
+    } elseif(!empty($filterEntries['partNumber'])) {
+      $partNumberQueryPlaceHolder = $this->getPlaceholder($filterEntries['partNumber'], '%s');
+      $findOrdersWithFilter = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE partNumber IN ($partNumberQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['partNumber']), 
+        ARRAY_A);
+      $findOrdersWithFilter = $this->addPdfInformationToOrder($findOrdersWithFilter);
+    } elseif(!empty($filterEntries['coverCode'])) {
+      $coverCodeQueryPlaceHolder = $this->getPlaceholder($filterEntries['coverCode'], '%s');
+      $findOrdersWithFilter = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM orders 
+        WHERE coverCode IN ($coverCodeQueryPlaceHolder) 
+        ORDER BY orderBuyer ASC, brand ASC, model ASC, `year` ASC, `version` ASC",
+        $filterEntries['coverCode']), 
+        ARRAY_A);
+      $findOrdersWithFilter = $this->addPdfInformationToOrder($findOrdersWithFilter);
     }
 
+    
     // Recherche des Orders dans l'interval de temps
     $findOrderInIntervallDay = $this->findOrdersOnIntervalDay($dayStart, $dayEnd);
 
-    // Commandes validant les différents filtres
+    // Commandes validant l'interval de temps + les filtres
     $findOrders = [];
 
-    foreach($findOrderInPartNumber as $orderInPartNumber) {
+    foreach($findOrdersWithFilter as $orderWithFilter) {
       foreach($findOrderInIntervallDay as $orderInIntervalDay) {
-        if($orderInPartNumber === $orderInIntervalDay) {
-          $findOrders[] = $orderInPartNumber;
+        if($orderWithFilter === $orderInIntervalDay) {
+          $findOrders[] = $orderWithFilter;
         }
       }
     }
+    
+    // Renvoie les commandes avec l'ajout de liens PDF
     return $findOrders;
+  }
+
+  /**
+   * Ajout des données PDF aux commandes
+   *
+   * @param [type] $ordersWithoutPdf
+   * @return array - Commandes avec les données PDF
+   */
+  function addPdfInformationToOrder($ordersWithoutPdf):array {
+    $orders = [];
+    foreach($ordersWithoutPdf as $order) {
+      
+      // Recherche des liaison commande - PartNumberToPDf
+      $documentationOrders = $this->findDocumentationOrders($order);
+
+      // Rechecher des données PDF pour chaque documentationOrders
+      $documentationInformations = $this->iterateThroughdocumentationOrders($order, $documentationOrders);
+      
+      $order['documentationPDFInformations'] =  $documentationInformations;
+
+      $orders[] = $order;
+    }
+
+    return $orders;      
+  }
+  
+  function addCarlineName($ordersWithoutCarName): array {
+    $orders = [];
+    foreach($ordersWithoutCarName as $order) {     
+      
+      
+      $order['carLineName'] =  '';
+
+      $orders[] = $order;
+    }
+
+    return $orders;      
+  }
+
+  /**
+   * Recherche des DocumentationOrder liées à une commande
+   *
+   * @param array $order
+   * @return array
+   */
+  function iterateThroughdocumentationOrders(array $order, array $documentationOrders): array {
+     
+    $documentations = [];
+
+    foreach($documentationOrders as $documentationOrder) {
+
+      //Recherche des Liens PDF
+      $findOrderPdfs = $this->findOrderPdfs($order, $documentationOrder);
+
+      // Recheche des information en détails (paperWallet, walletBranded, languageCodeSB, comments)
+      $documentationOrderDetail = $this->findDetailOnDocumentationOrder($documentationOrder);
+
+      // Ajout du type de document dans documentationOrderDetail
+      $documentationOrderDetail['type'] = $this->getDocumentationType($findOrderPdfs);
+
+
+      $documentations[] = [
+        'documentationId' => $documentationOrder['id'],
+        'documentationDetail' => $documentationOrderDetail,
+        'PdfDetail' => $findOrderPdfs
+      ];
+    }
+    return $documentations;
+  }
+
+  /**
+   * Recherche des DocumentationOrder liées à une commande
+   *
+   * @param array $order
+   * @return array
+   */
+  function findDocumentationOrders(array $order): array {
+    global $wpdb;
+
+    $findDocumentationOrders = $wpdb->get_results($wpdb->prepare(          
+      "SELECT * FROM documentationsOrders WHERE orderId = %s", $order['id']
+    ), ARRAY_A);
+
+    return $findDocumentationOrders;
+  }
+
+  /**
+   * Rercherche des données PDF liée a la docuementation
+   *
+   * @param array $order
+   * @param array $documentationOrder
+   * @return array
+   */
+  function findOrderPdfs(array $order, array $documentationOrder): array {
+    global $wpdb;
+
+    //Recherche des Liens PDF avec leur détails
+    $findOrderPdfs = $wpdb->get_results($wpdb->prepare(          
+      "SELECT pdfPrints.link, pdfPrints.type, pdfPrints.intOrCouv, pdfPrints.lang1, pdfPrints.fullLink, pdfPrints.pagination
+      FROM orderPdfs 
+      LEFT JOIN pdfPrints ON orderPdfs.PDFPrintId = pdfPrints.id
+      WHERE orderId = %s AND documentationOrderId = %s AND isDocumentationFind = 1", $order['id'], $documentationOrder['id']
+    ), ARRAY_A);
+
+    //var_dump($findOrderPdfs);
+
+    // Vérification des données de jointure
+    for($i = 0; $i < count($findOrderPdfs); $i++) {
+      if(empty($findOrderPdfs[$i]['link']) || empty($findOrderPdfs[$i]['type']) || empty($findOrderPdfs[$i]['intOrCouv']) || empty($findOrderPdfs[$i]['fullLink']) || empty($findOrderPdfs[$i]['pagination'])) {
+        $findOrderPdfs[$i] = [];
+      }
+    }
+
+    //var_dump($findOrderPdfs);
+    return $findOrderPdfs;
+  }
+
+  /**
+   * Récupération des détails d'une DocumentationOrder (paperWallet, walletBranded, languageCodeSB, comments)
+   *
+   * @return array
+   */
+  function findDetailOnDocumentationOrder(array $documentationOrder): array {
+    global $wpdb;
+
+    $partNumberToPDFId = $documentationOrder['partNumberToPDFId'];
+
+    // Récupérartion des données suivantes:
+    $documentationOrderDetail = $wpdb->get_results($wpdb->prepare(          
+      "SELECT paperWallet, walletBranded, languageCodeSB, comments, languageCodePackage FROM PartNumberToPDF WHERE id = %s", $partNumberToPDFId
+    ), ARRAY_A);
+
+    if(count($documentationOrderDetail) > 0) {
+      $documentationOrderDetail = $documentationOrderDetail[0];
+    }
+
+    // Transforme type bool walletBranded
+    $documentationOrderDetail['walletBranded'] = strtolower($documentationOrderDetail['walletBranded']) === 'y' ? true : false;
+
+    // Transforme type bool paperWallet
+    $documentationOrderDetail['paperWallet'] = strtolower($documentationOrderDetail['paperWallet']) === 'x' ? true : false;
+
+    // Nom fichier provenant de $documentationOrder
+    $documentationOrderDetail['docRef'] = $documentationOrder['docRef'];
+
+    return $documentationOrderDetail;
+  }
+
+  /**
+   * Renvoie le type d'une documentation
+   *
+   * @param array $pdfDetails - Tableau contenant le type a renvoyer
+   * @return string - Le type
+   */
+  function getDocumentationType(array $pdfDetails): string {
+    $documentationType = '';
+
+    // Si pas de contenu
+    if(count($pdfDetails) === 0) {
+      return 'undefined';
+    }
+    
+    for($i =0; $i < count($pdfDetails); $i++) {
+      if($i===0) {
+        $documentationType = trim(strtolower($pdfDetails[$i]['type']));
+      } else {
+
+        // Si les type diffrents
+        if($documentationType !== trim(strtolower($pdfDetails[$i]['type']))) {
+          return 'undefined';
+        }
+      }      
+    }
+    return $documentationType;
   }
 
   /**
@@ -336,7 +604,39 @@ class MySqlOrderRepository implements OrderRepositoryInterface {
   function findFirstOrderAfteSpecifiedDay(string $specifiedDay): array
   {
     global $wpdb;
-    return $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
-      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay), ARRAY_A)[0];
+
+    // Filtre les commandes pour les usines Stellantis   
+    if(isUserRoleFindInArrayOfRoles($this->user, StaticData::FACTORY_STELLANTIS_ROLES_NAMES)) {
+
+      $findFirstDay =  $wpdb->get_results($wpdb->prepare(
+        "SELECT * 
+        FROM `orders` 
+        WHERE wipId <> %s AND isPOD <> 1 AND deliveredDate > %s AND orderBuyer = %s
+        ORDER BY deliveredDate 
+        ASC LIMIT 1",
+        StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay, $this->user->getFirstRole()),
+      ARRAY_A
+    );
+
+    // Si commande
+    if(count($findFirstDay) > 0) {
+      return $findFirstDay[0];
+    }
+
+    return [];     
+    }
+
+    // Role autre que usine de stellantis
+    $findFirstDay =  $wpdb->get_results($wpdb->prepare("SELECT * FROM `orders` WHERE wipId <> %s AND isPOD <> 1 AND deliveredDate > %s ORDER BY deliveredDate ASC LIMIT 1",
+      StaticData::ORDER_STATUS['PREPARATION'], $specifiedDay),
+      ARRAY_A
+    );
+
+   
+    if(count($findFirstDay) > 0) {
+      return $findFirstDay[0];
+    }
+
+    return [];
   }
 }
